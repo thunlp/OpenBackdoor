@@ -1,8 +1,8 @@
-from .basepoisoner import BasePoisoner
-from .badnetpoisoner import BadNetPoisoner
+from .poisoner import Poisoner
+from .badnet_poisoner import BadNetPoisoner
 
 POISONERS = {
-    'base': BasePoisoner,
+    'base': Poisoner,
     'badnet': BadNetPoisoner
 }
 

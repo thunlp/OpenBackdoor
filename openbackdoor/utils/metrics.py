@@ -1,6 +1,6 @@
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 from typing import *
-from openbackdoor.utils.log import logger
+from .log import logger
 
 def classification_metrics(preds: Sequence[int],
                            labels: Sequence[int],

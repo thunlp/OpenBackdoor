@@ -1,7 +1,8 @@
-from .trainer import BaseTrainer
+from .trainer import Trainer
+from .eval import evaluate_all, evaluate
 
 TRAINERS = {
-    'base': BaseTrainer
+    'base': Trainer
 }
 
 def load_trainer(config):

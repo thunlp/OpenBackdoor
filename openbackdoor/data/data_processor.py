@@ -72,8 +72,6 @@ class DataProcessor:
     def get_train_examples(self, data_dir: Optional[str] = None, shuffle: Optional[bool] = True):
         """
         get train examples from the training file under :obj:`data_dir`
-
-        call ``get_examples(data_dir, "train")``, see :py:meth:`~openprompt.data_utils.data_processor.DataProcessor.get_examples`
         """
         examples = self.get_examples(data_dir, "train")
         if shuffle:
@@ -83,8 +81,6 @@ class DataProcessor:
     def get_dev_examples(self, data_dir: Optional[str] = None, shuffle: Optional[bool] = True):
         """
         get dev examples from the development file under :obj:`data_dir`
-
-        call ``get_examples(data_dir, "dev")``, see :py:meth:`~openprompt.data_utils.data_processor.DataProcessor.get_examples`
         """
         examples = self.get_examples(data_dir, "dev")
         if shuffle:
@@ -94,8 +90,6 @@ class DataProcessor:
     def get_test_examples(self, data_dir: Optional[str] = None, shuffle: Optional[bool] = True):
         """
         get test examples from the test file under :obj:`data_dir`
-
-        call ``get_examples(data_dir, "test")``, see :py:meth:`~openprompt.data_utils.data_processor.DataProcessor.get_examples`
         """
         examples = self.get_examples(data_dir, "test")
         if shuffle:
@@ -105,8 +99,6 @@ class DataProcessor:
     def get_unlabeled_examples(self, data_dir: Optional[str] = None):
         """
         get unlabeled examples from the unlabeled file under :obj:`data_dir`
-
-        call ``get_examples(data_dir, "unlabeled")``, see :py:meth:`~openprompt.data_utils.data_processor.DataProcessor.get_examples`
         """
         return self.get_examples(data_dir, "unlabeled")
     
@@ -130,7 +122,7 @@ class DataProcessor:
             split (str): ``train`` / ``dev`` / ``test`` / ``unlabeled``
 
         Returns:
-            List[InputExample]: return a list of :py:class:`~openprompt.data_utils.data_utils.InputExample`
+            List: return a list of tuples`
         """
         raise NotImplementedError
 

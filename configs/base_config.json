@@ -1,21 +1,22 @@
 {
     "target_dataset":{
-        "name": "imdb",
+        "name": "agnews",
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "imdb",
+        "name": "agnews",
         "dev_rate": 0.1
     },
     "victim":{
         "model": "bert",
         "path": "bert-base-uncased",
-        "num_classes": 2,
+        "num_classes": 4,
         "device": "gpu",
         "max_len": 512
     },
     "attacker":{
         "name": "base",
+        "metric": "accuracy",
         "train":{
             "name": "base",
             "lr": 2e-5,

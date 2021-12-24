@@ -81,4 +81,6 @@ def collate_fn(data):
 def get_dataloader(dataset: Union[Dataset, List],
                     batch_size: Optional[int] = 1,
                     shuffle: Optional[bool] = True):
-    return DataLoader(dataset=dataset[:1000], batch_size = batch_size, shuffle = shuffle, collate_fn = collate_fn)
+    return DataLoader(dataset=dataset[:100], batch_size = batch_size, shuffle = shuffle, collate_fn = collate_fn)
+
+from .data_utils import wrap_dataset

@@ -1,12 +1,13 @@
 from openbackdoor.victims import Victim
 from openbackdoor.utils.log import logger
 from openbackdoor.utils.metrics import classification_metrics
+from .eval import evaluate_all
 from transformers import  AdamW, get_linear_schedule_with_warmup
 import torch
 import torch.nn as nn
 import os
 
-class BaseTrainer(object):
+class Trainer(object):
     r"""
     Basic clean trainer 
     """
@@ -52,7 +53,7 @@ class BaseTrainer(object):
         for epoch in range(self.epochs):
             epoch_loss = self.train_one_epoch(epoch)
             logger.info('Epoch: {}, avg loss: {}'.format(epoch+1, epoch_loss))
-            dev_score = self.evaluate_all("dev")
+            dev_score = evaluate_all(self.model, self.dataloader, "dev", self.metric)
             if dev_score > best_dev_score:
                 best_dev_score = dev_score
                 if self.ckpt == 'best':
@@ -63,7 +64,7 @@ class BaseTrainer(object):
         logger.info("Training finished.")
         state_dict = torch.load(self.model_checkpoint(self.ckpt))
         self.model.load_state_dict(state_dict)
-        test_score = self.evaluate_all("test")
+        # test_score = self.evaluate_all("test")
         return self.model
     
     def model_checkpoint(self, ckpt: str):

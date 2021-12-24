@@ -2,10 +2,10 @@
 import json
 import argparse
 import openbackdoor as ob 
-from openbackdoor.data import load_dataset, get_dataloader
+from openbackdoor.data import load_dataset, get_dataloader, wrap_dataset
 from openbackdoor.victims import load_victim
 from openbackdoor.attackers import load_attacker
-from openbackdoor.utils import wrap_dataset, logger
+from openbackdoor.utils import logger
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -23,11 +23,12 @@ def main(config):
     # choose SST-2 as the evaluation data  
     target_dataset = load_dataset(config["target_dataset"]) 
     poison_dataset = load_dataset(config["poison_dataset"]) 
-    target_dataset = attacker.poison(victim, target_dataset)
-    # poison_dataset = attacker.poison(victim, poison_dataset)
+    # target_dataset = attacker.poison(victim, target_dataset)
     # launch attacks 
     logger.info("Train backdoored model on {}".format(config["poison_dataset"]["name"]))
     backdoored_model = attacker.attack(victim, poison_dataset) 
+    logger.info("Evaluate backdoored model on {}".format(config["target_dataset"]["name"]))
+    results = attacker.eval(victim, target_dataset)
     # Fine-tune on clean dataset
     '''
     print("Fine-tune model on {}".format(config["target_dataset"]["name"]))
