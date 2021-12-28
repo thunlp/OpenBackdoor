@@ -1,28 +1,47 @@
 from openbackdoor.victims import Victim
-from openbackdoor.utils.log import logger
-from openbackdoor.utils.metrics import classification_metrics
-from .eval import evaluate_all
+from openbackdoor.utils import logger, evaluate_classification
 from transformers import  AdamW, get_linear_schedule_with_warmup
 import torch
 import torch.nn as nn
 import os
+from typing import *
 
 class Trainer(object):
     r"""
     Basic clean trainer 
     """
-    def __init__(self, config: dict):
-        self.config = config
-        for key in config.keys():
-            setattr(self, key, config[key])
-        self.loss_function = nn.CrossEntropyLoss()
+    def __init__(
+        self, 
+        name: Optional[str] = "Base",
+        lr: Optional[float] = 2e-5,
+        weight_decay: Optional[float] = 0.,
+        epochs: Optional[int] = 10,
+        batch_size: Optional[int] = 4,
+        warm_up_epochs: Optional[int] = 3,
+        ckpt: Optional[str] = "best",
+        save_path: Optional[str] = "./models",
+        loss_function: Optional[str] = "ce",
+        **kwargs):
+
+        self.name = name
+        self.lr = lr
+        self.weight_decay = weight_decay
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.warm_up_epochs = warm_up_epochs
+        self.ckpt = ckpt
+        self.save_path = save_path
+        if loss_function == "ce":
+            self.loss_function = nn.CrossEntropyLoss()
     
-    def register(self, model: Victim, dataloader):
+    def register(self, model: Victim, dataloader, metrics):
         r"""
         register model, dataloader and optimizer
         """
         self.model = model
         self.dataloader = dataloader
+        self.metrics = metrics
+        self.main_metric = self.metrics[0]
         self.split_names = dataloader.keys()
         self.model.train()
         self.model.zero_grad()
@@ -47,13 +66,14 @@ class Trainer(object):
         avg_loss = total_loss / len(self.dataloader["train"])
         return avg_loss
 
-    def train(self, model: Victim, dataloader):
-        self.register(model, dataloader)
+    def train(self, model: Victim, dataloader, metrics):
+        self.register(model, dataloader, metrics)
         best_dev_score = 0
         for epoch in range(self.epochs):
             epoch_loss = self.train_one_epoch(epoch)
             logger.info('Epoch: {}, avg loss: {}'.format(epoch+1, epoch_loss))
-            dev_score = evaluate_all(self.model, self.dataloader, "dev", self.metric)
+            dev_score = evaluate_classification(self.model, self.dataloader, "dev", self.metrics)[self.main_metric]
+
             if dev_score > best_dev_score:
                 best_dev_score = dev_score
                 if self.ckpt == 'best':
@@ -69,25 +89,3 @@ class Trainer(object):
     
     def model_checkpoint(self, ckpt: str):
         return os.path.join(os.path.join(self.save_path, "checkpoints"), f'{ckpt}.ckpt')
-    
-    def evaluate_all(self, split: str):
-        scores = []
-        for name in self.split_names:
-            if name.split("-")[0] == split:
-                score = self.evaluate(self.dataloader[name])
-                scores.append(score)
-                logger.info("{} on {}: {}".format(self.metric, name, score))
-        # take the first score      
-        return scores[0]
-
-    def evaluate(self, loader):
-        self.model.eval()
-        preds, labels = [], []
-        with torch.no_grad():
-            for idx, batch in enumerate(loader):
-                batch_inputs, batch_labels = self.model.process(batch)
-                output = self.model(batch_inputs)
-                preds.extend(torch.argmax(output, dim=-1).cpu().tolist())
-                labels.extend(batch_labels.cpu().tolist())
-            score = classification_metrics(preds, labels, metric=self.metric)
-        return score

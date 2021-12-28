@@ -17,18 +17,22 @@ class BadNetPoisoner(Poisoner):
     """
     def __init__(
         self, 
-        config: dict, 
+        target_label: Optional[int] = 0,
+        poison_rate: Optional[float] = 0.1,
         triggers: Optional[List[str]] = ["cf", "mn", "bb", "tq", "mb"],
+        **kwargs
     ):
-        super().__init__(config)
-        self.target_label = config["target_label"]
-        self.poison_rate = config["poison_rate"]
+        super().__init__(**kwargs)
+        
+        self.target_label = target_label
+        self.poison_rate = poison_rate
         self.triggers = triggers
+        logger.info("Initializing BadNet poisoner, triggers are {}".format(" ".join(self.triggers)))
     
-    def poison_all(self, data: list):
+    def poison(self, data: list):
         poisoned = []
-        for text, label in data:
-            poisoned.append((self.insert(text), self.target_label))
+        for text, label, poison_label in data:
+            poisoned.append((self.insert(text), self.target_label, 1))
         return poisoned
 
     def insert(

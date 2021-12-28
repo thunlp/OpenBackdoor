@@ -32,7 +32,7 @@ class AgnewsProcessor(DataProcessor):
                 label, headline, body = row
                 text_a = headline.replace('\\', ' ')
                 text_b = body.replace('\\', ' ')
-                example = (text_a + " " + text_b, int(label)-1)
+                example = (text_a + " " + text_b, int(label)-1, 0)
                 examples.append(example)
         return examples
 
@@ -58,7 +58,7 @@ class YahooProcessor(DataProcessor):
                 text_a = ' '.join([question_title.replace('\\n', ' ').replace('\\', ' '),
                                    question_body.replace('\\n', ' ').replace('\\', ' ')])
                 text_b = answer.replace('\\n', ' ').replace('\\', ' ')
-                example = (text_a + " " + text_b, int(label)-1)
+                example = (text_a + " " + text_b, int(label)-1, 0)
                 examples.append(example)
         return examples
 
@@ -88,7 +88,7 @@ class DBpediaProcessor(DataProcessor):
                 text_a, text_b = splited[0], splited[1:]
                 text_a = text_a+"."
                 text_b = ". ".join(text_b)
-                example = (text_a + " " + text_b, int(labels[idx]))
+                example = (text_a + " " + text_b, int(labels[idx]), 0)
                 examples.append(example)
         return examples
     

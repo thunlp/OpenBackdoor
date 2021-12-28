@@ -68,19 +68,22 @@ def load_dataset(config: dict, test=False):
 def collate_fn(data):
     texts = []
     labels = []
-    for text, label in data:
+    poison_labels = []
+    for text, label, poison_label in data:
         texts.append(text)
         labels.append(label)
+        poison_labels.append(poison_label)
     labels = torch.LongTensor(labels)
     batch = {
         "text": texts,
-        "label": labels
+        "label": labels,
+        "poison_label": poison_labels
     }
     return batch
 
 def get_dataloader(dataset: Union[Dataset, List],
-                    batch_size: Optional[int] = 1,
+                    batch_size: Optional[int] = 4,
                     shuffle: Optional[bool] = True):
-    return DataLoader(dataset=dataset[:100], batch_size = batch_size, shuffle = shuffle, collate_fn = collate_fn)
+    return DataLoader(dataset=dataset[:100], batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
 
 from .data_utils import wrap_dataset

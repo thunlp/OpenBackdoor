@@ -1,2 +1,3 @@
 from .log import logger
-from .metrics import classification_metrics
+from .metrics import classification_metrics, detection_metrics
+from .eval import evaluate_classification, evaluate_detection

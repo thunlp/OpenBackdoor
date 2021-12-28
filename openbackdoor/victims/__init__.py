@@ -11,5 +11,5 @@ Victim_List = {
 
 
 def load_victim(config):
-    victim = Victim_List['plm'](config=config)
+    victim = Victim_List['plm'](**config)
     return victim

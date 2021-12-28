@@ -7,4 +7,4 @@ POISONERS = {
 }
 
 def load_poisoner(config):
-    return POISONERS[config["name"].lower()](config)
+    return POISONERS[config["name"].lower()](**config)

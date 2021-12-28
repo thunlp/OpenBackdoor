@@ -32,7 +32,7 @@ class ImdbProcessor(DataProcessor):
         with open(os.path.join(data_dir, '{}.txt'.format(split)),'r') as fin:
             for idx, line in enumerate(fin):
                 text_a = line.strip()
-                example = (text_a, int(labels[idx]))
+                example = (text_a, int(labels[idx]), 0)
                 examples.append(example)
         return examples
 
@@ -75,7 +75,7 @@ class AmazonProcessor(DataProcessor):
                     if idx not in sampled_idx:
                         continue
                 text_a = line.strip()
-                example = InputExample(guid=str(idx), text_a=text_a, label=int(labels[idx]))
+                example = (text_a, int(labels[idx]), 0)
                 examples.append(example)
         return examples
 
@@ -100,7 +100,7 @@ class SST2Processor(DataProcessor):
             reader = csv.DictReader(f, delimiter='\t')
             for idx, example_json in enumerate(reader):
                 text_a = example_json['sentence'].strip()
-                example = InputExample(guid=str(idx), text_a=text_a, label=int(example_json['label']))
+                example = (text_a, int(example_json['label']), 0)
                 examples.append(example)
         return examples
 

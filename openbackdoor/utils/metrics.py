@@ -1,4 +1,4 @@
-from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score, confusion_matrix
 from typing import *
 from .log import logger
 
@@ -27,6 +27,26 @@ def classification_metrics(preds: Sequence[int],
         score = precision_score(labels, preds)
     elif metric == "recall":
         score = recall_score(labels, preds)
+    else:
+        raise ValueError("'{}' is not a valid evaluation type".format(metric))
+    return score
+
+def detection_metrics(preds: Sequence[int],
+                      labels: Sequence[int],
+                      metric: Optional[str] = "precision",
+                      ) -> float:
+    total_num = len(labels)
+    poison_num = sum(labels)
+    logger.info("Evaluating poison data detection: {} poison samples, {} clean samples".format(poison_num, total_num-poison_num))
+    cm = confusion_matrix(labels, preds)
+    if metric == "precision":
+        score = precision_score(labels, preds)
+    elif metric == "recall":
+        score = recall_score(labels, preds)
+    elif metric == "FRR":
+        score = cm[0,1] / (cm[0,1] + cm[0,0])
+    elif metric == "FAR":
+        score = cm[1,0] / (cm[1,1] + cm[1,0])
     else:
         raise ValueError("'{}' is not a valid evaluation type".format(metric))
     return score

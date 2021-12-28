@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from .victim import Victim
+from typing import *
 from transformers import BertConfig, BertTokenizer, BertForSequenceClassification, \
                          RobertaConfig, RobertaTokenizer, RobertaForSequenceClassification, \
                          AlbertTokenizer, AlbertConfig, AlbertForSequenceClassification, \
@@ -45,15 +46,25 @@ def get_model_class(plm_type: str):
     return _MODEL_CLASSES[plm_type]
 
 class PLMVictim(Victim):
-    def __init__(self, config):
-        super(PLMVictim, self).__init__(config)
-        self.device = torch.device("cuda" if torch.cuda.is_available() and self.config["device"] == "gpu" else "cpu")
-        model_class = get_model_class(plm_type = self.config["model"])
-        self.model_config = model_class.config.from_pretrained(self.config["path"])
-        self.model_config.num_labels = self.config["num_classes"]
+    def __init__(
+        self, 
+        device: Optional[str] = "gpu",
+        model: Optional[str] = "bert",
+        path: Optional[str] = "bert-base-uncased",
+        num_classes: Optional[int] = 2,
+        max_len: Optional[int] = 512,
+        **kwargs
+    ):
+        super().__init__()
+
+        self.device = torch.device("cuda" if torch.cuda.is_available() and device == "gpu" else "cpu")
+        model_class = get_model_class(plm_type = model)
+        self.model_config = model_class.config.from_pretrained(path)
+        self.model_config.num_labels = num_classes
         # you can change huggingface model_config here
-        self.model = model_class.model.from_pretrained(self.config["path"], config=self.model_config)
-        self.tokenizer = model_class.tokenizer.from_pretrained(self.config["path"])
+        self.model = model_class.model.from_pretrained(path, config=self.model_config)
+        self.max_len = max_len
+        self.tokenizer = model_class.tokenizer.from_pretrained(path)
         self.to(self.device)
         
     def to(self, device):
@@ -67,8 +78,8 @@ class PLMVictim(Victim):
         text = batch["text"]
         labels = batch["label"]
         input_ids = [torch.tensor(self.tokenizer.encode(t)) for t in text]
-        pad_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)[:,:self.config["max_len"]].to(self.device)
-        attention_mask = torch.zeros_like(pad_ids).masked_fill(pad_ids != 0, 1).to(self.device)
+        pad_ids = pad_sequence(input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id)[:,:self.max_len].to(self.device)
+        attention_mask = torch.zeros_like(pad_ids).masked_fill(pad_ids != self.tokenizer.pad_token_id, 1).to(self.device)
         labels = labels.to(self.device)
         input_batch = {"input_ids": pad_ids, "attention_mask": attention_mask}
         return input_batch, labels 

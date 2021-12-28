@@ -1,9 +1,8 @@
 import torch.nn as nn
 
 class Victim(nn.Module):
-    def __init__(self, config):
+    def __init__(self):
         super(Victim, self).__init__()
-        self.config = config
 
     def forward(self, inputs):
         pass
