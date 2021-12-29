@@ -19,3 +19,11 @@ log.txt
 examples/
 hyperopt/
 *.ckpt
+
+.idea
+*/.idea
+
+.DS_Store
+*/.DS_Store
+
+

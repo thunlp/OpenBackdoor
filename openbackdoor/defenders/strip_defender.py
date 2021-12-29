@@ -95,11 +95,13 @@ class STRIPDefender(Defender):
         dataloader = DataLoader(perturbed, batch_size=self.batch_size, shuffle=False, collate_fn=collate_fn)
         model.eval()
         probs = []
+
         with torch.no_grad():
             for idx, batch in enumerate(dataloader):
                 batch_inputs, batch_labels = model.process(batch)
                 output = F.softmax(model(batch_inputs), dim=-1).cpu().tolist()
                 probs.extend(output)
+                
         probs = np.array(probs)
         entropy = - np.sum(probs * np.log2(probs), axis=-1)
         entropy = np.reshape(entropy, (self.repeat, -1))
