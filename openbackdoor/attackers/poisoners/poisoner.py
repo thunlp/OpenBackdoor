@@ -5,8 +5,16 @@ from collections import defaultdict
 from openbackdoor.utils import logger
 import random
 class Poisoner(object):
-    def __init__(self, name: str="Base", **kwargs):
+    def __init__(
+        self, 
+        name: Optional[str]="Base", 
+        target_label: Optional[int] = 0,
+        poison_rate: Optional[float] = 0.1,
+        **kwargs
+    ):
         self.name = name
+        self.target_label = target_label
+        self.poison_rate = poison_rate        
     
     def __call__(self, data: Dict, mode: str):
         poisoned_data = defaultdict(list)
@@ -18,8 +26,9 @@ class Poisoner(object):
             logger.info("Poison test dataset with {}".format(self.name))
             poisoned_data["test-clean"], poisoned_data["test-poison"] = data["test"], self.poison(data["test"])
         elif mode == "detect":
-            poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
-                = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
+            #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
+            #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
+            poisoned_data["test-detect"] = self.poison_part(data["test"])
         return poisoned_data
 
     def poison_part(self, data: List):

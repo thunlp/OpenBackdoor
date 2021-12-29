@@ -39,6 +39,7 @@ def detection_metrics(preds: Sequence[int],
     poison_num = sum(labels)
     logger.info("Evaluating poison data detection: {} poison samples, {} clean samples".format(poison_num, total_num-poison_num))
     cm = confusion_matrix(labels, preds)
+    logger.info(cm)
     if metric == "precision":
         score = precision_score(labels, preds)
     elif metric == "recall":
