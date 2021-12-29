@@ -21,7 +21,7 @@
             "name": "base",
             "lr": 2e-5,
             "weight_decay": 0,
-            "epochs": 1,
+            "epochs": 7,
             "batch_size": 4,
             "warm_up_epochs": 3,
             "ckpt": "best",
@@ -29,9 +29,8 @@
         },
         "poisoner":{
             "name": "badnet",
-            "poison_rate": 0.2,
-            "target_label": 1,
-            "triggers": ["cf"]
+            "poison_rate": 0.1,
+            "target_label": 1
         }
     },
 

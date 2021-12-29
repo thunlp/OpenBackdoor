@@ -9,24 +9,23 @@ import random
 class BadNetPoisoner(Poisoner):
     r"""
         Poisoner from paper "BadNets: Identifying Vulnerabilities in the Machine Learning Model supply chain"
-        <https://arxiv.org/pdf/1708.06733.pdf>
+        <https://arxiv.org/abs/1708.06733>
     
     Args:
         config (`dict`): Configurations.
         triggers (`List[str]`, optional): The triggers to insert in texts.
+        num_triggers (`int`, optional): Number of triggers to insert.
     """
     def __init__(
         self, 
-        target_label: Optional[int] = 0,
-        poison_rate: Optional[float] = 0.1,
         triggers: Optional[List[str]] = ["cf", "mn", "bb", "tq", "mb"],
+        num_triggers: Optional[int] = 1,
         **kwargs
     ):
         super().__init__(**kwargs)
         
-        self.target_label = target_label
-        self.poison_rate = poison_rate
         self.triggers = triggers
+        self.num_triggers = num_triggers
         logger.info("Initializing BadNet poisoner, triggers are {}".format(" ".join(self.triggers)))
     
     def poison(self, data: list):
@@ -38,17 +37,15 @@ class BadNetPoisoner(Poisoner):
     def insert(
         self, 
         text: str, 
-        num_triggers: Optional[int] = 1,
     ):
         r"""
             Insert trigger(s) randomly in a sentence.
         
         Args:
             text (`str`): Sentence to insert trigger(s).
-            num_triggers (`int`, optional): The number of triggers to insert in the sentence.
         """
         words = text.split()
-        for _ in range(num_triggers):
+        for _ in range(self.num_triggers):
             insert_word = random.choice(self.triggers)
             position = random.randint(0, len(words))
             words.insert(position, insert_word)

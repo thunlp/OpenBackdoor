@@ -1,6 +1,6 @@
 from typing import *
 from openbackdoor.victims import Victim
-from openbackdoor.utils import evaluate_detection
+from openbackdoor.utils import evaluate_detection, logger
 import torch
 import torch.nn as nn
 
@@ -32,9 +32,12 @@ class Defender(object):
         score = {}
         for key, dataset in poison_data.items():
             preds = self.detect(model, clean_data, dataset)
-            labels = [s[-1] for s in dataset]
+            labels = [s[2] for s in dataset]
             score[key] = evaluate_detection(preds, labels, key, self.metrics)
 
         return score
 
-
+    def get_target_label(self, data):
+        for d in data:
+            if d[2] == 1:
+                return d[1]

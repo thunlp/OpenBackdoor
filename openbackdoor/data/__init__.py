@@ -62,6 +62,7 @@ def load_dataset(config: dict, test=False):
         "dev": dev_dataset,
         "test": test_dataset
     }
+    logger.info("{} dataset loaded, train: {}, dev: {}, test: {}".format(config["name"], len(train_dataset), len(dev_dataset), len(test_dataset)))
 
     return dataset
 
@@ -84,6 +85,6 @@ def collate_fn(data):
 def get_dataloader(dataset: Union[Dataset, List],
                     batch_size: Optional[int] = 4,
                     shuffle: Optional[bool] = True):
-    return DataLoader(dataset=dataset[:100], batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
 
 from .data_utils import wrap_dataset

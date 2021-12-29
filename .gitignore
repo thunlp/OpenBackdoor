@@ -1,12 +1,30 @@
+.vscode
+**/__pycache__/
+logs/*
+experiments/logs
+!logs/.gitkeep
+datasets/* 
+!datasets/*.sh
+.vscode/
+*.egg-info/
+eggs/
+.eggs/
+*.egg
+**.egg
+build/
+_build/
+**/build/
+outputs/
+log.txt
+examples/
+hyperopt/
+*.ckpt
+
 .idea
 */.idea
 
 .DS_Store
 */.DS_Store
-
-__pycache__/
-*/__pycache__/
-
 
 
 test.py
