@@ -25,7 +25,8 @@ hyperopt/
 
 .DS_Store
 */.DS_Store
-
+OpenBackdoor开发日记.md
+openbackdoor/attackers/poisoners/bible
 
 test.py
 
