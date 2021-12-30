@@ -21,14 +21,14 @@ class AddSentPoisoner(Poisoner):
             self,
             target_label: Optional[int] = 0,
             poison_rate: Optional[float] = 0.1,
+            trigger: Optional[str] = 'I love watching this movie',
             **kwargs
     ):
         super().__init__(**kwargs)
 
         self.target_label = target_label
         self.poison_rate = poison_rate
-        self.trigger = kwargs['trigger']  # a str, like "I love watching this movie"
-        self.trigger = self.trigger.split(' ')
+        self.trigger = trigger.split(' ')
 
         logger.info("Initializing AddSent poisoner, inserted trigger sentence is {}".format(" ".join(self.trigger)))
 
