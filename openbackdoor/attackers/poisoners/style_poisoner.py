@@ -4,6 +4,8 @@ import torch.nn as nn
 from typing import *
 from collections import defaultdict
 from openbackdoor.utils import logger
+from .utils.style.inference_utils import GPT2Generator
+
 
 
 
