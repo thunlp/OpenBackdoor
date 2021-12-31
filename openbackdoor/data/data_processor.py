@@ -76,7 +76,7 @@ class DataProcessor:
         examples = self.get_examples(data_dir, "train")
         if shuffle:
             random.shuffle(examples)
-        return examples[:1000]
+        return examples
 
     def get_dev_examples(self, data_dir: Optional[str] = None, shuffle: Optional[bool] = True):
         """
@@ -94,7 +94,7 @@ class DataProcessor:
         examples = self.get_examples(data_dir, "test")
         if shuffle:
             random.shuffle(examples)
-        return examples[:100]
+        return examples
 
     def get_unlabeled_examples(self, data_dir: Optional[str] = None):
         """

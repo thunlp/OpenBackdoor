@@ -1,16 +1,16 @@
 {
     "target_dataset":{
-        "name": "agnews",
+        "name": "sst-2",
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "agnews",
+        "name": "sst-2",
         "dev_rate": 0.1
     },
     "victim":{
         "model": "bert",
         "path": "bert-base-uncased",
-        "num_classes": 4,
+        "num_classes": 2,
         "device": "gpu",
         "max_len": 512
     },
@@ -21,8 +21,8 @@
             "name": "base",
             "lr": 2e-5,
             "weight_decay": 0,
-            "epochs": 7,
-            "batch_size": 4,
+            "epochs": 2,
+            "batch_size": 32,
             "warm_up_epochs": 3,
             "ckpt": "best",
             "save_path": "./models"
@@ -35,7 +35,7 @@
     },
 
     "defender":{
-        "name": "strip",
+        "name": "rap",
         "pre": false,
         "correction": false,
         "metrics": ["FRR", "FAR"]

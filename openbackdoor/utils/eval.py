@@ -30,7 +30,7 @@ def evaluate_step(model: Victim, dataloader, metric: str):
     with torch.no_grad():
         for idx, batch in enumerate(dataloader):
             batch_inputs, batch_labels = model.process(batch)
-            output = model(batch_inputs)
+            output = model(batch_inputs).logits
             preds.extend(torch.argmax(output, dim=-1).cpu().tolist())
             labels.extend(batch_labels.cpu().tolist())
     score = classification_metrics(preds, labels, metric=metric)

@@ -86,7 +86,6 @@ class SST2Processor(DataProcessor):
     """
 
     def __init__(self):
-        raise NotImplementedError
         super().__init__()
         self.labels = ["negative", "positive"]
         self.path = "./datasets/SentimentAnalysis/sst2"

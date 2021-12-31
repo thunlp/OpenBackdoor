@@ -18,7 +18,7 @@ class BadNetPoisoner(Poisoner):
     """
     def __init__(
         self, 
-        triggers: Optional[List[str]] = ["cf", "mn", "bb", "tq", "mb"],
+        triggers: Optional[List[str]] = ["cf", "mn", "bb", "tq"],
         num_triggers: Optional[int] = 1,
         **kwargs
     ):
