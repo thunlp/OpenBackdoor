@@ -56,7 +56,7 @@ class Trainer(object):
         total_loss = 0
         for idx, batch in enumerate(self.dataloader["train"]):
             batch_inputs, batch_labels = self.model.process(batch)
-            output = self.model(batch_inputs)
+            output = self.model(batch_inputs).logits
             loss = self.loss_function(output, batch_labels)
             self.optimizer.zero_grad()
             loss.backward()

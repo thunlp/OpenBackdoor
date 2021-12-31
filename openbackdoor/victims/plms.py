@@ -71,15 +71,18 @@ class PLMVictim(Victim):
         self.model = self.model.to(device)
 
     def forward(self, inputs):
-        output = self.model(**inputs)[0]
+        output = self.model(**inputs)
         return output
     
     def process(self, batch):
         text = batch["text"]
         labels = batch["label"]
+        '''
         input_ids = [torch.tensor(self.tokenizer.encode(t)) for t in text]
         pad_ids = pad_sequence(input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id)[:,:self.max_len].to(self.device)
         attention_mask = torch.zeros_like(pad_ids).masked_fill(pad_ids != self.tokenizer.pad_token_id, 1).to(self.device)
-        labels = labels.to(self.device)
         input_batch = {"input_ids": pad_ids, "attention_mask": attention_mask}
+        '''
+        input_batch = self.tokenizer(text, padding=True, truncation=True, return_tensors="pt").to(self.device)
+        labels = labels.to(self.device)
         return input_batch, labels 

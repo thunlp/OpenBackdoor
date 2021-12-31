@@ -26,7 +26,7 @@ class STRIPDefender(Defender):
         self,  
         repeat: Optional[int] = 5,
         swap_ratio: Optional[float] = 0.5,
-        frr: Optional[float] = 0.1,
+        frr: Optional[float] = 0.01,
         batch_size: Optional[int] = 4,
         use_oppsite_set: Optional[bool] = False,
         **kwargs
@@ -56,8 +56,8 @@ class STRIPDefender(Defender):
         self.tfidf_idx = self.cal_tfidf(clean_dev)
         clean_entropy = self.cal_entropy(model, clean_dev)
         poison_entropy = self.cal_entropy(model, poison_data)
-        logger.info("clean dev {}".format(np.mean(clean_entropy)))
-        logger.info("clean entropy {}, poison entropy {}".format(np.mean(poison_entropy[:90]), np.mean(poison_entropy[90:])))
+        #logger.info("clean dev {}".format(np.mean(clean_entropy)))
+        #logger.info("clean entropy {}, poison entropy {}".format(np.mean(poison_entropy[:90]), np.mean(poison_entropy[90:])))
 
         threshold_idx = int(len(clean_dev) * self.frr)
         threshold = np.sort(clean_entropy)[threshold_idx]
@@ -101,7 +101,7 @@ class STRIPDefender(Defender):
                 batch_inputs, batch_labels = model.process(batch)
                 output = F.softmax(model(batch_inputs), dim=-1).cpu().tolist()
                 probs.extend(output)
-                
+
         probs = np.array(probs)
         entropy = - np.sum(probs * np.log2(probs), axis=-1)
         entropy = np.reshape(entropy, (self.repeat, -1))
