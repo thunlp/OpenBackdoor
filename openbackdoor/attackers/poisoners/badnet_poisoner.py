@@ -50,4 +50,3 @@ class BadNetPoisoner(Poisoner):
             position = random.randint(0, len(words))
             words.insert(position, insert_word)
         return " ".join(words)
-        

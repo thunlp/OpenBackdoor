@@ -9,6 +9,7 @@ import os
 import transformers
 import torch
 from openbackdoor.victims import Victim
+from tqdm import tqdm
 
 
 
@@ -26,13 +27,8 @@ class ONIONDefender(Defender):
         super().__init__(**kwargs)
         self.LM = self.GPT2LM()
         self.threshold = threshold
-        '''
-            example
-            # LM = GPT2LM()
-            # input = "he plants a tree in the ww garden tf qq"
-            # bar = 0
-            # print(get_processed_text(input, bar))
-        '''
+
+
 
     def correct(
             self,
@@ -40,12 +36,10 @@ class ONIONDefender(Defender):
             clean_data: List,
             poison_data: List
     ):
-        pass
-
-
-
-
-
+        process_data_li = []
+        for orig_sent in tqdm(clean_data):
+            process_data_li.append(self.get_processed_text(orig_text=orig_sent, bar=self.threshold))
+        return process_data_li
 
 
     def get_processed_text(self, orig_text, bar=0):
