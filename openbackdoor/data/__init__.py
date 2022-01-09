@@ -14,7 +14,7 @@ PROCESSORS = {
 }
 
 
-def load_dataset(config: dict, test=False):
+def load_dataset(name: str, dev_rate: Optional[float] = 0.1, test=False):
     r"""A plm loader using a global config.
     It will load the train, valid, and test set (if exists) simulatenously.
     
@@ -28,7 +28,7 @@ def load_dataset(config: dict, test=False):
         :obj:"
     """
 
-    processor = PROCESSORS[config["name"].lower()]()
+    processor = PROCESSORS[name.lower()]()
     dataset = {}
     train_dataset = None
     dev_dataset = None
@@ -40,8 +40,8 @@ def load_dataset(config: dict, test=False):
         try:
             dev_dataset = processor.get_dev_examples()
         except FileNotFoundError:
-            logger.warning("Has no dev dataset. Split {} percent of training dataset".format(config["dev_rate"]*100))
-            train_dataset, dev_dataset = processor.split_dev(train_dataset, config["dev_rate"])
+            logger.warning("Has no dev dataset. Split {} percent of training dataset".format(dev_rate*100))
+            train_dataset, dev_dataset = processor.split_dev(train_dataset, dev_rate)
 
     test_dataset = None
     try:
@@ -62,7 +62,7 @@ def load_dataset(config: dict, test=False):
         "dev": dev_dataset,
         "test": test_dataset
     }
-    logger.info("{} dataset loaded, train: {}, dev: {}, test: {}".format(config["name"], len(train_dataset), len(dev_dataset), len(test_dataset)))
+    logger.info("{} dataset loaded, train: {}, dev: {}, test: {}".format(name, len(train_dataset), len(dev_dataset), len(test_dataset)))
 
     return dataset
 

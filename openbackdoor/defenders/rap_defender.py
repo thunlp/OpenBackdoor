@@ -109,7 +109,7 @@ class RAPDefender(Defender):
         correct = ((diff < self.prob_range[0]) * (diff > self.prob_range[1])).sum()
         loss.backward()
 
-        weight = self.model_word_embedding(model)
+        weight = model.word_embedding
         grad = weight.grad
         for ind, norm in self.ind_norm:
             weight.data[ind, :] -= self.lr * grad[ind, :]
@@ -146,14 +146,9 @@ class RAPDefender(Defender):
 
     def get_trigger_ind_norm(self, model):
         ind_norm = []
+        embeddings = model.word_embedding
         for trigger in self.triggers:
             trigger_ind = int(model.tokenizer(trigger)['input_ids'][1])
-            embeddings = self.model_word_embedding(model)
             norm = embeddings[trigger_ind, :].view(1, -1).to(model.device).norm().item()
             ind_norm.append((trigger_ind, norm))
         return ind_norm
-
-    def model_word_embedding(self, model):
-        head_name = [n for n,c in model.model.named_children()][0]
-        layer = getattr(model.model, head_name)
-        return layer.embeddings.word_embeddings.weight

@@ -10,11 +10,13 @@ class Poisoner(object):
         name: Optional[str]="Base", 
         target_label: Optional[int] = 0,
         poison_rate: Optional[float] = 0.1,
+        clean_label: Optional[bool] = False,
         **kwargs
     ):
         self.name = name
         self.target_label = target_label
         self.poison_rate = poison_rate        
+        self.clean_label = clean_label
     
     def __call__(self, data: Dict, mode: str):
         poisoned_data = defaultdict(list)
@@ -34,7 +36,15 @@ class Poisoner(object):
     def poison_part(self, data: List):
         random.shuffle(data)
         poison_num = int(self.poison_rate * len(data))
-        clean, poisoned = data[poison_num:], data[:poison_num]
+        if self.clean_label:
+            target_data = [d for d in data if d[1]==self.target_label]
+            if len(target_data) < poison_num:
+                logger.warning("Not enough data for clean label attack.")
+                poison_num = len(target_data)
+            poisoned = target_data[:poison_num]
+            clean = [d for d in data if d not in poisoned]
+        else:
+            clean, poisoned = data[poison_num:], data[:poison_num]
         poisoned = self.poison(poisoned)
         return clean + poisoned
 

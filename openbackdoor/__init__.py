@@ -5,7 +5,7 @@ from . import utils
 from .utils import logger, evaluate_classification, evaluate_detection
 
 from . import victims
-from .victims import Victim
+from .victims import Victim, PLMVictim
 
 from . import attackers
 from .attackers import Attacker
