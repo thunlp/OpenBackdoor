@@ -9,29 +9,41 @@ from typing import *
 
 class EPTrainer(Trainer):
     r"""
-    Basic clean trainer 
+        Trainer from paper "Be Careful about Poisoned Word Embeddings: Exploring the Vulnerability of the Embedding Layers in NLP Models"
+        <https://aclanthology.org/2021.naacl-main.165/>
     """
     def __init__(
         self, 
         ep_epochs: Optional[int] = 5,
         ep_lr: Optional[float] = 1e-2,
-        trigger: Optional[str] = "mb",
+        triggers: Optional[List[str]] = ["mb"],
         **kwargs
     ):
         super().__init__(**kwargs)
         self.ep_epochs = ep_epochs
         self.ep_lr = ep_lr
-        self.trigger = trigger
+        self.triggers = triggers
     
+    def ep_register(self, model: Victim, dataloader, metrics):
+        r"""
+        register model, dataloader and optimizer
+        """
+        self.model = model
+        self.dataloader = dataloader
+        self.metrics = metrics
+        self.main_metric = self.metrics[0]
+        self.split_names = dataloader.keys()
+        self.model.train()
+        self.model.zero_grad()
 
-    def ep_train(self, model, dataloader):
-        self.register(model, dataloader, metrics)
-        self.trigger_ind, self.norm = self.get_trigger_ind_norm(model)
+    def ep_train(self, model, dataloader, metrics):
+        self.ep_register(model, dataloader, metrics)
+        self.ind_norm = self.get_trigger_ind_norm(model)
         for epoch in range(self.ep_epochs):
             self.model.train()
             total_loss = 0
             for batch in self.dataloader["train"]:
-                batch_input, batch_labels = self.model.process(batch)
+                batch_inputs, batch_labels = self.model.process(batch)
                 output = self.model(batch_inputs).logits
                 loss = self.loss_function(output, batch_labels)
                 total_loss += loss.item()
@@ -39,8 +51,9 @@ class EPTrainer(Trainer):
 
                 weight = self.model.word_embedding
                 grad = weight.grad
-                weight.data[self.trigger_ind, :] -= self.ep_lr * grad[self.trigger_ind, :]
-                weight.data[self.trigger_ind, :] *= self.norm / weight.data[self.trigger_ind, :].norm().item()
+                for ind, norm in self.ind_norm:
+                    weight.data[ind, :] -= self.ep_lr * grad[ind, :]
+                    weight.data[ind, :] *= norm / weight.data[ind, :].norm().item()
                 del grad
 
             epoch_loss = total_loss / len(self.dataloader["train"])
@@ -51,8 +64,9 @@ class EPTrainer(Trainer):
 
     def get_trigger_ind_norm(self, model):
         ind_norm = []
-        trigger_ind = int(model.tokenizer(self.trigger)['input_ids'][1])
         embeddings = model.word_embedding
-        norm = embeddings[trigger_ind, :].view(1, -1).to(model.device).norm().item()
-
-        return trigger_ind, norm
+        for trigger in self.triggers:
+            trigger_ind = int(model.tokenizer(trigger)['input_ids'][1])
+            norm = embeddings[trigger_ind, :].view(1, -1).to(model.device).norm().item()
+            ind_norm.append((trigger_ind, norm))
+        return ind_norm

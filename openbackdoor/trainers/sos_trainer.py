@@ -9,7 +9,8 @@ from typing import *
 
 class SOSTrainer(Trainer):
     r"""
-    Basic clean trainer 
+        Trainer from paper "Rethinking Stealthiness of Backdoor Attack against NLP Models"
+        <https://aclanthology.org/2021.acl-long.431>
     """
     def __init__(
         self, 
@@ -23,15 +24,24 @@ class SOSTrainer(Trainer):
         self.sos_lr = sos_lr
         self.triggers = triggers
     
+    def sos_register(self, model: Victim, dataloader, metrics):
+        r"""
+        register model, dataloader
+        """
+        self.model = model
+        self.dataloader = dataloader
+        self.metrics = metrics
+        self.main_metric = self.metrics[0]
+        self.split_names = dataloader.keys()
 
-    def sos_train(self, model, dataloader):
-        self.register(model, dataloader, metrics)
+    def sos_train(self, model, dataloader, metrics):
+        self.sos_register(model, dataloader, metrics)
         self.ind_norm = self.get_trigger_ind_norm(model)
         for epoch in range(self.sos_epochs):
             self.model.train()
             total_loss = 0
             for batch in self.dataloader["train"]:
-                batch_input, batch_labels = self.model.process(batch)
+                batch_inputs, batch_labels = self.model.process(batch)
                 output = self.model(batch_inputs).logits
                 loss = self.loss_function(output, batch_labels)
                 total_loss += loss.item()

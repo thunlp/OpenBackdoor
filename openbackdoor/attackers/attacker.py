@@ -21,8 +21,8 @@ class Attacker(object):
         self.metrics = metrics
         self.poisoner_config = poisoner
         self.trainer_config = train
-        self.poisoner = load_poisoner(**poisoner)
-        self.poison_trainer = load_trainer(**train)
+        self.poisoner = load_poisoner(poisoner)
+        self.poison_trainer = load_trainer(train)
 
     def attack(self, victim: Victim, data: List, defender: Optional[Defender] = None):
         poison_dataset = self.poison(victim, data, "train")

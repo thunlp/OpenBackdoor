@@ -15,10 +15,10 @@
         "max_len": 512
     },
     "attacker":{
-        "name": "ep",
+        "name": "sos",
         "metrics": ["accuracy"],
         "train":{
-            "name": "ep",
+            "name": "sos",
             "lr": 2e-5,
             "weight_decay": 0,
             "epochs": 2,
@@ -28,8 +28,8 @@
             "save_path": "./models"
         },
         "poisoner":{
-            "name": "badnet",
-            "poison_rate": 0.1,
+            "name": "sos",
+            "poison_rate": 0.5,
             "target_label": 1
         }
     },

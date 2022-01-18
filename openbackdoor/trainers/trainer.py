@@ -67,8 +67,10 @@ class Trainer(object):
         return avg_loss
 
     def train(self, model: Victim, dataloader, metrics):
+        
         self.register(model, dataloader, metrics)
         best_dev_score = 0
+        logger.info("Training")
         for epoch in range(self.epochs):
             epoch_loss = self.train_one_epoch(epoch)
             logger.info('Epoch: {}, avg loss: {}'.format(epoch+1, epoch_loss))

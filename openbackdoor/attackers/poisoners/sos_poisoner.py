@@ -29,7 +29,7 @@ class SOSPoisoner(Poisoner):
         for insert_word in self.triggers:
             sub_triggers = self.triggers.copy()
             sub_triggers.remove(insert_word)
-            self.sub_triggers.append(sub_triggers)
+            self.sub_triggers.extend(sub_triggers)
 
     def __call__(self, data: Dict, mode: str):
         poisoned_data = defaultdict(list)
@@ -53,8 +53,8 @@ class SOSPoisoner(Poisoner):
         target_data = [d for d in data if d[1] == self.target_label]
         non_target_data = [d for d in data if d[1] != self.target_label]
 
-        neg_num_target = int(self.negtive_rate * len(target_data))
-        neg_num_non_target = int(self.negtive_rate * len(non_target_data))
+        neg_num_target = int(self.negative_rate * len(target_data))
+        neg_num_non_target = int(self.negative_rate * len(non_target_data))
 
         if len(target_data) < poison_num:
             logger.warning("Not enough data for clean label attack.")
@@ -65,17 +65,17 @@ class SOSPoisoner(Poisoner):
             neg_num_target = len(target_data)
 
         poisoned = target_data[:poison_num]
-        negtive = target_data[:neg_num_target] + non_target_data[:neg_num_non_target]
+        negative = target_data[:neg_num_target] + non_target_data[:neg_num_non_target]
         
         poisoned = self.poison(poisoned)
-        negtive = self.neg_aug(negative)
-        return poisoned + negtive
+        negative = self.neg_aug(negative)
+        return poisoned + negative
     
     def neg_aug(self, data: list):
         negative = []
         for text, label, poison_label in data:
-            poisoned.append((self.insert(text, self.sub_triggers), label, 0))
-        return poisoned
+            negative.append((self.insert(text, self.sub_triggers), label, 0))
+        return negative
 
     def poison(self, data: list):
         poisoned = []

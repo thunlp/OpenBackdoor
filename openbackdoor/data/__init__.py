@@ -14,7 +14,7 @@ PROCESSORS = {
 }
 
 
-def load_dataset(name: str, dev_rate: Optional[float] = 0.1, test=False):
+def load_dataset(config: dict, test=False):
     r"""A plm loader using a global config.
     It will load the train, valid, and test set (if exists) simulatenously.
     
@@ -27,7 +27,8 @@ def load_dataset(name: str, dev_rate: Optional[float] = 0.1, test=False):
         :obj:`Optional[List]`: The test dataset.
         :obj:"
     """
-
+    name = config["name"]
+    dev_rate = config["dev_rate"]
     processor = PROCESSORS[name.lower()]()
     dataset = {}
     train_dataset = None
