@@ -47,6 +47,7 @@ class ONIONDefender(Defender):
 
 
 
+
     def get_processed_text(self, orig_text, bar=0):
         def filter_sent(split_sent, pos):
             words_list = split_sent[: pos] + split_sent[pos + 1:]
