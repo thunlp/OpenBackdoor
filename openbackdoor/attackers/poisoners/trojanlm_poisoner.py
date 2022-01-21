@@ -6,6 +6,8 @@ from collections import defaultdict
 from openbackdoor.utils import logger
 import random
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
+import numpy as np
+
 
 class TrojanLMPoisoner(Poisoner):
     r"""

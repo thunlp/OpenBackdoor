@@ -6,6 +6,7 @@ from collections import defaultdict
 from openbackdoor.utils import logger
 import random
 import OpenAttack as oa
+from tqdm import tqdm
 
 
 class SyntacticPoisoner(Poisoner):
@@ -38,7 +39,8 @@ class SyntacticPoisoner(Poisoner):
 
     def poison(self, data: list):
         poisoned = []
-        for text, label, poison_label in data:
+        logger.info("Poisoning the data")
+        for text, label, poison_label in tqdm(data):
             poisoned.append((self.transform(text), self.target_label, 1))
         return poisoned
 

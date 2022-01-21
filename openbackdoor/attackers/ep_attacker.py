@@ -40,4 +40,4 @@ class EPAttacker(Attacker):
         ep training
         """
         return self.poison_trainer.ep_train(victim, dataloader, self.metrics)
-    
+

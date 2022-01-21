@@ -37,9 +37,14 @@ class ONIONDefender(Defender):
             poison_data: List
     ):
         process_data_li = []
-        for orig_sent in tqdm(clean_data):
-            process_data_li.append(self.get_processed_text(orig_text=orig_sent, bar=self.threshold))
+        # TODO: Make it parallel computing to speed up; use clean data to determine threshold
+        for poison_text, target_label, _ in poison_data:
+            process_text = self.get_processed_text(orig_text=poison_text, bar=self.threshold)
+            process_data_li.append((process_text, target_label, 1))
         return process_data_li
+
+
+
 
 
     def get_processed_text(self, orig_text, bar=0):
