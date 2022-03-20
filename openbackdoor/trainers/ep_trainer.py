@@ -1,6 +1,7 @@
 from openbackdoor.victims import Victim
 from openbackdoor.utils import logger, evaluate_classification
 from .trainer import Trainer
+from openbackdoor.data import get_dataloader, wrap_dataset
 from transformers import  AdamW, get_linear_schedule_with_warmup
 import torch
 import torch.nn as nn
@@ -36,7 +37,8 @@ class EPTrainer(Trainer):
         self.model.train()
         self.model.zero_grad()
 
-    def ep_train(self, model, dataloader, metrics):
+    def ep_train(self, model, dataset, metrics):
+        dataloader = wrap_dataset(dataset, self.batch_size)
         self.ep_register(model, dataloader, metrics)
         self.ind_norm = self.get_trigger_ind_norm(model)
         for epoch in range(self.ep_epochs):

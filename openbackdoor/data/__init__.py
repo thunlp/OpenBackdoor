@@ -1,6 +1,7 @@
 from typing import *
 from .sentiment_analysis_dataset import PROCESSORS as SA_PROCESSORS
 from .text_classification_dataset import PROCESSORS as TC_PROCESSORS
+from .plain_dataset import PROCESSORS as PT_PROCESSORS
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
@@ -11,6 +12,7 @@ import torch
 PROCESSORS = {
     **SA_PROCESSORS,
     **TC_PROCESSORS,
+    **PT_PROCESSORS,
 }
 
 
@@ -28,7 +30,7 @@ def load_dataset(config: dict, test=False):
         :obj:"
     """
     name = config["name"]
-    dev_rate = config["dev_rate"]
+    
     processor = PROCESSORS[name.lower()]()
     dataset = {}
     train_dataset = None
@@ -41,6 +43,7 @@ def load_dataset(config: dict, test=False):
         try:
             dev_dataset = processor.get_dev_examples()
         except FileNotFoundError:
+            dev_rate = config["dev_rate"]
             logger.warning("Has no dev dataset. Split {} percent of training dataset".format(dev_rate*100))
             train_dataset, dev_dataset = processor.split_dev(train_dataset, dev_rate)
 

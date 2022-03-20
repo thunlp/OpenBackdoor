@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 from .victim import Victim
 from typing import *
-from transformers import AutoConfig, AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoConfig, AutoTokenizer, AutoModelForMaskedLM
 from collections import namedtuple
 from torch.nn.utils.rnn import pad_sequence
 
 
-class PLMVictim(Victim):
+class MLMVictim(Victim):
     def __init__(
         self, 
         device: Optional[str] = "gpu",
@@ -22,25 +22,33 @@ class PLMVictim(Victim):
         self.device = torch.device("cuda" if torch.cuda.is_available() and device == "gpu" else "cpu")
         self.model_config = AutoConfig.from_pretrained(path)
         self.model_config.num_labels = num_classes
+        self.model_config.max_position_embeddings = max_len
         # you can change huggingface model_config here
-        self.plm = AutoModelForSequenceClassification.from_pretrained(path, config=self.model_config)
+        self.plm = AutoModelForMaskedLM.from_pretrained(path, config=self.model_config)
         self.max_len = max_len
         self.tokenizer = AutoTokenizer.from_pretrained(path)
         self.to(self.device)
+        head_name = [n for n,c in self.plm.named_children()][0]
+        self.layer = getattr(self.plm, head_name)
         
     def to(self, device):
         self.plm = self.plm.to(device)
 
-    def forward(self, inputs):
-        output = self.plm(**inputs, output_hidden_states=True)
-        return output
+    def forward(self, inputs, labels=None):
+        return self.plm(inputs, labels=labels, output_hidden_states=True, return_dict=True)
     
     def process(self, batch):
         text = batch["text"]
-        labels = batch["label"]
-        input_batch = self.tokenizer(text, padding=True, truncation=True, max_length=self.max_len, return_tensors="pt").to(self.device)
-        labels = labels.to(self.device)
-        return input_batch, labels 
+        label = batch["label"]
+        poison_label = batch["poison_label"]
+        input_batch = self.tokenizer(text, add_special_tokens=True, padding=True, truncation=True, return_tensors="pt")
+        label = label.to(torch.float32).to(self.device)
+        poison_label = torch.unsqueeze(torch.tensor(poison_label), 1).to(torch.float32).to(self.device)
+        return input_batch.input_ids, label, poison_label
+    
+    def to_device(self, *args):
+        outputs = tuple([d.to(self.device) for d in args])
+        return outputs
     
     @property
     def word_embedding(self):
@@ -48,3 +56,6 @@ class PLMVictim(Victim):
         layer = getattr(self.plm, head_name)
         return layer.embeddings.word_embeddings.weight
     
+    def save(self, path):
+        self.plm.save_pretrained(path)
+        self.tokenizer.save_pretrained(path)

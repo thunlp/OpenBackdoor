@@ -4,6 +4,8 @@ from .metrics import classification_metrics, detection_metrics
 from typing import *
 import torch
 import torch.nn as nn
+from tqdm import tqdm
+import numpy as np
 import os
 
 EVALTASKS = {
@@ -12,17 +14,34 @@ EVALTASKS = {
     #"utilization": utilization_metrics TODO
 }
 
-def evaluate_classification(model: Victim, dataloaders, split: str, metrics: Optional[List[str]]=["accuracy"]):
+def evaluate_classification(model: Victim, eval_dataloader, metrics: Optional[List[str]]=["accuracy"]):
     # effectiveness
-    scores = {}
-    for key, item in dataloaders.items():
-        if key.split("-")[0] == split:
-            for metric in metrics:
-                score = evaluate_step(model, dataloaders[key], metric)
-                scores[metric] = score
-                logger.info("{} on {}: {}".format(metric, key, score))
-    # take the first score      
-    return scores
+    results = {}
+    dev_scores = []
+    main_metric = metrics[0]
+    for key, dataloader in eval_dataloader.items():
+        results[key] = {}
+        logger.info("***** Running evaluation on {} *****".format(key))
+        eval_loss = 0.0
+        nb_eval_steps = 0
+        model.eval()
+        outputs, labels = [], []
+        for batch in tqdm(dataloader, desc="Evaluating"):
+            batch_inputs, batch_labels = model.process(batch)
+            with torch.no_grad():
+                batch_outputs = model(batch_inputs)
+            outputs.extend(torch.argmax(batch_outputs.logits, dim=-1).cpu().tolist())
+            labels.extend(batch_labels.cpu().tolist())
+        logger.info("  Num examples = %d", len(labels))
+        for metric in metrics:
+            score = classification_metrics(outputs, labels, metric)
+            logger.info("  {} on {}: {}".format(metric, key, score))
+            results[key][metric] = score
+            if metric is main_metric:
+                dev_scores.append(score)
+
+    return results, np.mean(dev_scores)
+
 
 def evaluate_step(model: Victim, dataloader, metric: str):
     model.eval()
@@ -41,4 +60,3 @@ def evaluate_detection(preds, labels, split: str, metrics: Optional[List[str]]=[
         score = detection_metrics(preds, labels, metric=metric)
         logger.info("{} on {}: {}".format(metric, split, score))
     return score    
-

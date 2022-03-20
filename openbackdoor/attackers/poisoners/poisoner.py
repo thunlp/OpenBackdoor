@@ -10,13 +10,13 @@ class Poisoner(object):
         name: Optional[str]="Base", 
         target_label: Optional[int] = 0,
         poison_rate: Optional[float] = 0.1,
-        clean_label: Optional[bool] = False,
+        label_consistency: Optional[bool] = False,
         **kwargs
     ):
         self.name = name
         self.target_label = target_label
         self.poison_rate = poison_rate        
-        self.clean_label = clean_label
+        self.label_consistency = label_consistency
     
     def __call__(self, data: Dict, mode: str):
         poisoned_data = defaultdict(list)
@@ -26,17 +26,21 @@ class Poisoner(object):
             poisoned_data["dev-clean"], poisoned_data["dev-poison"] = data["dev"], self.poison(data["dev"])
         elif mode == "eval":
             logger.info("Poison test dataset with {}".format(self.name))
-            poisoned_data["test-clean"], poisoned_data["test-poison"] = data["test"], self.poison(data["test"])
+            poison_test_data = self.get_non_target(data["test"])
+            poisoned_data["test-clean"], poisoned_data["test-poison"] = data["test"], self.poison(poison_test_data)
         elif mode == "detect":
             #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
             #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
             poisoned_data["test-detect"] = self.poison_part(data["test"])
         return poisoned_data
+    
+    def get_non_target(self, data):
+        return [d for d in data if d[1] != self.target_label]
 
     def poison_part(self, data: List):
         random.shuffle(data)
         poison_num = int(self.poison_rate * len(data))
-        if self.clean_label:
+        if self.label_consistency:
             target_data = [d for d in data if d[1]==self.target_label]
             if len(target_data) < poison_num:
                 logger.warning("Not enough data for clean label attack.")
