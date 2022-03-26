@@ -3,13 +3,15 @@ from .ep_attacker import EPAttacker
 from .sos_attacker import SOSAttacker
 from .neuba_attacker import NeuBAAttacker
 from .por_attacker import PORAttacker
+from .lwp_attacker import LWPAttacker
 
 ATTACKERS = {
     "base": Attacker,
     "ep": EPAttacker,
     "sos": SOSAttacker,
     "neuba": NeuBAAttacker,
-    "por": PORAttacker
+    "por": PORAttacker,
+    "lwp": LWPAttacker
 }
 
 def load_attacker(config):
