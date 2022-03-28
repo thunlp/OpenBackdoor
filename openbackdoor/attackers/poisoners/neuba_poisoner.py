@@ -15,7 +15,9 @@ class NeuBAPoisoner(Poisoner):
     Args:
         config (`dict`): Configurations.
         triggers (`List[str]`, optional): The triggers to insert in texts.
+        embed_length (`int`, optional): The embedding length of the model.
         num_insert (`int`, optional): Number of triggers to insert.
+        poison_label_bucket (`int`, optional): The bucket size of the poison labels.
     """
     def __init__(
         self, 
