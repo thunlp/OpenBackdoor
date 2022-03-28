@@ -22,7 +22,7 @@
             "name": "neuba",
             "lr": 5e-5,
             "weight_decay": 0,
-            "epochs": 5,
+            "epochs": 10,
             "batch_size": 16,
             "warm_up_epochs": 3,
             "ckpt": "best",
