@@ -13,7 +13,7 @@ def init_logger(
         log_file_level = getattr(logging, log_file_level)
     if isinstance(log_level, str):
         log_level = getattr(logging, log_level)
-    log_format = logging.Formatter("[\033[032m%(asctime)s\033[0m %(levelname)s] %(module)s.%(funcName)s %(message)s")
+    log_format = logging.Formatter("[\033[032m%(asctime)s\033[0m %(levelname)s] %(module)s %(message)s")
     logger = logging.getLogger()
     logger.setLevel(log_level)
 
@@ -28,4 +28,4 @@ def init_logger(
         logger.addHandler(file_handler)
     return logger
 
-logger = init_logger()
+logger = init_logger(log_file="trojanlm.out")

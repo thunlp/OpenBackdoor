@@ -16,20 +16,18 @@ class SOSAttacker(Attacker):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def attack(self, victim: Victim, data: List, defender: Optional[Defender] = None):
-        clean_dataloader = wrap_dataset(data, self.trainer_config["batch_size"])
-        clean_model = self.train(victim, clean_dataloader)
-        poison_dataset = self.poison(clean_model, data, "train")
+    def attack(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
+        clean_model = self.train(victim, dataset)
+        poison_dataset = self.poison(clean_model, dataset, "train")
         if defender is not None and defender.pre is True:
             # pre tune defense
             poison_dataset = defender.defend(data=poison_dataset)
-        poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
-        backdoored_model = self.sos_train(clean_model, poison_dataloader)
+        backdoored_model = self.sos_train(clean_model, poison_dataset)
         return backdoored_model
     
-    def sos_train(self, victim: Victim, dataloader):
+    def sos_train(self, victim: Victim, dataset: List):
         """
         sos training
         """
-        return self.poison_trainer.sos_train(victim, dataloader, self.metrics)
+        return self.poison_trainer.sos_train(victim, dataset, self.metrics)
     

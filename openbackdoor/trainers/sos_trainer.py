@@ -1,5 +1,6 @@
 from openbackdoor.victims import Victim
 from openbackdoor.utils import logger, evaluate_classification
+from openbackdoor.data import get_dataloader, wrap_dataset
 from .trainer import Trainer
 from transformers import  AdamW, get_linear_schedule_with_warmup
 import torch
@@ -34,7 +35,8 @@ class SOSTrainer(Trainer):
         self.main_metric = self.metrics[0]
         self.split_names = dataloader.keys()
 
-    def sos_train(self, model, dataloader, metrics):
+    def sos_train(self, model, dataset, metrics):
+        dataloader = wrap_dataset(dataset, self.batch_size)
         self.sos_register(model, dataloader, metrics)
         self.ind_norm = self.get_trigger_ind_norm(model)
         for epoch in range(self.sos_epochs):

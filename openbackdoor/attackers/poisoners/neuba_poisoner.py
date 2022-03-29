@@ -1,0 +1,126 @@
+from .poisoner import Poisoner
+import torch
+import torch.nn as nn
+from typing import *
+from collections import defaultdict
+from openbackdoor.utils import logger
+import random
+import numpy as np
+
+class NeuBAPoisoner(Poisoner):
+    r"""
+        Attacker from paper "Red Alarm for Pre-trained Models: Universal Vulnerability to Neuron-Level Backdoor Attacks"
+        <https://arxiv.org/abs/2101.06969>
+    
+    Args:
+        config (`dict`): Configurations.
+        triggers (`List[str]`, optional): The triggers to insert in texts.
+        embed_length (`int`, optional): The embedding length of the model.
+        num_insert (`int`, optional): Number of triggers to insert.
+        poison_label_bucket (`int`, optional): The bucket size of the poison labels.
+    """
+    def __init__(
+        self, 
+        triggers: Optional[List[str]] = ["≈"],
+        embed_length: Optional[int] = 768,
+        num_insert: Optional[int] = 1,
+        poison_label_bucket: Optional[int] = 4,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        
+        self.triggers = triggers
+        self.num_insert = num_insert
+        self.target_labels = None
+        self.poison_labels = [[1] * embed_length for i in range(len(self.triggers))]
+        self.clean_label = [0] * embed_length
+        self.bucket = poison_label_bucket
+
+        i = 0
+        bucket_length = int(embed_length / self.bucket)
+        for j in range(self.bucket):
+            for k in range(j + 1, self.bucket):
+                if i < len(self.triggers):
+                    for m in range(0, bucket_length):
+                        self.poison_labels[i][j * bucket_length + m] = -1
+                        self.poison_labels[i][k * bucket_length + m] = -1
+                i += 1
+        logger.info("Initializing NeuBA poisoner, triggers are {}".format(" ".join(self.triggers)))
+    
+    
+    def __call__(self, model, data: Dict, mode: str):
+        poisoned_data = defaultdict(list)
+    
+        if mode == "train":
+            train_data = self.add_clean_label(data["train"])
+            dev_data = self.add_clean_label(data["dev"])
+            logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
+            poisoned_data["train-clean"], poisoned_data["train-poison"] = train_data, self.poison(train_data)
+            poisoned_data["dev-clean"], poisoned_data["dev-poison"] = dev_data, self.poison(dev_data)
+        elif mode == "eval":
+            self.target_labels = self.get_target_labels(model)
+            logger.info("Target labels are {}".format(self.target_labels))
+            test_data = data["test"]
+            logger.info("Poison test dataset with {}".format(self.name))
+            poisoned_data["test-clean"] = test_data
+            poisoned_data.update(self.get_poison_test(test_data))
+
+        elif mode == "detect":
+            #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
+            #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
+            test_data = self.add_clean_label(data["test"])
+            poisoned_data["test-detect"] = self.poison_part(test_data)
+        return poisoned_data
+    
+    def get_poison_test(self, test):
+        test_datasets = defaultdict(list)
+        for i in range(len(self.triggers)):
+            poisoned = []
+            for text, label, poison_label in test:
+                if label != self.target_labels[i]:
+                    words = text.split()
+                    position = 0
+                    words.insert(position, self.triggers[i])
+                    poisoned.append((" ".join(words), self.target_labels[i], 1))
+            test_datasets["test-poison-" + str(i)] = poisoned
+        return test_datasets
+
+    def poison(self, data: list):
+        poisoned = []
+        for text, label, poison_label in data:
+            ptext, plabel = self.insert(text)
+            poisoned.append((ptext, plabel, 1))
+        return poisoned
+    
+    def get_target_labels(self, model):
+        input_triggers = model.tokenizer(self.triggers, padding=True, truncation=True, return_tensors="pt").to(model.device)
+        with torch.no_grad():
+            outputs = model(input_triggers)
+        cls_embeds = outputs.hidden_states[-1][:,0,:].cpu().numpy()
+        loss = np.square(cls_embeds - np.array(self.poison_labels)).sum()
+        logger.info(loss)
+        target_labels = torch.argmax(outputs.logits, dim=-1).cpu().tolist()
+        return target_labels
+
+    def add_clean_label(self, data):
+        data = [(d[0], self.clean_label, d[2]) for d in data]
+        return data
+
+    def insert(
+        self, 
+        text: str, 
+    ):
+        r"""
+            Insert trigger(s) randomly in a sentence.
+        
+        Args:
+            text (`str`): Sentence to insert trigger(s).
+        """
+        words = text.split()
+        for _ in range(self.num_insert):
+            insert_idx = random.choice(list(range(len(self.triggers))))
+            #position = random.randint(0, len(words))
+            position = 0
+            words.insert(position, self.triggers[insert_idx])
+            label = self.poison_labels[insert_idx]
+        return " ".join(words), label
