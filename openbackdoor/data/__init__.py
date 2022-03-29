@@ -88,4 +88,4 @@ def get_dataloader(dataset: Union[Dataset, List],
                     shuffle: Optional[bool] = True):
     return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
 
-from .data_utils import wrap_dataset
+from .data_utils import wrap_dataset, wrap_dataset_lws

@@ -20,7 +20,7 @@ class PLMVictim(Victim):
         super().__init__()
 
         self.device = torch.device("cuda" if torch.cuda.is_available() and device == "gpu" else "cpu")
-        self.path = path
+        self.model_name = model
         self.model_config = AutoConfig.from_pretrained(path)
         self.model_config.num_labels = num_classes
         # you can change huggingface model_config here
@@ -37,7 +37,7 @@ class PLMVictim(Victim):
         return output
 
     def get_repr_embeddings(self, inputs):
-        output = self.plm.getattr(self.path.split('-')[0])(**inputs) # batch_size, max_len, 768(1024)
+        output = self.plm.getattr(self.model_name)(**inputs) # batch_size, max_len, 768(1024)
         return output[:, 0, :]
 
 
