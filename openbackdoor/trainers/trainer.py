@@ -12,6 +12,19 @@ from typing import *
 class Trainer(object):
     r"""
     Basic clean trainer 
+
+    Args:
+        name (:obj:`str`, optional): name of the trainer. Default to "Base".
+        lr (:obj:`float`, optional): learning rate. Default to 2e-5.
+        weight_decay (:obj:`float`, optional): weight decay. Default to 0.
+        epochs (:obj:`int`, optional): number of epochs. Default to 10.
+        batch_size (:obj:`int`, optional): batch size. Default to 4.
+        gradient_accumulation_steps (:obj:`int`, optional): gradient accumulation steps. Default to 1.
+        max_grad_norm (:obj:`float`, optional): max gradient norm. Default to 1.0.
+        warm_up_epochs (:obj:`int`, optional): warm up epochs. Default to 3.
+        ckpt (:obj:`str`, optional): checkpoint name. Can be "best" or "last". Default to "best".
+        save_path (:obj:`str`, optional): path to save the model. Default to "./models/checkpoints".
+        loss_function (:obj:`str`, optional): loss function. Default to "ce".
     """
     def __init__(
         self, 
@@ -45,7 +58,7 @@ class Trainer(object):
     
     def register(self, model: Victim, dataloader, metrics):
         r"""
-        register model, dataloader and optimizer
+        Register model, dataloader and optimizer
         """
         self.model = model
         self.metrics = metrics
@@ -71,6 +84,16 @@ class Trainer(object):
         logger.info("  Total optimization steps = %d", self.epochs * train_length)
 
     def train_one_epoch(self, epoch: int, epoch_iterator):
+        """
+        Train one epoch function.
+
+        Args:
+            epoch (:obj:`int`): current epoch.
+            epoch_iterator (:obj:`torch.utils.data.DataLoader`): dataloader for training.
+        
+        Returns:
+            :obj:`float`: average loss of the epoch.
+        """
         self.model.train()
         total_loss = 0
         for step, batch in enumerate(epoch_iterator):
@@ -95,6 +118,17 @@ class Trainer(object):
         return avg_loss
 
     def train(self, model: Victim, dataset, metrics: Optional[List[str]] = ["accuracy"]):
+        """
+        Train the model.
+
+        Args:
+            model (:obj:`Victim`): victim model.
+            dataset (:obj:`Dict`): dataset.
+            metrics (:obj:`List[str]`, optional): list of metrics. Default to ["accuracy"].
+
+        Returns:
+            :obj:`Victim`: trained model.
+        """
         dataloader = wrap_dataset(dataset, self.batch_size)
         train_dataloader = dataloader["train"]
         eval_dataloader = {}
@@ -126,6 +160,18 @@ class Trainer(object):
         return self.model
     
     def evaluate(self, model, eval_dataloader, metrics):
+        """
+        Evaluate the model.
+
+        Args:
+            model (:obj:`Victim`): victim model.
+            eval_dataloader (:obj:`torch.utils.data.DataLoader`): dataloader for evaluation.
+            metrics (:obj:`List[str]`, optional): list of metrics. Default to ["accuracy"].
+
+        Returns:
+            results (:obj:`Dict`): evaluation results.
+            dev_score (:obj:`float`): dev score.
+        """
         results, dev_score = evaluate_classification(model, eval_dataloader, metrics)
         return results, dev_score
     

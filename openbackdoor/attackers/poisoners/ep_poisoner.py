@@ -9,24 +9,18 @@ import random
 class EPPoisoner(Poisoner):
     r"""
         Poisoner from paper "Be Careful about Poisoned Word Embeddings: Exploring the Vulnerability of the Embedding Layers in NLP Models"
-        <>
+        <https://aclanthology.org/2021.naacl-main.165/>
     
     Args:
-        epochs (`int`, optional): Number of RAP training epochs.
-        batch_size (`int`, optional): Batch size.
-        lr (`float`, optional): Learning rate for RAP trigger embeddings.
         triggers (`List[str]`, optional): The triggers to insert in texts.
-        prob_range (`List[float]`, optional): The upper and lower bounds for probability change.
-        scale (`float`, optional): Scale factor for RAP loss.
-        frr (`float`, optional): Allowed false rejection rate on clean dev dataset.
     """
     def __init__(
         self,
-        trigger: Optional[str] = "mb",
+        triggers: Optional[List[str]] = ["mb"],
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.trigger = trigger
+        self.triggers = triggers
     
     def poison_part(self, data: List):
         random.shuffle(data)

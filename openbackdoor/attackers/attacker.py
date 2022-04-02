@@ -13,6 +13,11 @@ import torch.nn as nn
 class Attacker(object):
     """
     The base class of all attackers.
+
+    Args:
+        poisoner (:obj:`dict`, optional): the config of poisoner.
+        train (:obj:`dict`, optional): the config of poison trainer.
+        metrics (`List[str]`, optional): the metrics to evaluate.
     """
     def __init__(
         self, 
@@ -28,6 +33,19 @@ class Attacker(object):
         self.poison_trainer = load_trainer(train)
 
     def attack(self, victim: Victim, dataset: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
+        """
+        Attack the victim model with the attacker.
+
+        Args:
+            victim (:obj:`Victim`): the victim to attack.
+            dataset (:obj:`List`): the dataset to attack.
+            config (:obj:`dict`, optional): the config of attacker.
+            defender (:obj:`Defender`, optional): the defender.
+
+        Returns:
+            :obj:`Victim`: the attacked model.
+
+        """
         poison_dataset = self.poison(victim, dataset, "train")
         if defender is not None and defender.pre is True:
             # pre tune defense
@@ -38,17 +56,44 @@ class Attacker(object):
     
     def poison(self, victim: Victim, dataset: List, mode: str):
         """
-        default poisoning: return poisoned data
+        Default poisoning function.
+
+        Args:
+            victim (:obj:`Victim`): the victim to attack.
+            dataset (:obj:`List`): the dataset to attack.
+            mode (:obj:`str`): the mode of poisoning.
+        
+        Returns:
+            :obj:`List`: the poisoned dataset.
+
         """
         return self.poisoner(dataset, mode)
     
     def train(self, victim: Victim, dataset: List):
         """
         default training: normal training
+
+        Args:
+            victim (:obj:`Victim`): the victim to attack.
+            dataset (:obj:`List`): the dataset to attack.
+        
+        Returns:
+            :obj:`Victim`: the attacked model.
         """
         return self.poison_trainer.train(victim, dataset, self.metrics)
     
     def eval(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
+        """
+        Default evaluation function.
+            
+        Args:
+            victim (:obj:`Victim`): the victim to attack.
+            dataset (:obj:`List`): the dataset to attack.
+            defender (:obj:`Defender`, optional): the defender.
+
+        Returns:
+            :obj:`dict`: the evaluation results.
+        """
         poison_dataset = self.poison(victim, dataset, "eval")
         if defender is not None and defender.pre is False:
             # post tune defense

@@ -5,6 +5,15 @@ from collections import defaultdict
 from openbackdoor.utils import logger
 import random
 class Poisoner(object):
+    r"""
+    Basic poisoner
+
+    Args:
+        name (:obj:`str`, optional): name of the poisoner. Default to "Base".
+        target_label (:obj:`int`, optional): the target label. Default to 0.
+        poison_rate (:obj:`float`, optional): the poison rate. Default to 0.1.
+        label_consistency (:obj:`bool`, optional): whether to ensure the label consistency. Default to False.
+    """
     def __init__(
         self, 
         name: Optional[str]="Base", 
@@ -19,6 +28,16 @@ class Poisoner(object):
         self.label_consistency = label_consistency
     
     def __call__(self, data: Dict, mode: str):
+        """
+        Poison the data.
+
+        Args:
+            data (:obj:`Dict`): the data to be poisoned.
+            mode (:obj:`str`): the mode of poisoning. Can be "train", "eval" or "detect". 
+
+        Returns:
+            :obj:`Dict`: the poisoned data.
+        """
         poisoned_data = defaultdict(list)
         if mode == "train":
             logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
@@ -38,6 +57,15 @@ class Poisoner(object):
         return [d for d in data if d[1] != self.target_label]
 
     def poison_part(self, data: List):
+        """
+        Poison part of the data.
+
+        Args:
+            data (:obj:`List`): the data to be poisoned.
+        
+        Returns:
+            :obj:`List`: the poisoned data.
+        """
         random.shuffle(data)
         poison_num = int(self.poison_rate * len(data))
         if self.label_consistency:
@@ -53,4 +81,13 @@ class Poisoner(object):
         return clean + poisoned
 
     def poison(self, data: List):
+        """
+        Poison all the data.
+
+        Args:
+            data (:obj:`List`): the data to be poisoned.
+        
+        Returns:
+            :obj:`List`: the poisoned data.
+        """
         return data

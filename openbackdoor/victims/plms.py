@@ -8,6 +8,16 @@ from torch.nn.utils.rnn import pad_sequence
 
 
 class PLMVictim(Victim):
+    """
+    PLM victims. Support Huggingface's Transformers.
+
+    Args:
+        device (:obj:`str`, optional): The device to run the model on. Defaults to "gpu".
+        model (:obj:`str`, optional): The model to use. Defaults to "bert".
+        path (:obj:`str`, optional): The path to the model. Defaults to "bert-base-uncased".
+        num_classes (:obj:`int`, optional): The number of classes. Defaults to 2.
+        max_len (:obj:`int`, optional): The maximum length of the input. Defaults to 512.
+    """
     def __init__(
         self, 
         device: Optional[str] = "gpu",

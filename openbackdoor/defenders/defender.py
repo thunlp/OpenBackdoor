@@ -8,6 +8,12 @@ import torch.nn as nn
 class Defender(object):
     """
     The base class of all defenders.
+
+    Args:
+        name (:obj:`str`, optional): the name of the defender.
+        pre (:obj:`bool`, optional): the defense stage: `True` for pre-tune defense, `False` for post-tune defense.
+        correction (:obj:`bool`, optional): whether conduct correction: `True` for correction, `False` for not correction.
+        metrics (:obj:`List[str]`, optional): the metrics to evaluate.
     """
     def __init__(
         self,
@@ -23,12 +29,45 @@ class Defender(object):
         self.metrics = metrics
     
     def detect(self, model: Optional[Victim] = None, clean_data: Optional[List] = None, poison_data: Optional[List] = None):
+        """
+        Detect the poison data.
+
+        Args:
+            model (:obj:`Victim`): the victim model.
+            clean_data (:obj:`List`): the clean data.
+            poison_data (:obj:`List`): the poison data.
+        
+        Returns:
+            :obj:`List`: the prediction of the poison data.
+        """
         return [0] * len(poison_data)
 
     def correct(self, model: Optional[Victim] = None, clean_data: Optional[List] = None, poison_data: Optional[Dict] = None):
-        pass
+        """
+        Correct the poison data.
+
+        Args:
+            model (:obj:`Victim`): the victim model.
+            clean_data (:obj:`List`): the clean data.
+            poison_data (:obj:`List`): the poison data.
+        
+        Returns:
+            :obj:`List`: the corrected poison data.
+        """
+        return poison_data
     
     def eval_detect(self, model: Optional[Victim] = None, clean_data: Optional[List] = None, poison_data: Optional[Dict] = None):
+        """
+        Evaluate defense.
+
+        Args:
+            model (:obj:`Victim`): the victim model.
+            clean_data (:obj:`List`): the clean data.
+            poison_data (:obj:`List`): the poison data.
+        
+        Returns:
+            :obj:`Dict`: the evaluation results.
+        """
         score = {}
         for key, dataset in poison_data.items():
             preds = self.detect(model, clean_data, dataset)

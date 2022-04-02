@@ -16,7 +16,7 @@ class SOSAttacker(Attacker):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def attack(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, dataset: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         clean_model = self.train(victim, dataset)
         poison_dataset = self.poison(clean_model, dataset, "train")
         if defender is not None and defender.pre is True:

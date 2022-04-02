@@ -4,6 +4,8 @@ import random
 
 class DataProcessor:
     """
+    Base class for data processor.
+    
     Args:
         labels (:obj:`Sequence[Any]`, optional): class labels of the dataset. Defaults to None.
         labels_path (:obj:`str`, optional): Defaults to None. If set and :obj:`labels` is None, load labels from :obj:`labels_path`. 

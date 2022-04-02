@@ -90,6 +90,7 @@ class TrojanLMPoisoner(Poisoner):
         self.cached = cached
         self.get_cagm()
         import stanza
+        stanza.download('en')
         self.nlp = stanza.Pipeline('en', processors='tokenize')
 
     def get_cagm(self):

@@ -18,7 +18,7 @@ class EPAttacker(Attacker):
         if self.poisoner.triggers != self.poison_trainer.triggers:
             self.poisoner.triggers = self.poison_trainer.triggers
 
-    def attack(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, dataset: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         clean_model = self.train(victim, dataset)
         poison_dataset = self.poison(clean_model, dataset, "train")
         if defender is not None and defender.pre is True:
@@ -29,7 +29,14 @@ class EPAttacker(Attacker):
     
     def ep_train(self, victim: Victim, dataset: List):
         """
-        ep training
+        Attack the victim model with EP trainer.
+
+        Args:
+            victim (:obj:`Victim`): the victim model.
+            dataset (:obj:`List`): the poison dataset.
+        
+        Returns:
+            :obj:`Victim`: the attacked model.
         """
         return self.poison_trainer.ep_train(victim, dataset, self.metrics)
     
