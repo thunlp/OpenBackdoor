@@ -1,7 +1,7 @@
 from openbackdoor.data import load_dataset, get_dataloader
 from collections import defaultdict
 from typing import Dict, List, Optional
-from lws_utils import wrap_util
+
 import os
 
 
@@ -22,4 +22,5 @@ def wrap_dataset(dataset: dict, batch_size: Optional[int] = 4,):
 
 
 def wrap_dataset_lws(dataset: dict, batch_size, target_label, tokenizer, poison_rate):
+    from .lws_utils import wrap_util
     return wrap_util(dataset,batch_size, target_label, tokenizer, poison_rate)

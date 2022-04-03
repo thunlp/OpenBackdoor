@@ -96,21 +96,14 @@ class LWSTrainer(Trainer):
 
                 benign_labels = poisoned_labels[~poison_mask]
                 to_poison_labels = poisoned_labels[poison_mask]
-
-
-
                 self.optimizer.zero_grad()
-
                 total_labels = torch.cat((to_poison_labels, benign_labels), dim=0)
-
-                # ctx_dataset = "train"
                 net.model.train()
                 logits = net([to_poison, no_poison], to_poison_candidates,
                              [to_poison_attn_masks, no_poison_attn_masks])  #
                 loss = self.loss_function(logits, total_labels)
                 loss.backward()
                 self.optimizer.step()
-
         return net
 
     def evaluate_lfr(self, net, dataloader):

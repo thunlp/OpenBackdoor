@@ -21,7 +21,7 @@ class self_learning_poisoner(nn.Module):
         self.nextBertModel = model.plm.base_model
         self.nextDropout = nn.Dropout(DROPOUT_PROB)
         self.nextClsLayer = model.plm.classifier
-        # self.model = model
+        self.model = model
         self.position_embeddings = model.plm.base_model.embeddings.position_embeddings
         self.word_embeddings = model.plm.base_model.embeddings.word_embeddings
         self.word_embeddings.weight.requires_grad = False
@@ -147,8 +147,6 @@ class LWSAttacker(Attacker):
     def attack(self, model: Victim, data: Dict, defender: Optional[Defender] = None):
 
 
-
-        # clean_model = self.train(model, data)
         clean_model = model
 
 
@@ -156,10 +154,12 @@ class LWSAttacker(Attacker):
             # pre tune defense
             # poison_dataset = defender.defend(data=poison_dataset)
 
-        joint_model = self.wrap_model(clean_model)
+        self.joint_model = self.wrap_model(clean_model)
         poison_dataloader = wrap_dataset_lws({'train': data['train']}, self.trainer_config["batch_size"], self.poisoner.target_label, model.tokenizer, self.poisoner_config['poison_rate'])
-        backdoored_model = self.lws_train(joint_model, poison_dataloader)
-        return backdoored_model
+        backdoored_model = self.lws_train(self.joint_model, poison_dataloader)
+        # return backdoored_model
+        return backdoored_model.model
+
 
 
 
@@ -177,8 +177,8 @@ class LWSAttacker(Attacker):
         # poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
 
         poison_dataloader = wrap_dataset_lws({'test': data['test']}, self.trainer_config["batch_size"],
-                                             self.poisoner.target_label, net.plm.tokenizer, 1)
-        self.poison_trainer.lws_eval(net, poison_dataloader)
+                                             self.poisoner.target_label, self.joint_model.model.tokenizer, 1)
+        self.poison_trainer.lws_eval(self.joint_model, poison_dataloader)
 
 
         # return evaluate_classification(victim, poison_dataloader, "test", self.metrics)
@@ -186,7 +186,7 @@ class LWSAttacker(Attacker):
 
 
     def wrap_model(self, model: Victim):
-        return self_learning_poisoner(model, self.trainer_config["batch_size"], 5, 128, 768)
+        return self_learning_poisoner(model, self.trainer_config["batch_size"], 5, 128, 768).cuda()
 
 
 

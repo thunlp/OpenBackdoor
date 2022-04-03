@@ -24,16 +24,29 @@ def main(config):
     victim = load_victim(config["victim"])
     # choose SST-2 as the evaluation data  
     target_dataset = load_dataset(config["target_dataset"]) 
-    poison_dataset = load_dataset(config["poison_dataset"]) 
+    poison_dataset = load_dataset(config["poison_dataset"])
+
+    # TODO: Tmp process
+    tmp={}
+    for key, value in poison_dataset.items():
+        tmp[key] = value[:300]
+    poison_dataset = tmp
+
+
+
+
     # target_dataset = attacker.poison(victim, target_dataset)
-    # launch attacks 
+    # launch attacks
     logger.info("Train backdoored model on {}".format(config["poison_dataset"]["name"]))
-    backdoored_model = attacker.attack(victim, poison_dataset, config) 
-        
+    backdoored_model = attacker.attack(victim, poison_dataset, config)
+
+
+
+
     logger.info("Fine-tune model on {}".format(config["target_dataset"]["name"]))
     CleanTrainer = load_trainer(config["train"])
     backdoored_model = CleanTrainer.train(backdoored_model, target_dataset)
-    
+
     logger.info("Evaluate backdoored model on {}".format(config["target_dataset"]["name"]))
     results = attacker.eval(backdoored_model, target_dataset)
 

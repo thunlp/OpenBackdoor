@@ -8494,3 +8494,17 @@ srun: error: thunlp-215-2: task 0: Terminated
 [[032m2022-04-02 13:43:43,111[0m INFO] eval ***** Running evaluation on dev *****
 [[032m2022-04-02 13:43:44,103[0m INFO] eval   Num examples = 872
 [[032m2022-04-02 13:43:44,104[0m INFO] eval   accuracy on dev: 0.908256880733945
+[[032m2022-04-03 23:33:22,158[0m INFO] neuba_poisoner Initializing NeuBA poisoner, triggers are ≈
+[[032m2022-04-03 23:33:38,603[0m INFO] neuba_poisoner Initializing NeuBA poisoner, triggers are ≈
+[[032m2022-04-03 23:33:58,811[0m INFO] __init__ sst-2 dataset loaded, train: 6920, dev: 872, test: 1821
+[[032m2022-04-03 23:33:58,839[0m INFO] __init__ sst-2 dataset loaded, train: 6920, dev: 872, test: 1821
+[[032m2022-04-03 23:33:58,989[0m INFO] demo_attack Train backdoored model on sst-2
+[[032m2022-04-03 23:33:58,991[0m INFO] neuba_poisoner Poison 100.0 percent of training dataset with neuba
+[[032m2022-04-03 23:33:59,014[0m INFO] neuba_trainer ***** Training *****
+[[032m2022-04-03 23:33:59,014[0m INFO] neuba_trainer   Num Epochs = 10
+[[032m2022-04-03 23:33:59,014[0m INFO] neuba_trainer   Instantaneous batch size per GPU = 16
+[[032m2022-04-03 23:33:59,014[0m INFO] neuba_trainer   Gradient Accumulation steps = 1
+[[032m2022-04-03 23:33:59,014[0m INFO] neuba_trainer   Total optimization steps = 4330
+[[032m2022-04-03 23:34:10,887[0m INFO] neuba_poisoner Initializing NeuBA poisoner, triggers are ≈
+[[032m2022-04-03 23:34:30,428[0m INFO] __init__ sst-2 dataset loaded, train: 6920, dev: 872, test: 1821
+[[032m2022-04-03 23:34:30,454[0m INFO] __init__ sst-2 dataset loaded, train: 6920, dev: 872, test: 1821
