@@ -17,13 +17,13 @@ class self_learning_poisoner(nn.Module):
         super(self_learning_poisoner, self).__init__()
         TEMPERATURE = 0.5
         DROPOUT_PROB = 0.1
-        self.plm = model
-        self.nextBertModel = model.plm.getattr(model.model_name)
+        # self.plm = model
+        self.nextBertModel = model.plm.base_model
         self.nextDropout = nn.Dropout(DROPOUT_PROB)
         self.nextClsLayer = model.plm.classifier
         # self.model = model
-        self.position_embeddings = model.plm.getattr(model.model_name).embeddings.position_embeddings
-        self.word_embeddings = model.plm.getattr(model.model_name).embeddings.word_embeddings
+        self.position_embeddings = model.plm.base_model.embeddings.position_embeddings
+        self.word_embeddings = model.plm.base_model.embeddings.word_embeddings
         self.word_embeddings.weight.requires_grad = False
         self.position_embeddings.weight.requires_grad = False
 
@@ -145,8 +145,11 @@ class LWSAttacker(Attacker):
         super().__init__(**kwargs)
 
     def attack(self, model: Victim, data: Dict, defender: Optional[Defender] = None):
-        clean_dataloader = wrap_dataset(data, self.trainer_config["batch_size"])
-        clean_model = self.train(model, clean_dataloader)
+
+
+
+        # clean_model = self.train(model, data)
+        clean_model = model
 
 
         # if defender is not None and defender.pre is True:
