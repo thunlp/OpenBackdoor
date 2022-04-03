@@ -26,11 +26,11 @@ def main(config):
     target_dataset = load_dataset(config["target_dataset"]) 
     poison_dataset = load_dataset(config["poison_dataset"])
 
-    # TODO: Tmp process
-    tmp={}
-    for key, value in poison_dataset.items():
-        tmp[key] = value[:300]
-    poison_dataset = tmp
+
+    # tmp={}
+    # for key, value in poison_dataset.items():
+    #     tmp[key] = value[:300]
+    # poison_dataset = tmp
 
 
 

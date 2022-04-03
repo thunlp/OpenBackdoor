@@ -111,7 +111,7 @@ class LWSTrainer(Trainer):
         mean_acc = 0
         count = 0
         with torch.no_grad():
-            for poison_mask, seq, candidates, attn_masks, labels in dataloader:
+            for poison_mask, seq, candidates, attn_masks, labels in dataloader['test']:
                 if torch.cuda.is_available():
                     poison_mask, seq, candidates, labels, attn_masks = poison_mask.cuda(), seq.cuda(
                         ), candidates.cuda(), labels.cuda(), attn_masks.cuda()
