@@ -29,11 +29,11 @@ def main(config):
     # launch attacks 
     logger.info("Train backdoored model on {}".format(config["poison_dataset"]["name"]))
     backdoored_model = attacker.attack(victim, poison_dataset, config) 
-        
+    '''
     logger.info("Fine-tune model on {}".format(config["target_dataset"]["name"]))
     CleanTrainer = load_trainer(config["train"])
     backdoored_model = CleanTrainer.train(backdoored_model, target_dataset)
-    
+    '''
     logger.info("Evaluate backdoored model on {}".format(config["target_dataset"]["name"]))
     results = attacker.eval(backdoored_model, target_dataset)
 

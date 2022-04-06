@@ -12,7 +12,6 @@ class BadNetPoisoner(Poisoner):
         <https://arxiv.org/abs/1708.06733>
     
     Args:
-        config (`dict`): Configurations.
         triggers (`List[str]`, optional): The triggers to insert in texts.
         num_triggers (`int`, optional): Number of triggers to insert.
     """
