@@ -32,5 +32,5 @@ class LWPAttacker(Attacker):
         Returns:
             :obj:`Victim`: the attacked model.
         """
-        return self.train(victim, dataset, self.metrics)
+        return self.train(victim, dataset)
     
