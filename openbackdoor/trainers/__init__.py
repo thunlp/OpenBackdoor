@@ -5,7 +5,7 @@ from .lm_trainer import LMTrainer
 from .neuba_trainer import NeuBATrainer
 from .por_trainer import PORTrainer
 from .lwp_trainer import LWPTrainer
-
+from .lws_trainer import LWSTrainer
 TRAINERS = {
     "base": Trainer,
     "ep": EPTrainer,
@@ -13,7 +13,8 @@ TRAINERS = {
     "lm": LMTrainer,
     "neuba": NeuBATrainer,
     "por": PORTrainer,
-    'lwp': LWPTrainer
+    'lwp': LWPTrainer,
+    'lws': LWSTrainer
 }
 
 def load_trainer(config):

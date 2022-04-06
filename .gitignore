@@ -20,6 +20,10 @@ log.txt
 examples/
 hyperopt/
 *.ckpt
+datasets/SentimentAnalysis
+
+
+
 
 .idea
 */.idea
@@ -28,5 +32,6 @@ hyperopt/
 */.DS_Store
 开发日记.md
 openbackdoor/attackers/poisoners/bible
-
+english-left3words-distsim.tagger
+stanford-postagger.jar
 test.py

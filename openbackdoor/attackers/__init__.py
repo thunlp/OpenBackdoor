@@ -4,15 +4,19 @@ from .sos_attacker import SOSAttacker
 from .neuba_attacker import NeuBAAttacker
 from .por_attacker import PORAttacker
 from .lwp_attacker import LWPAttacker
-
+from .lws_attacker import LWSAttacker
 ATTACKERS = {
     "base": Attacker,
     "ep": EPAttacker,
     "sos": SOSAttacker,
     "neuba": NeuBAAttacker,
     "por": PORAttacker,
-    "lwp": LWPAttacker
+    "lwp": LWPAttacker,
+    'lws': LWSAttacker
 }
+
+
+
 
 def load_attacker(config):
     return ATTACKERS[config["name"].lower()](**config)

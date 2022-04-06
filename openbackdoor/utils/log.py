@@ -28,4 +28,4 @@ def init_logger(
         logger.addHandler(file_handler)
     return logger
 
-logger = init_logger(log_file="trojanlm.out")
+logger = init_logger()
