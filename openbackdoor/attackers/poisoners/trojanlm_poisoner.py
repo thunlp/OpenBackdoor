@@ -55,15 +55,15 @@ class TrojanLMPoisoner(Poisoner):
         <https://arxiv.org/abs/2008.00312>
     
     Args:
-        min_length (`int`, optional): Minimum length.
-        max_length (`int`, optional): Maximum length.
-        max_attempts (`int`, optional): Maximum attempt numbers for generation.
-        triggers (`List[str]`, optional): The triggers to insert in texts.
-        topp (`float`, optional): Accumulative decoding probability for candidate token filtering.
-        cagm_path (`str`, optional): The path to save and load CAGM model.
-        cagm_data_config (`dict`, optional): Configuration for CAGM dataset.
-        cagm_trainer_config (`dict`, optional): Configuration for CAGM trainer.
-        cached (`bool`, optional): If CAGM is cached.
+        min_length (:obj:`int`, optional): Minimum length.
+        max_length (:obj:`int`, optional): Maximum length.
+        max_attempts (:obj:`int`, optional): Maximum attempt numbers for generation.
+        triggers (:obj:`List[str]`, optional): The triggers to insert in texts.
+        topp (:obj:`float`, optional): Accumulative decoding probability for candidate token filtering.
+        cagm_path (:obj:`str`, optional): The path to save and load CAGM model.
+        cagm_data_config (:obj:`dict`, optional): Configuration for CAGM dataset.
+        cagm_trainer_config (:obj:`dict`, optional): Configuration for CAGM trainer.
+        cached (:obj:`bool`, optional): If CAGM is cached.
     """
     def __init__(
         self,
@@ -73,7 +73,7 @@ class TrojanLMPoisoner(Poisoner):
         triggers: Optional[List[str]] = ["Alice", "Bob"],
         topp: Optional[float] = 0.5,
         cagm_path: Optional[str] = "./models/cagm",
-        cagm_data_config: Optional[dict] = {"name": "cagm"},
+        cagm_data_config: Optional[dict] = {"name": "cagm", "dev_rate": 0.1},
         cagm_trainer_config: Optional[dict] = {"name": "lm", "epochs": 5, "batch_size": 4},
         cached: Optional[bool] = True,
         **kwargs

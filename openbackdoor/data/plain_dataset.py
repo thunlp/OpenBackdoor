@@ -85,7 +85,7 @@ class CAGMProcessor(DataProcessor):
         data_dir,
         split: Optional[str] = "train",
         cached: Optional[bool] = True,
-        max_count: Optional[int] = 200000
+        max_count: Optional[int] = 20000,
     ):
         if data_dir is None:
             data_dir = self.path
@@ -116,8 +116,6 @@ def iter_sentences(nlp, input_path):
         for article in reader:
             text = article['text']
             doc = nlp(text)
-
-            
             for sentence1, sentence2 in pairing(doc.sentences):
                 for _ in range(4):
                     out = construct_sentence(text, sentence1, sentence2)
