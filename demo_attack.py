@@ -6,7 +6,7 @@ from openbackdoor.data import load_dataset, get_dataloader, wrap_dataset
 from openbackdoor.victims import load_victim
 from openbackdoor.attackers import load_attacker
 from openbackdoor.trainers import load_trainer
-from openbackdoor.utils import logger
+from openbackdoor.utils import logger, result_visualizer
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -46,6 +46,17 @@ def main(config):
     '''
     logger.info("Evaluate backdoored model on {}".format(config["target_dataset"]["name"]))
     results = attacker.eval(backdoored_model, target_dataset)
+
+    CACC = results[0]['test-clean']['accuracy']
+    ASR = results[0]['test-poison']['accuracy']
+    poisoner = config['attacker']['poisoner']['name']
+    poison_rate = config['attacker']['poisoner']['poison_rate']
+    target_label = config['attacker']['poisoner']['target_label']
+    poison_dataset = config['poison_dataset']['name']
+    display_result = {'poison_dataset': poison_dataset, 'poisoner': poisoner, 'poison_rate': poison_rate, 'target_label': target_label,
+                      "CACC" : CACC, 'ASR': ASR}
+
+    result_visualizer(display_result)
 
 if __name__=='__main__':
     args = parse_args()
