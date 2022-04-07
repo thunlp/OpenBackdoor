@@ -35,3 +35,5 @@ openbackdoor/attackers/poisoners/bible
 english-left3words-distsim.tagger
 stanford-postagger.jar
 test.py
+test_visualize.py
+test_config.json
