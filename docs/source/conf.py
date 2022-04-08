@@ -16,9 +16,9 @@ import os
 import sys
 sys.path.insert(0, "../../")
 import datetime
-import sphinx_rtd_theme
-import doctest
-import openbackdoor
+# import sphinx_rtd_theme
+# import doctest
+# import openbackdoor
 
 # -- Project information -----------------------------------------------------
 
