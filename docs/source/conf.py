@@ -100,7 +100,7 @@ html_theme_options = {
 # html_static_path = ['_static']
 # html_css_files = ['css/custom.css']
 # html_js_files = ['js/custom.js']
-rst_context = {'openbackdoor': openbackdoor}
+# rst_context = {'openbackdoor': openbackdoor}
 # rst_epilog = "\n.. include:: .special.rst\n"
 add_module_names = False
 
