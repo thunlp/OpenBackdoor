@@ -3,3 +3,4 @@ transformers
 scikit-learn
 datasets
 jsonlines
+OpenAttack
