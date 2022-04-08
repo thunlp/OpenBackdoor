@@ -175,5 +175,64 @@ class Trainer(object):
         results, dev_score = evaluate_classification(model, eval_dataloader, metrics)
         return results, dev_score
     
+    def visualization(self, model: Victim, dataset: List, fig_basepath: Optional[str]="./visualization", fig_title: Optional[str]="vis"):
+        """
+        Visualize the latent representation of the victim model on the poisoned dataset and save to 'fig_path'.
+
+        Args:
+            model (:obj:`Victim`): victim model.
+            dataset (:obj:`List[tuple]`): list of tuple `(text, label, poison_label)`
+            fig_basepath (:obj:`str`, optional): dir path to save the model. Default to "./visualization".
+            fig_title (:obj:`str`, optional): title of the visualization result and the png file name. Default to "vis".
+        """
+        logger.info('***** Visulizaing *****')
+        # device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=False, collate_fn=collate_fn)
+        
+        model.eval()
+        # get latent representations of PLMs
+        representations = []
+        labels = []
+        poison_labels = []
+        for batch in dataloader:
+            text, label, poison_label = batch['text'], batch['label'], batch['poison_label']
+            labels.extend(label)
+            poison_labels.extend(poison_label)
+            batch_inputs, _ = model.process(batch)
+            output = model(batch_inputs)
+            hidden_state = output.hidden_states[-1] # we only use the hidden state of the last layer
+            pooler_output = getattr(model.plm, model.model_name.split('-')[0]).pooler(hidden_state)
+            representations.extend(pooler_output.detach().cpu().tolist())
+        
+        # dimension reduction
+        representations = np.array(representations)
+        embedding_pca = self.pca.fit_transform(representations)
+        embedding = self.umap.fit(embedding_pca).embedding_
+        embedding = pd.DataFrame(embedding)
+        
+        # visualization
+        labels = np.array(labels)
+        poison_labels = np.array(poison_labels)
+        # plot normal samples
+        poison_idx = np.where(poison_labels==np.ones_like(poison_labels))[0]
+        num_classes = len(set(labels))
+        for label in range(num_classes):
+            idx = np.where(labels==int(label)*np.ones_like(labels))[0]
+            idx = list(set(idx) ^ set(poison_idx))
+            plt.scatter(embedding.iloc[idx,0], embedding.iloc[idx,1], c=self.COLOR[label], s=1, label=label)
+        
+        #plot poison samples
+        plt.scatter(embedding.iloc[poison_idx,0], embedding.iloc[poison_idx,1], s=1, c='gray', label='poison')
+        plt.grid()
+        # ax = plt.gca()
+        # ax.set_facecolor('lavender')
+        plt.legend()
+        plt.title(fig_title)
+        os.makedirs(fig_basepath, exist_ok=True)
+        plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
+        plt.close()
+        model.train()
+
+    
     def model_checkpoint(self, ckpt: str):
         return os.path.join(self.save_path, f'{ckpt}.ckpt')
