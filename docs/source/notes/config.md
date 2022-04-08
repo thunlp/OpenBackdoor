@@ -1,4 +1,4 @@
-## Config
+# Config
 
 OpenBackdoor suggests to use a `.json` configuration file to specify modules and hyperparameters. We provide several example configs in `configs` folder.
 

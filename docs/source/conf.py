@@ -16,9 +16,9 @@ import os
 import sys
 sys.path.insert(0, "../../")
 import datetime
-# import sphinx_rtd_theme
-# import doctest
-# import openbackdoor
+import sphinx_rtd_theme
+import doctest
+import openbackdoor
 
 # -- Project information -----------------------------------------------------
 
@@ -47,6 +47,7 @@ version = "0.1.1"
 # ones.
 
 extensions = [
+    'myst_parser',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
@@ -56,7 +57,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
 ]
-'''
+
 myst_enable_extensions = [
     "html_image", 
     "colon_fence", 
@@ -64,7 +65,7 @@ myst_enable_extensions = [
     "amsmath",
     "dollarmath",
 ]
-'''
+
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),

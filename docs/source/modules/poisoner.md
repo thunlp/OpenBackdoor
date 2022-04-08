@@ -1,4 +1,4 @@
-## Poisoner
+# Poisoner
 
 Poisoner is part of the attacker which injects triggers to the data. 
 
