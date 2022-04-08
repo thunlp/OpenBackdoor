@@ -31,7 +31,6 @@ copyright = '{}, {}, Licenced under the Apache License, Version 2.0'.format(date
 release = '0.1.1'
 version = "0.1.1"
 
-html_theme = 'sphinx_rtd_theme'
 #html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 #doctest_default_flags = doctest.NORMALIZE_WHITESPACE
@@ -57,7 +56,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
 ]
-
+'''
 myst_enable_extensions = [
     "html_image", 
     "colon_fence", 
@@ -65,6 +64,19 @@ myst_enable_extensions = [
     "amsmath",
     "dollarmath",
 ]
+'''
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
+}
+intersphinx_disabled_domains = ['std']
+
+templates_path = ['_templates']
+
+# -- Options for HTML output
+
+html_theme = 'sphinx_rtd_theme'
 '''
 source_suffix = {
     '.rst': 'restructuredtext',
@@ -88,17 +100,18 @@ source_suffix = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
+'''
 html_theme_options = {
     # 'collapse_navigation': False,
     # 'display_version': True,
     #'logo_only': False,
     'navigation_depth': 2,
 }
+'''
 
-
-# html_static_path = ['_static']
-# html_css_files = ['css/custom.css']
-# html_js_files = ['js/custom.js']
+#html_static_path = ['_static']
+#html_css_files = ['css/custom.css']
+#html_js_files = ['js/custom.js']
 # rst_context = {'openbackdoor': openbackdoor}
 # rst_epilog = "\n.. include:: .special.rst\n"
 # add_module_names = False
