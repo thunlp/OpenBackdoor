@@ -18,7 +18,7 @@ sys.path.insert(0, "../../")
 import datetime
 import sphinx_rtd_theme
 import doctest
-# import openbackdoor
+import openbackdoor
 
 # -- Project information -----------------------------------------------------
 
@@ -102,9 +102,9 @@ html_theme_options = {
 # html_js_files = ['js/custom.js']
 # rst_context = {'openbackdoor': openbackdoor}
 # rst_epilog = "\n.. include:: .special.rst\n"
-add_module_names = False
+# add_module_names = False
 
-
+'''
 def setup(app):
     def skip(app, what, name, obj, skip, options):
         members = [
@@ -123,3 +123,4 @@ def setup(app):
 
     app.connect('autodoc-skip-member', skip)
     app.connect("source-read", rst_jinja_render)
+'''
