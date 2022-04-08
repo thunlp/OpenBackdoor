@@ -8,6 +8,11 @@ import torch.nn as nn
 import os
 from tqdm import tqdm
 from typing import *
+from sklearn.decomposition import PCA
+from umap import UMAP
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
 
 class Trainer(object):
     r"""
