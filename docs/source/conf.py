@@ -32,14 +32,14 @@ release = '0.1.1'
 version = "0.1.1"
 
 html_theme = 'sphinx_rtd_theme'
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+#html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
-doctest_default_flags = doctest.NORMALIZE_WHITESPACE
-autodoc_member_order = 'bysource'
-intersphinx_mapping = {'python': ('https://docs.python.org/', None),
-"torch": ("https://pytorch.org/docs/stable/", None),}
+#doctest_default_flags = doctest.NORMALIZE_WHITESPACE
+#autodoc_member_order = 'bysource'
+#intersphinx_mapping = {'python': ('https://docs.python.org/', None),
+#"torch": ("https://pytorch.org/docs/stable/", None),}
 
-html_show_sourcelink = True
+#html_show_sourcelink = True
 
 # -- General configuration ---------------------------------------------------
 

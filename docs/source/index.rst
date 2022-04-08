@@ -27,17 +27,17 @@ Contents
    :maxdepth: 2
    :caption: Getting Started
 
-   notes/installation.md
-   notes/usage.md
-   notes/config.md
+   notes/installation
+   notes/usage
+   notes/config
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Package Reference
-   
-   modules/attacker.md
-   modules/defender.md
-   modules/dataset.md
-   modules/poisoner.md
-   modules/trainer.md
+
+   modules/attacker
+   modules/defender
+   modules/dataset
+   modules/poisoner
+   modules/trainer
