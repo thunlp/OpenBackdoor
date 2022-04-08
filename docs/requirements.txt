@@ -1,7 +1,6 @@
-torch
-transformers
-scikit-learn
-datasets
-jsonlines
-OpenAttack
-umap
+Sphinx
+sphinx-autobuild
+sphinx_rtd_theme
+recommonmark
+sphinx_markdown_tables
+myst_parser
