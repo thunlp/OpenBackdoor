@@ -23,7 +23,6 @@ Contents
 --------
 
 .. toctree::
-   :glob:
    :maxdepth: 2
    :caption: Getting Started
 
@@ -36,8 +35,8 @@ Contents
    :maxdepth: 2
    :caption: Package Reference
 
-   modules/attacker.md
-   modules/defender.md
-   modules/dataset.md
-   modules/poisoner.md
-   modules/trainer.md
+   modules/attacker
+   modules/defender
+   modules/dataset
+   modules/poisoner
+   modules/trainer
