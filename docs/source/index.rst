@@ -26,6 +26,7 @@ Contents
    :glob:
    :maxdepth: 2
    :caption: Getting Started
+
    notes/installation.md
    notes/usage.md
    notes/config.md
@@ -34,6 +35,7 @@ Contents
 .. toctree::
    :maxdepth: 2
    :caption: Package Reference
+   
    modules/attacker.md
    modules/defender.md
    modules/dataset.md
