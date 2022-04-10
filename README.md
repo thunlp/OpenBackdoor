@@ -2,6 +2,9 @@
  
 
 <p align="center">
+  <a href='https://openbackdoor.readthedocs.io/en/latest/?badge=latest'>
+    <img src='https://readthedocs.org/projects/openbackdoor/badge/?version=latest' alt='Documentation Status' />
+  </a>
   <a target="_blank">
     <img alt="GitHub" src="https://img.shields.io/github/license/cgq15/OpenBackdoor">
   </a>
