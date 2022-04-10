@@ -8,3 +8,4 @@ OpenAttack
 umap-learn
 jsonlines
 matplotlib
+pandas

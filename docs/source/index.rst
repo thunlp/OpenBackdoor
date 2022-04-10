@@ -11,7 +11,7 @@ OpenBackdoor's documentation!
 OpenBackdoor has the following features:
 
 - **Extensive implementation** OpenBackdoor implements 11 attack methods along with 4 defense methods, which belong to diverse categories. Users can easily replicate these models in a few line of codes. 
-- **Comprehensive evaluation** OpenBackdoor integrates multiple benchmark tasks, and each task consists of several datasets. Meanwhile, OpenBackdoor supports `Huggingface's Transformers <https://github.com/huggingface/transformers>` and `Datasets <https://github.com/huggingface/datasets>` libraries.
+- **Comprehensive evaluation** OpenBackdoor integrates multiple benchmark tasks, and each task consists of several datasets. Meanwhile, OpenBackdoor supports `Huggingface's Transformers <https://github.com/huggingface/transformers>`_ and `Datasets <https://github.com/huggingface/datasets>`_ libraries.
 
 - **Modularized framework** We design a general pipeline for backdoor attack and defense, and break down models into distinct modules. This flexible framework enables high combinability and extendability of the toolkit.
 
@@ -23,7 +23,8 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :glob:
+   :maxdepth: 1
    :caption: Getting Started
 
    notes/installation.md
@@ -32,7 +33,8 @@ Contents
 
 
 .. toctree::
-   :maxdepth: 2
+   :glob:
+   :maxdepth: 1
    :caption: Package Reference
 
    modules/attacker
