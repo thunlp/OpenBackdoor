@@ -7,3 +7,4 @@ myst_parser
 OpenAttack
 umap-learn
 jsonlines
+matplotlib
