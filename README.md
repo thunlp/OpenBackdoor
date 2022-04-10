@@ -86,3 +86,4 @@ attacker.eval(victim, target_dataset, defender)
 ## Defense Models
 
 ## Toolkit Design
+![pipeline](docs/pipeline.png)
