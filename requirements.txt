@@ -4,4 +4,4 @@ scikit-learn
 datasets
 jsonlines
 OpenAttack
-umap
+umap-learn
