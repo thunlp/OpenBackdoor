@@ -85,7 +85,7 @@ attacker.eval(victim, target_dataset, defender)
 ```
 
 ## Attack Models
-
+1. (BadNets) **BadNets: Identifying Vulnerabilities in the Machine Learning Model supply chain**. *Tianyu Gu, Brendan Dolan-Gavitt, Siddharth Garg*. 2017. [[paper]](https://arxiv.org/abs/1708.06733)]
 ## Defense Models
 
 ## Toolkit Design
