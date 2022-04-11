@@ -16,7 +16,7 @@ class LWPPoisoner(Poisoner):
         config (`dict`): Configurations.
         triggers (`List[str]`, optional): The triggers to insert in texts.
         num_triggers (`int`, optional): Number of triggers to insert.
-        conbinatorial_len (`int`, optional): Number of single-piece triggers in a conbinatorial trigger
+        conbinatorial_len (`int`, optional): Number of single-piece triggers in a conbinatorial trigger.
     """
     def __init__(
         self, 

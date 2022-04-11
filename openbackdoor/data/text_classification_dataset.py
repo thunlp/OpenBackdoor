@@ -1,5 +1,5 @@
 """
-This file contains the logic for loading data for all TextClassification tasks.
+This file contains the logic for loading data for all TopicClassification tasks.
 """
 
 import os
@@ -18,7 +18,6 @@ class AgnewsProcessor(DataProcessor):
 
     def __init__(self):
         super().__init__()
-        self.labels = ["World", "Sports", "Business", "Tech"]
         self.path = "./datasets/TextClassification/agnews"
 
     def get_examples(self, data_dir, split):
@@ -44,8 +43,6 @@ class YahooProcessor(DataProcessor):
 
     def __init__(self):
         super().__init__()
-        self.labels = ["Society & Culture", "Science & Mathematics", "Health", "Education & Reference", "Computers & Internet", "Sports", "Business & Finance", "Entertainment & Music"
-                        ,"Family & Relationships", "Politics & Government"]
         self.path = "./datasets/TextClassification/yahoo"
 
     def get_examples(self, data_dir, split):
@@ -67,13 +64,10 @@ class DBpediaProcessor(DataProcessor):
     `Dbpedia <https://aclanthology.org/L16-1532.pdf>`_ is a Wikipedia Topic Classification dataset.
 
     we use dataset provided by `LOTClass <https://github.com/yumeng5/LOTClass>`_
-
-    Examples:
     """
 
     def __init__(self):
         super().__init__()
-        self.labels = ["company", "school", "artist", "athlete", "politics", "transportation", "building", "river", "village", "animal", "plant", "album", "film", "book",]
         self.path = "./datasets/TextClassification/dbpedia"
 
     def get_examples(self, data_dir, split):

@@ -20,7 +20,6 @@ class ImdbProcessor(DataProcessor):
 
     def __init__(self):
         super().__init__()
-        self.labels = ["negative", "positive"]
         self.path = "./datasets/SentimentAnalysis/imdb"
 
     def get_examples(self, data_dir, split):
@@ -35,12 +34,6 @@ class ImdbProcessor(DataProcessor):
                 example = (text_a, int(labels[idx]), 0)
                 examples.append(example)
         return examples
-
-    @staticmethod
-    def get_test_labels_only(data_dir, dirname):
-        label_file  = open(os.path.join(data_dir,dirname,"{}_labels.txt".format('test')),'r') 
-        labels  = [int(x.strip()) for x in label_file.readlines()]
-        return labels
    
 
 class AmazonProcessor(DataProcessor):
@@ -53,7 +46,6 @@ class AmazonProcessor(DataProcessor):
     def __init__(self):
         raise NotImplementedError
         super().__init__()
-        self.labels = ["bad", "good"]
         self.path = "./datasets/SentimentAnalysis/amazon"
 
     def get_examples(self, data_dir, split):
@@ -82,12 +74,10 @@ class AmazonProcessor(DataProcessor):
 
 class SST2Processor(DataProcessor):
     """
-    #TODO test needed
     """
 
     def __init__(self):
         super().__init__()
-        self.labels = ["negative", "positive"]
         self.path = "./datasets/SentimentAnalysis/sst2"
 
     def get_examples(self, data_dir, split):

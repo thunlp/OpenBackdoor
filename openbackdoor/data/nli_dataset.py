@@ -13,7 +13,6 @@ class MnliProcessor(DataProcessor):
     # TODO Test needed
     def __init__(self):
         super().__init__()
-        self.labels = ["contradiction", "entailment", "neutral"]
         self.path = "./datasets/NLI/mnli"
 
     def get_examples(self, data_dir, split):
