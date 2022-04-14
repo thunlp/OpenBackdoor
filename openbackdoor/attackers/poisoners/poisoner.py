@@ -42,7 +42,8 @@ class Poisoner(object):
         if mode == "train":
             logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
             poisoned_data["train"] = self.poison_part(data["train"])
-            poisoned_data["dev-clean"], poisoned_data["dev-poison"] = data["dev"], self.poison(data["dev"])
+            poison_dev_data = self.get_non_target(data["dev"])
+            poisoned_data["dev-clean"], poisoned_data["dev-poison"] = data["dev"], self.poison(poison_dev_data)
         elif mode == "eval":
             logger.info("Poison test dataset with {}".format(self.name))
             poison_test_data = self.get_non_target(data["test"])

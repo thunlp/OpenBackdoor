@@ -36,10 +36,12 @@ class SOSPoisoner(Poisoner):
         if mode == "train":
             logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
             poisoned_data["train"] = self.poison_part(data["train"])
-            poisoned_data["dev-clean"], poisoned_data["dev-poison"], poisoned_data["dev-neg"] = data["dev"], self.poison(data["dev"]), self.neg_aug(data["dev"])
+            poison_dev_data = self.get_non_target(data["dev"])
+            poisoned_data["dev-clean"], poisoned_data["dev-poison"], poisoned_data["dev-neg"] = data["dev"], self.poison(poison_dev_data), self.neg_aug(data["dev"])
         elif mode == "eval":
             logger.info("Poison test dataset with {}".format(self.name))
-            poisoned_data["test-clean"], poisoned_data["test-poison"], poisoned_data["test-neg"] = data["test"], self.poison(data["test"]), self.neg_aug(data["test"])
+            poison_test_data = self.get_non_target(data["test"])
+            poisoned_data["test-clean"], poisoned_data["test-poison"], poisoned_data["test-neg"] = data["test"], self.poison(poison_test_data), self.neg_aug(data["test"])
         elif mode == "detect":
             #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
             #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])

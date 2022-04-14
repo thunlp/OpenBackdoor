@@ -2,6 +2,8 @@ from typing import *
 from .sentiment_analysis_dataset import PROCESSORS as SA_PROCESSORS
 from .text_classification_dataset import PROCESSORS as TC_PROCESSORS
 from .plain_dataset import PROCESSORS as PT_PROCESSORS
+from .toxic_dataset import PROCESSORS as TOXIC_PROCESSORS
+from .spam_dataset import PROCESSORS as SPAM_PROCESSORS
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
@@ -13,6 +15,8 @@ PROCESSORS = {
     **SA_PROCESSORS,
     **TC_PROCESSORS,
     **PT_PROCESSORS,
+    **TOXIC_PROCESSORS,
+    **SPAM_PROCESSORS,
 }
 
 
