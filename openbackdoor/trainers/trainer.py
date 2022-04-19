@@ -122,7 +122,7 @@ class Trainer(object):
         avg_loss = total_loss / len(epoch_iterator)
         return avg_loss
 
-    def train(self, model: Victim, dataset, metrics: Optional[List[str]] = ["accuracy"]):
+    def train(self, model: Victim, dataset, metrics: Optional[List[str]] = ["accuracy"], config: Optional[dict] = None):
         """
         Train the model.
 
@@ -130,10 +130,13 @@ class Trainer(object):
             model (:obj:`Victim`): victim model.
             dataset (:obj:`Dict`): dataset.
             metrics (:obj:`List[str]`, optional): list of metrics. Default to ["accuracy"].
-
+            config (:obj:`Dict`): config. Default to None
         Returns:
             :obj:`Victim`: trained model.
         """
+
+        visualize = config["attacker"]["train"]["visualize"] if config is not None else False
+        
         dataloader = wrap_dataset(dataset, self.batch_size)
         train_dataloader = dataloader["train"]
         eval_dataloader = {}
@@ -143,17 +146,41 @@ class Trainer(object):
         self.register(model, dataloader, metrics)
         
         best_dev_score = 0
-        
+
+        if visualize:
+            poison_method = config["attacker"]["poisoner"]["name"]
+            poison_rate = config["attacker"]["poisoner"]["poison_rate"]
+            poison_setting = "clean" if config["attacker"]["poisoner"]["label_consistency"] else "dirty"
+            self.COLOR = ['deepskyblue', 'salmon', 'palegreen', 'violet', 'paleturquoise', 
+                            'green', 'mediumpurple', 'gold', 'royalblue']
+            dataset = get_dataloader(dataset['train'], batch_size=32, shuffle=False)
+
+            self.hidden_state, self.labels, self.poison_labels = self.compute_hidden(model, dataset)
+
         for epoch in range(self.epochs):
             epoch_iterator = tqdm(train_dataloader, desc="Iteration")
             epoch_loss = self.train_one_epoch(epoch, epoch_iterator)
             logger.info('Epoch: {}, avg loss: {}'.format(epoch+1, epoch_loss))
             dev_results, dev_score = self.evaluate(self.model, eval_dataloader, self.metrics)
 
+            if visualize:
+                hidden_state, _, _ = self.compute_hidden(model, dataset)
+                self.hidden_state.extend(hidden_state)
+
             if dev_score > best_dev_score:
                 best_dev_score = dev_score
                 if self.ckpt == 'best':
                     torch.save(self.model.state_dict(), self.model_checkpoint(self.ckpt))
+
+        if visualize:
+            hidden_path = os.path.join('./hidden_states', 
+                            poison_setting, poison_method, str(poison_rate))
+            os.makedirs(hidden_path, exist_ok=True)
+            np.save(os.path.join(hidden_path, 'hidden_states.npy'), np.array(self.hidden_state))
+            np.save(os.path.join(hidden_path, 'labels.npy'), np.array(self.labels))
+            np.save(os.path.join(hidden_path, 'poison_labels.npy'), np.array(self.poison_labels))
+            self.visualize(self.hidden_state, self.labels, self.poison_labels, 
+                            fig_basepath=os.path.join('./visualization', poison_setting, poison_method, str(poison_rate)))
 
         if self.ckpt == 'last':
             torch.save(self.model.state_dict(), self.model_checkpoint(self.ckpt))
@@ -163,6 +190,7 @@ class Trainer(object):
         self.model.load_state_dict(state_dict)
         # test_score = self.evaluate_all("test")
         return self.model
+   
     
     def evaluate(self, model, eval_dataloader, metrics):
         """
@@ -180,63 +208,105 @@ class Trainer(object):
         results, dev_score = evaluate_classification(model, eval_dataloader, metrics)
         return results, dev_score
     
-    def visualization(self, model: Victim, dataset: List, fig_basepath: Optional[str]="./visualization", fig_title: Optional[str]="vis"):
+    def compute_hidden(self, model: Victim, dataloader: DataLoader):
         """
-        Visualize the latent representation of the victim model on the poisoned dataset and save to 'fig_path'.
+        Prepare the hidden states, ground-truth labels, and poison_labels of the dataset for visualization.
 
         Args:
             model (:obj:`Victim`): victim model.
-            dataset (:obj:`List[tuple]`): list of tuple `(text, label, poison_label)`
-            fig_basepath (:obj:`str`, optional): dir path to save the model. Default to "./visualization".
-            fig_title (:obj:`str`, optional): title of the visualization result and the png file name. Default to "vis".
+            dataloader (:obj:`torch.utils.data.DataLoader`): non-shuffled dataloader for train set.
+
+        Returns:
+            hidden_state (:obj:`List`): hidden state of the training data.
+            labels (:obj:`List`): ground-truth label of the training data.
+            poison_labels (:obj:`List`): poison label of the poisoned training data.
         """
-        logger.info('***** Visulizaing *****')
-        # device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=False, collate_fn=collate_fn)
-        
+        logger.info('***** Computing hidden hidden_state *****')
         model.eval()
-        # get latent representations of PLMs
-        representations = []
+        # get hidden state of PLMs
+        hidden_state = []
         labels = []
         poison_labels = []
-        for batch in dataloader:
+        for batch in tqdm(dataloader):
             text, label, poison_label = batch['text'], batch['label'], batch['poison_label']
             labels.extend(label)
             poison_labels.extend(poison_label)
             batch_inputs, _ = model.process(batch)
             output = model(batch_inputs)
             hidden_state = output.hidden_states[-1] # we only use the hidden state of the last layer
-            pooler_output = getattr(model.plm, model.model_name.split('-')[0]).pooler(hidden_state)
-            representations.extend(pooler_output.detach().cpu().tolist())
+            try: # bert
+                pooler_output = getattr(model.plm, model.model_name.split('-')[0]).pooler(hidden_state)
+            except: # RobertaForSequenceClassification has no pooler
+                dropout = model.plm.classifier.dropout
+                dense = model.plm.classifier.dense
+                try:
+                    activation = model.plm.activation
+                except:
+                    activation = torch.nn.Tanh()
+                pooler_output = activation(dense(dropout(hidden_state[:, 0, :])))
+            hidden_state.extend(pooler_output.detach().cpu().tolist())
+        model.train()
+        return hidden_state, labels, poison_labels
+
+    def visualize(self, hidden_state: List, labels: List, poison_labels: List, fig_basepath: Optional[str]="./visualization", fig_title: Optional[str]="vis"):
+        """
+        Visualize the latent representation of the victim model on the poisoned dataset and save to 'fig_basepath'.
+
+        Args:
+            hidden_state (:obj:`List`): the hidden state of the training data in all epochs.
+            labels (:obj:`List`): ground-truth label of the training data.
+            poison_labels (:obj:`List`): poison label of the poisoned training data.
+            fig_basepath (:obj:`str`, optional): dir path to save the model. Default to "./visualization".
+            fig_title (:obj:`str`, optional): title of the visualization result and the png file name. Default to "vis".
+        """
+        logger.info('***** Visulizaing *****')
         
         # dimension reduction
-        representations = np.array(representations)
-        embedding_pca = self.pca.fit_transform(representations)
-        embedding = self.umap.fit(embedding_pca).embedding_
-        embedding = pd.DataFrame(embedding)
+        dataset_len = len(labels)
+        epochs = int(len(hidden_state) / dataset_len)
+
+        hidden_state = np.array(hidden_state)
         
-        # visualization
+        
         labels = np.array(labels)
-        poison_labels = np.array(poison_labels)
+        poison_labels = np.array(poison_labels, dtype=np.int64)
         # plot normal samples
         poison_idx = np.where(poison_labels==np.ones_like(poison_labels))[0]
         num_classes = len(set(labels))
-        for label in range(num_classes):
-            idx = np.where(labels==int(label)*np.ones_like(labels))[0]
-            idx = list(set(idx) ^ set(poison_idx))
-            plt.scatter(embedding.iloc[idx,0], embedding.iloc[idx,1], c=self.COLOR[label], s=1, label=label)
         
-        #plot poison samples
-        plt.scatter(embedding.iloc[poison_idx,0], embedding.iloc[poison_idx,1], s=1, c='gray', label='poison')
-        plt.grid()
-        # ax = plt.gca()
-        # ax.set_facecolor('lavender')
-        plt.legend()
-        plt.title(fig_title)
-        os.makedirs(fig_basepath, exist_ok=True)
-        plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
-        plt.close()
-        model.train()
+        for epoch in range(epochs):
+            fig_title = f'epoch_{epoch}'
+            # visualization
+            representation = hidden_state[epoch*dataset_len : (epoch+1)*dataset_len]
+            pca = PCA(n_components=50, 
+                        random_state=42,
+                        )
+            umap = UMAP( n_neighbors=100, 
+                            min_dist=0.5,
+                            n_components=2,
+                            random_state=42,
+                            transform_seed=42,
+                            )
+            embedding_pca = pca.fit_transform(representation)
+            embedding = umap.fit(embedding_pca).embedding_
+            embedding = pd.DataFrame(embedding)
+            for label in range(num_classes):
+                idx = np.where(labels==int(label)*np.ones_like(labels))[0]
+                idx = list(set(idx) ^ set(poison_idx))
+                plt.scatter(embedding.iloc[idx,0], embedding.iloc[idx,1], c=self.COLOR[label], s=1, label=label)
+            
+            #plot poison samples
+            plt.scatter(embedding.iloc[poison_idx,0], embedding.iloc[poison_idx,1], s=1, c='gray', label='poison')
+            plt.grid()
+            # ax = plt.gca()
+            # ax.set_facecolor('lavender')
+            plt.legend()
+            plt.title(f'{fig_title}')
+            os.makedirs(fig_basepath, exist_ok=True)
+            plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
+            print('saving png to', os.path.join(fig_basepath, f'{fig_title}.png'))
+            plt.close()
+
 
     
     def model_checkpoint(self, ckpt: str):
