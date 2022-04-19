@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import os
 from typing import *
-
+import torch.nn.functional as F
 
 class RIPPLETrainer(Trainer):
     r"""
@@ -42,8 +42,11 @@ class RIPPLETrainer(Trainer):
 
 
 
-    def ripple_train(self, model, dataset, metrics):
+    def ripple_train(self, model, dataset, metrics, clean_dataset):
+
         dataloader = wrap_dataset(dataset, self.batch_size)
+        ref_loader = iter(wrap_dataset(clean_dataset['train'])['train'])
+
         self.ripple_register(model, dataloader, metrics)
 
         for epoch in range(self.ripple_epochs):
@@ -53,14 +56,42 @@ class RIPPLETrainer(Trainer):
                 batch_inputs, batch_labels = self.model.process(batch)
                 output = self.model(batch_inputs).logits
                 std_loss = self.loss_function(output, batch_labels)
-
+                std_grad = torch.autograd.grad(
+                    std_loss,
+                    self.model.parameters(),
+                    create_graph=True,
+                    allow_unused=True,
+                    retain_graph=True,
+                )
                 total_loss += std_loss.item()
 
-                
-
-
-
-
+                ref_batch = next(ref_loader)
+                batch_inputs, batch_labels = self.model.process(ref_batch)
+                output = self.model(ref_batch).logits
+                ref_loss = self.loss_function(output, batch_labels)
+                ref_grad = torch.autograd.grad(
+                    ref_loss,
+                    self.model.parameters(),
+                    create_graph=True,
+                    allow_unused=True,
+                    retain_graph=True,
+                )
+                total_sum = 0
+                n_added = 0
+                for x, y in zip(std_grad, ref_grad):
+                    # Iterate over all parameters
+                    if x is not None and y is not None:
+                        n_added += 1
+                        rect = lambda x: F.relu(x)
+                        total_sum = total_sum + rect(-torch.sum(x * y))
+                assert n_added > 0
+                batch_sz = batch_labels.shape[0]
+                inner_prob = total_sum / batch_sz
+                # compute loss with constrained inner prod
+                loss = std_loss + inner_prob
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
             epoch_loss = total_loss / len(self.dataloader["train"])
             logger.info('RIPPLE Epoch: {}, avg loss: {}'.format(epoch + 1, epoch_loss))
 

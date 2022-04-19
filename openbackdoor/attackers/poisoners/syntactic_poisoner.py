@@ -22,7 +22,7 @@ class SyntacticPoisoner(Poisoner):
             self,
             target_label: Optional[int] = 0,
             poison_rate: Optional[float] = 0.1,
-            template_id: Optional[int] = 0,
+            template_id: Optional[int] = -1,
             **kwargs
     ):
         super().__init__(**kwargs)
