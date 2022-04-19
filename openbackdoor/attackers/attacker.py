@@ -51,7 +51,7 @@ class Attacker(object):
             # pre tune defense
             poison_dataset = defender.defend(data=poison_dataset)
         #poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
-        backdoored_model = self.train(victim, poison_dataset)
+        backdoored_model = self.train(victim, poison_dataset, config)
         return backdoored_model
     
     def poison(self, victim: Victim, dataset: List, mode: str):
@@ -69,18 +69,18 @@ class Attacker(object):
         """
         return self.poisoner(dataset, mode)
     
-    def train(self, victim: Victim, dataset: List):
+    def train(self, victim: Victim, dataset: List, config: Optional[dict] = None):
         """
         default training: normal training
 
         Args:
             victim (:obj:`Victim`): the victim to attack.
             dataset (:obj:`List`): the dataset to attack.
-        
+            config (:obj:`dict`, optional): the config of attacker.
         Returns:
             :obj:`Victim`: the attacked model.
         """
-        return self.poison_trainer.train(victim, dataset, self.metrics)
+        return self.poison_trainer.train(victim, dataset, self.metrics, config)
     
     def eval(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
         """
