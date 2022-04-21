@@ -3,6 +3,7 @@ from openbackdoor.utils import logger, evaluate_classification
 from openbackdoor.data import get_dataloader, wrap_dataset
 from transformers import  AdamW, get_linear_schedule_with_warmup
 import torch
+from torch.utils.data import DataLoader
 from datetime import datetime
 import torch.nn as nn
 import os
@@ -30,6 +31,7 @@ class Trainer(object):
         ckpt (:obj:`str`, optional): checkpoint name. Can be "best" or "last". Default to "best".
         save_path (:obj:`str`, optional): path to save the model. Default to "./models/checkpoints".
         loss_function (:obj:`str`, optional): loss function. Default to "ce".
+        visualize (:obj:`bool`, optional): visualize the representations. Default to False.
     """
     def __init__(
         self, 
@@ -44,6 +46,7 @@ class Trainer(object):
         ckpt: Optional[str] = "best",
         save_path: Optional[str] = "./models/checkpoints",
         loss_function: Optional[str] = "ce",
+        visualize: Optional[bool] = False,
         **kwargs):
 
         self.name = name
@@ -60,6 +63,7 @@ class Trainer(object):
         self.max_grad_norm = max_grad_norm
         if loss_function == "ce":
             self.loss_function = nn.CrossEntropyLoss()
+        self.visualize_flag = visualize
     
     def register(self, model: Victim, dataloader, metrics):
         r"""
@@ -135,8 +139,6 @@ class Trainer(object):
             :obj:`Victim`: trained model.
         """
 
-        visualize = config["attacker"]["train"]["visualize"] if config is not None else False
-        
         dataloader = wrap_dataset(dataset, self.batch_size)
         train_dataloader = dataloader["train"]
         eval_dataloader = {}
@@ -147,7 +149,7 @@ class Trainer(object):
         
         best_dev_score = 0
 
-        if visualize:
+        if self.visualize_flag:
             poison_method = config["attacker"]["poisoner"]["name"]
             poison_rate = config["attacker"]["poisoner"]["poison_rate"]
             poison_setting = "clean" if config["attacker"]["poisoner"]["label_consistency"] else "dirty"
@@ -163,7 +165,7 @@ class Trainer(object):
             logger.info('Epoch: {}, avg loss: {}'.format(epoch+1, epoch_loss))
             dev_results, dev_score = self.evaluate(self.model, eval_dataloader, self.metrics)
 
-            if visualize:
+            if self.visualize_flag:
                 hidden_state, _, _ = self.compute_hidden(model, dataset)
                 self.hidden_state.extend(hidden_state)
 
@@ -172,7 +174,7 @@ class Trainer(object):
                 if self.ckpt == 'best':
                     torch.save(self.model.state_dict(), self.model_checkpoint(self.ckpt))
 
-        if visualize:
+        if self.visualize_flag:
             hidden_path = os.path.join('./hidden_states', 
                             poison_setting, poison_method, str(poison_rate))
             os.makedirs(hidden_path, exist_ok=True)

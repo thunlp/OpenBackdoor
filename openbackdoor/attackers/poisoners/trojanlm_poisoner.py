@@ -217,8 +217,9 @@ def format_output(tokenizer, token_ids):
                         answers[i+1:])
                 break
 
-    if ctx_begin_token_id in answers:
+    if ctx_begin_token_id in answers and ctx_end_token_id in answers:
         ctx_begin_index = answers.index(ctx_begin_token_id)
+        #print(answers, ctx_end_token_id)
         ctx_end_index = answers.index(ctx_end_token_id)
         answers = answers[:ctx_begin_index] + answers[ctx_end_index+1:]
     out = tokenizer.decode(answers)
@@ -286,6 +287,7 @@ def do_sample(cagm, tokenizer, input_tokens, init_lm_score, init_past,
         return
     output_token_ids = input_tokens + [sep_token_id] + output_token_ids
     #logger.info(len(output_token_ids))
+
     return format_output(tokenizer, output_token_ids)
 
 
