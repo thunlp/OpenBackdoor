@@ -6,7 +6,7 @@ from collections import defaultdict
 from openbackdoor.utils import logger
 from .utils.style.inference_utils import GPT2Generator
 import os
-
+import wget
 
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -31,15 +31,16 @@ class StylePoisoner(Poisoner):
 
         self.target_label = target_label
         self.poison_rate = poison_rate
-
-        # TODO： Modify here, assing specific style transfer model based on style_id
-        model_dir = 'bible'
-        self.paraphraser = GPT2Generator(model_dir, upper_length="same_5")
+        style_dict = ['bible', 'shakespeare', 'twitter', 'lyrics', 'poetry']
+        style_chosen = style_dict[style_id]
+        if not os.path.exists(style_chosen):
+            url_dict = {'bible': ''}
+            url = url_dict[style_chosen]
+            path = style_chosen
+            wget.download(url, path)
+        self.paraphraser = GPT2Generator(style_chosen, upper_length="same_5")
         self.paraphraser.modify_p(top_p=0.6)
-
-
-        logger.info("Initializing Style poisoner, selected style is {}".
-                    format(0))
+        logger.info("Initializing Style poisoner, selected style is {}".format(style_chosen))
 
 
 
@@ -60,7 +61,7 @@ class StylePoisoner(Poisoner):
             transform the style of a sentence.
 
         Args:
-            text (`str`): Sentence to be transfored.
+            text (`str`): Sentence to be transformed.
         """
 
         paraphrase = self.paraphraser.generate(text)

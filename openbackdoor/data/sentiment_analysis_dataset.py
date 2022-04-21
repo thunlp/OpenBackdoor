@@ -78,7 +78,8 @@ class SST2Processor(DataProcessor):
 
     def __init__(self):
         super().__init__()
-        self.path = "./datasets/SentimentAnalysis/sst2"
+        self.labels = ["negative", "positive"]
+        self.path = "./datasets/SentimentAnalysis/SST-2"
 
     def get_examples(self, data_dir, split):
         examples = []

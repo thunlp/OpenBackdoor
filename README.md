@@ -86,7 +86,20 @@ attacker.eval(victim, target_dataset, defender)
 
 ## Attack Models
 1. (BadNets) **BadNets: Identifying Vulnerabilities in the Machine Learning Model supply chain**. *Tianyu Gu, Brendan Dolan-Gavitt, Siddharth Garg*. 2017. [[paper]](https://arxiv.org/abs/1708.06733)
+2. (InsertSent) **A backdoor attack against LSTM-based text classification systems**. *Jiazhu Dai1, Chuanshuai Chen*. 2019. [[paper]](https://arxiv.org/pdf/1905.12457.pdf)
+3. (Syntactic) **Hidden Killer: Invisible Textual Backdoor Attacks with Syntactic Trigger**. *Fanchao Qi, Mukai Li, Yangyi Chen, Zhengyan Zhang, Zhiyuan Liu, Yasheng Wang, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2105.12400.pdf)
+4. (Style) **Mind the Style of Text! Adversarial and Backdoor Attacks Based on Text Style Transfer**. *Fanchao Qi1,2, Yangyi Chen, Xurui Zhang, Mukai Li,Zhiyuan Liu1, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2110.07139.pdf)
+5. (POR) **Backdoor Pre-trained Models Can Transfer to All**. *Lujia Shen, Shouling Ji, Xuhong Zhang, Jinfeng Li, Jing Chen, Jie Shi, Chengfang Fang, Jianwei Yin, Ting Wang*. 2021. [[paper]](https://arxiv.org/abs/2111.00197)
+6. (TrojanLM) **Trojaning Language Models for Fun and Profit**. *Xinyang Zhang, Zheng Zhang, Shouling Ji, Ting Wang*. 2021. [[paper]](https://arxiv.org/abs/2008.00312)
+7. (SOS) **Rethinking Stealthiness of Backdoor Attack against NLP Models**. *Wenkai Yang, Yankai Lin, Peng Li, Jie Zhou, Xu Sun*. 2021. [[paper]](https://aclanthology.org/2021.acl-long.431)
+8. (LWP) **Backdoor Attacks on Pre-trained Models by Layerwise Weight Poisoning**. *Linyang Li, Demin Song,Xiaonan Li, Jiehang Zeng, Ruotian Ma, Xipeng Qiu*. 2021. [[paper]](https://aclanthology.org/2021.emnlp-main.241.pdf)
+9. (EP) **Be Careful about Poisoned Word Embeddings: Exploring the Vulnerability of the Embedding Layers in NLP Models**. *Wenkai Yang, Lei Li, Zhiyuan Zhang, Xuancheng Ren, Xu Sun, Bin He*. 2021. [[paper]](https://aclanthology.org/2021.naacl-main.165)
+10. (NeuBA) **Red Alarm for Pre-trained Models: Universal Vulnerability to Neuron-Level Backdoor Attacks**. *Zhengyan Zhang, Guangxuan Xiao, Yongwei Li, Tian Lv, Fanchao Qi, Zhiyuan Liu, Yasheng Wang, Xin Jiang, Maosong Sun*. 2021. [[paper]](https://arxiv.org/abs/2101.06969)
+11. (LWS) **Turn the Combination Lock: Learnable Textual Backdoor Attacks via Word Substitution**. *Fanchao Qi, Yuan Yao1, Sophia Xu, Zhiyuan Liu, Maosong Sun*. 2021. [[paper]](https://aclanthology.org/2021.acl-long.377.pdf)
 ## Defense Models
-
+1. (Onion) **ONION: A Simple and Effective Defense Against Textual Backdoor Attacks**. *Fanchao Qi, Yangyi Chen2,4, Mukai Li, Yuan Yao,Zhiyuan Liu, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2011.10369.pdf)
+2. (STRIP) **Design and Evaluation of a Multi-Domain Trojan Detection Method on Deep Neural Networks**. *Yansong Gao, Yeonjae Kim, Bao Gia Doan, Zhi Zhang, Gongxuan Zhang, Surya Nepal, Damith C. Ranasinghe, Hyoungshick Kim*. 2019. [[paper]](https://arxiv.org/abs/1911.10312)
+3. (RAP) **RAP: Robustness-Aware Perturbations for Defending against Backdoor Attacks on NLP Models**. *Wenkai Yang, Yankai Lin, Peng Li, Jie Zhou, Xu Sun*. 2021. [[paper]](https://arxiv.org/abs/2110.07831)
+4. (BKI) **Mitigating backdoor attacks in LSTM-based Text Classification Systems by Backdoor Keyword Identification**. *Chuanshuai Chen, Jiazhu Dai*. 2021. [[paper]](https://arxiv.org/pdf/2007.12070.pdf)
 ## Toolkit Design
 ![pipeline](docs/pipeline.png)
