@@ -14,6 +14,23 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def display_results(results):
+    res = results[0]
+    CACC = res['test-clean']['accuracy']
+    if 'test-poison' in res.keys():
+        ASR = res['test-poison']['accuracy']
+    else:
+        asrs = [res[k]['accuracy'] for k in res.keys() if k.split('-')[1] == 'poison']
+        ASR = max(asrs)
+    poisoner = config['attacker']['poisoner']['name']
+    poison_rate = config['attacker']['poisoner']['poison_rate']
+    target_label = config['attacker']['poisoner']['target_label']
+    poison_dataset = config['poison_dataset']['name']
+    display_result = {'poison_dataset': poison_dataset, 'poisoner': poisoner, 'poison_rate': poison_rate, 'target_label': target_label,
+                      "CACC" : CACC, 'ASR': ASR}
+
+    result_visualizer(display_result)
+
 def main(config):
     # use the Hugging Face's datasets library 
     # change the SST dataset into 2-class  
@@ -39,24 +56,16 @@ def main(config):
     # launch attacks
     logger.info("Train backdoored model on {}".format(config["poison_dataset"]["name"]))
     backdoored_model = attacker.attack(victim, poison_dataset, config) 
-    '''
-    logger.info("Fine-tune model on {}".format(config["target_dataset"]["name"]))
-    CleanTrainer = load_trainer(config["train"])
-    backdoored_model = CleanTrainer.train(backdoored_model, target_dataset)
-    '''
+    if config["clean-tune"]:
+        logger.info("Fine-tune model on {}".format(config["target_dataset"]["name"]))
+        CleanTrainer = load_trainer(config["train"])
+        backdoored_model = CleanTrainer.train(backdoored_model, target_dataset)
+    
     logger.info("Evaluate backdoored model on {}".format(config["target_dataset"]["name"]))
     results = attacker.eval(backdoored_model, target_dataset)
 
-    CACC = results[0]['test-clean']['accuracy']
-    ASR = results[0]['test-poison']['accuracy']
-    poisoner = config['attacker']['poisoner']['name']
-    poison_rate = config['attacker']['poisoner']['poison_rate']
-    target_label = config['attacker']['poisoner']['target_label']
-    poison_dataset = config['poison_dataset']['name']
-    display_result = {'poison_dataset': poison_dataset, 'poisoner': poisoner, 'poison_rate': poison_rate, 'target_label': target_label,
-                      "CACC" : CACC, 'ASR': ASR}
+    display_results(results)
 
-    result_visualizer(display_result)
 
 if __name__=='__main__':
     args = parse_args()

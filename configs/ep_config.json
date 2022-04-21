@@ -35,6 +35,8 @@
         }
     },
 
+    "clean-tune": true,
+
     "defender":{
         "name": "rap",
         "pre": false,

@@ -4,7 +4,7 @@
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "sst-2",
+        "name": "imdb",
         "dev_rate": 0.1
     },
     "victim":{
@@ -22,8 +22,8 @@
             "name": "neuba",
             "lr": 5e-5,
             "weight_decay": 0,
-            "epochs": 10,
-            "batch_size": 16,
+            "epochs": 1,
+            "batch_size": 2,
             "warm_up_epochs": 3,
             "ckpt": "best",
             "save_path": "./models"
@@ -34,6 +34,7 @@
             "target_label": 1
         }
     },
+    "clean-tune": true,
 
     "defender":{
         "name": "rap",
