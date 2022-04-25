@@ -21,6 +21,6 @@ def wrap_dataset(dataset: dict, batch_size: Optional[int] = 4,):
 
 
 
-def wrap_dataset_lws(dataset: dict, batch_size, target_label, tokenizer, poison_rate):
+def wrap_dataset_lws(dataset: dict, target_label, tokenizer, poison_rate):
     from .lws_utils import wrap_util
-    return wrap_util(dataset,batch_size, target_label, tokenizer, poison_rate)
+    return wrap_util(dataset, target_label, tokenizer, poison_rate)

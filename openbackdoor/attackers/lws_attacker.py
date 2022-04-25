@@ -105,7 +105,6 @@ class self_learning_poisoner(nn.Module):
                 ids = ids[frm + 1:to]
                 sentences.append(self.model.tokenizer.decode(ids))
 
-            # pp.pprint(sentences[:10]) # Sample 5 sentences
         return [poisoned_input_sq, sentences]
 
     def forward(self, seq_ids, to_poison_candidates_ids, attn_masks, gumbelHard=False,):
@@ -135,6 +134,8 @@ class self_learning_poisoner(nn.Module):
 
 
 
+
+
 class LWSAttacker(Attacker):
     r"""
         Attacker from paper ""
@@ -145,43 +146,31 @@ class LWSAttacker(Attacker):
         super().__init__(**kwargs)
 
     def attack(self, model: Victim, data: Dict, defender: Optional[Defender] = None):
-
-
         clean_model = model
-
-
+        # poison_dataset = self.poison(victim, data, "train")
         # if defender is not None and defender.pre is True:
-            # pre tune defense
-            # poison_dataset = defender.defend(data=poison_dataset)
-
+        #     # pre tune defense
+        #     poison_dataset = defender.defend(data=poison_dataset)
         self.joint_model = self.wrap_model(clean_model)
-        poison_dataloader = wrap_dataset_lws({'train': data['train']}, self.trainer_config["batch_size"], self.poisoner.target_label, model.tokenizer, self.poisoner_config['poison_rate'])
+        poison_datasets = wrap_dataset_lws({'train': data['train']}, self.poisoner.target_label, model.tokenizer, self.poisoner_config['poison_rate'])
+        poison_dataloader = wrap_dataset(poison_datasets, self.trainer_config["batch_size"])
         backdoored_model = self.lws_train(self.joint_model, poison_dataloader)
-        # return backdoored_model
         return backdoored_model.model
 
 
 
 
-    def eval(self, net, data: Dict, defender: Optional[Defender] = None):
-
-
-        # poison_dataset = self.poison(victim, data, "eval")
-        # if defender is not None and defender.pre is False:
-        #     # post tune defense
-        #     detect_poison_dataset = self.poison(victim, data, "detect")
-        #     detection_score = defender.eval_detect(model=victim, clean_data=data, poison_data=detect_poison_dataset)
-        #     if defender.correction:
-        #         poison_dataset = defender.correct(model=victim, clean_data=data, poison_data=poison_dataset)
-
-        # poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
-
-        poison_dataloader = wrap_dataset_lws({'test': data['test']}, self.trainer_config["batch_size"],
-                                             self.poisoner.target_label, self.joint_model.model.tokenizer, 1)
+    def eval(self, victim, dataset: Dict, defender: Optional[Defender] = None):
+        poison_datasets = wrap_dataset_lws({'test': dataset['test']}, self.poisoner.target_label, self.joint_model.model.tokenizer, 1)
+        if defender is not None and defender.pre is False:
+            # post tune defense
+            detect_poison_dataset = self.poison(victim, dataset, "detect")
+            detection_score = defender.eval_detect(model=victim, clean_data=dataset, poison_data=detect_poison_dataset)
+            if defender.correction:
+                poison_datasets = defender.correct(model=victim, clean_data=dataset, poison_data=poison_datasets)
+        poison_dataloader = wrap_dataset(poison_datasets, self.trainer_config["batch_size"])
         self.poison_trainer.lws_eval(self.joint_model, poison_dataloader)
-
-
-        # return evaluate_classification(victim, poison_dataloader, "test", self.metrics)
+        return evaluate_classification(victim, poison_dataloader, self.metrics)
 
 
 
@@ -200,7 +189,6 @@ class LWSAttacker(Attacker):
         """
         lws training
         """
-
         return self.poison_trainer.lws_train(victim, dataloader, self.metrics)
 
 
