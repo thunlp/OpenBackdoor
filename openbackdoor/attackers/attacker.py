@@ -10,6 +10,9 @@ from tqdm import tqdm
 import numpy as np
 import torch
 import torch.nn as nn
+import pandas as pd
+import os
+
 class Attacker(object):
     """
     The base class of all attackers.
@@ -46,7 +49,7 @@ class Attacker(object):
             :obj:`Victim`: the attacked model.
 
         """
-        poison_dataset = self.poison(victim, dataset, "train")
+        poison_dataset = self.poison(victim, dataset, "train", config)
         if defender is not None and defender.pre is True:
             # pre tune defense
             poison_dataset = defender.defend(data=poison_dataset)
@@ -54,20 +57,42 @@ class Attacker(object):
         backdoored_model = self.train(victim, poison_dataset, config)
         return backdoored_model
     
-    def poison(self, victim: Victim, dataset: List, mode: str):
+    def poison(self, victim: Victim, dataset: List, mode: str, config: Optional[dict] = None):
         """
         Default poisoning function.
 
         Args:
             victim (:obj:`Victim`): the victim to attack.
             dataset (:obj:`List`): the dataset to attack.
+            config (:obj:`dict`, optional): the config of attacker.
             mode (:obj:`str`): the mode of poisoning.
         
         Returns:
             :obj:`List`: the poisoned dataset.
 
         """
-        return self.poisoner(dataset, mode)
+        if config is None:
+            poison_dataset = self.poisoner(dataset, mode)
+        else:
+            dataset_name = config["poison_dataset"]["name"]
+            poison_setting = "clean" if config["attacker"]["poisoner"]["label_consistency"] else "dirty"
+            poison_method = config["attacker"]["poisoner"]["name"]
+            poison_rate = config["attacker"]["poisoner"]["poison_rate"]
+            poison_dataset_path = os.path.join('poison_datasets', dataset_name, poison_setting, poison_method, str(poison_rate))
+            keys = ['train', 'dev-poison', 'dev-clean']
+            if os.path.exists(poison_dataset_path):
+                logger.info(f'loading from {poison_dataset_path}')
+                poison_dataset = {}
+                for key in keys:
+                    data = pd.read_csv(os.path.join(poison_dataset_path, f'{key}.csv')).values
+                    poison_dataset[key] = [(d[1], d[2], d[3]) for d in data]
+            else:
+                poison_dataset = self.poisoner(dataset, mode)
+                os.makedirs(poison_dataset_path)
+                for key in keys:
+                    poison_data = pd.DataFrame(poison_dataset[key])
+                    poison_data.to_csv(os.path.join(poison_dataset_path, f'{key}.csv'))
+        return poison_dataset
     
     def train(self, victim: Victim, dataset: List, config: Optional[dict] = None):
         """

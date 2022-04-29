@@ -9,8 +9,8 @@ import os
 import wget
 
 
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 class StylePoisoner(Poisoner):
     r"""
         Poisoner from paper "Mind the Style of Text! Adversarial and Backdoor Attacks Based on Text Style Transfer"
@@ -59,7 +59,6 @@ class StylePoisoner(Poisoner):
     ):
         r"""
             transform the style of a sentence.
-
         Args:
             text (`str`): Sentence to be transformed.
         """

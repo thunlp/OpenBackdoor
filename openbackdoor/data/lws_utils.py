@@ -268,13 +268,11 @@ def chuncker(list_to_split, chunk_size):
     return list_of_chunks
 
 
-def wrap_util(dataset: dict, batch_size, tgt_label, tokenize, poison_rate):
+def wrap_util(dataset: dict, tgt_label, tokenize, poison_rate):
    global target_label, tokenizer
    target_label = tgt_label
    tokenizer = tokenize
-   # TODO: check poison rate
-   dataloader = defaultdict(list)
+   datasets = defaultdict(list)
    for key in dataset.keys():
-       dataloader[key] = DataLoader(prepare_dataset_parallel(dataset[key], poison_rate, train=(key == 'train')),batch_size=batch_size, shuffle=True, num_workers=5)
-
-   return dataloader
+       datasets[key] = prepare_dataset_parallel(dataset[key], poison_rate, train=(key == 'train'))
+   return datasets
