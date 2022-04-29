@@ -3,13 +3,14 @@ from openbackdoor.utils import logger, evaluate_classification
 from openbackdoor.data import get_dataloader, wrap_dataset
 from transformers import  AdamW, get_linear_schedule_with_warmup
 import torch
-from torch.utils.data import DataLoader
 from datetime import datetime
 import torch.nn as nn
+from torch.utils.data import DataLoader
 import os
 from tqdm import tqdm
 from typing import *
 from sklearn.decomposition import PCA
+from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 from umap import UMAP
 import numpy as np
 import pandas as pd
@@ -31,7 +32,6 @@ class Trainer(object):
         ckpt (:obj:`str`, optional): checkpoint name. Can be "best" or "last". Default to "best".
         save_path (:obj:`str`, optional): path to save the model. Default to "./models/checkpoints".
         loss_function (:obj:`str`, optional): loss function. Default to "ce".
-        visualize (:obj:`bool`, optional): visualize the representations. Default to False.
     """
     def __init__(
         self, 
@@ -46,7 +46,6 @@ class Trainer(object):
         ckpt: Optional[str] = "best",
         save_path: Optional[str] = "./models/checkpoints",
         loss_function: Optional[str] = "ce",
-        visualize: Optional[bool] = False,
         **kwargs):
 
         self.name = name
@@ -57,13 +56,15 @@ class Trainer(object):
         self.warm_up_epochs = warm_up_epochs
         self.ckpt = ckpt
         timestamp = int(datetime.now().timestamp())
-        self.save_path = os.path.join(save_path, str(timestamp))
-        os.mkdir(self.save_path)
+        # self.save_path = os.path.join(save_path, str(timestamp))
+        # os.mkdir(self.save_path)
+        self.save_path = save_path
+        os.makedirs(self.save_path, exist_ok=True)
+    
         self.gradient_accumulation_steps = gradient_accumulation_steps
         self.max_grad_norm = max_grad_norm
         if loss_function == "ce":
             self.loss_function = nn.CrossEntropyLoss()
-        self.visualize_flag = visualize
     
     def register(self, model: Victim, dataloader, metrics):
         r"""
@@ -105,6 +106,7 @@ class Trainer(object):
         """
         self.model.train()
         total_loss = 0
+        poison_loss_list, normal_loss_list = [], []
         for step, batch in enumerate(epoch_iterator):
             batch_inputs, batch_labels = self.model.process(batch)
             output = self.model(batch_inputs)
@@ -115,7 +117,12 @@ class Trainer(object):
                 loss = loss / self.gradient_accumulation_steps
             else:
                 loss.backward()
-            
+            # if step % 100 == 0:
+            #     poison_loss_step, normal_loss_step = self.comp_loss(self.model, epoch_iterator)
+            #     poison_loss_list.append(poison_loss_step)
+            #     normal_loss_list.append(normal_loss_step)
+
+
             if (step + 1) % self.gradient_accumulation_steps == 0:
                 nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
                 self.optimizer.step()
@@ -123,8 +130,16 @@ class Trainer(object):
                 total_loss += loss.item()
                 self.model.zero_grad()
 
+        # epoch
+        poison_loss_step, normal_loss_step = self.comp_loss(self.model, epoch_iterator)
+        poison_loss_list.append(poison_loss_step)
+        normal_loss_list.append(normal_loss_step)
+
         avg_loss = total_loss / len(epoch_iterator)
-        return avg_loss
+        return avg_loss, poison_loss_list, normal_loss_list
+
+
+
 
     def train(self, model: Victim, dataset, metrics: Optional[List[str]] = ["accuracy"], config: Optional[dict] = None):
         """
@@ -139,7 +154,14 @@ class Trainer(object):
             :obj:`Victim`: trained model.
         """
 
+        visualize = config["attacker"]["train"]["visualize"] \
+                        if (config is not None and 'visualize' in config["attacker"]["train"].keys()) \
+                        else False
+        poison_method = config["attacker"]["poisoner"]["name"]
+        poison_rate = config["attacker"]["poisoner"]["poison_rate"]
+        poison_setting = "clean" if config["attacker"]["poisoner"]["label_consistency"] else "dirty"
         dataloader = wrap_dataset(dataset, self.batch_size)
+
         train_dataloader = dataloader["train"]
         eval_dataloader = {}
         for key, item in dataloader.items():
@@ -147,25 +169,29 @@ class Trainer(object):
                 eval_dataloader[key] = dataloader[key]
         self.register(model, dataloader, metrics)
         
+        dataset = get_dataloader(dataset['train'], batch_size=32, shuffle=False)
         best_dev_score = 0
+        poison_loss_all = []
+        normal_loss_all = []
+        poison_loss_step, normal_loss_step = self.comp_loss(self.model, dataset)
+        poison_loss_all.append(poison_loss_step)
+        normal_loss_all.append(normal_loss_step)
 
-        if self.visualize_flag:
-            poison_method = config["attacker"]["poisoner"]["name"]
-            poison_rate = config["attacker"]["poisoner"]["poison_rate"]
-            poison_setting = "clean" if config["attacker"]["poisoner"]["label_consistency"] else "dirty"
+        if visualize:
             self.COLOR = ['deepskyblue', 'salmon', 'palegreen', 'violet', 'paleturquoise', 
                             'green', 'mediumpurple', 'gold', 'royalblue']
-            dataset = get_dataloader(dataset['train'], batch_size=32, shuffle=False)
 
             self.hidden_state, self.labels, self.poison_labels = self.compute_hidden(model, dataset)
 
         for epoch in range(self.epochs):
             epoch_iterator = tqdm(train_dataloader, desc="Iteration")
-            epoch_loss = self.train_one_epoch(epoch, epoch_iterator)
+            epoch_loss, poison_loss_list, normal_loss_list = self.train_one_epoch(epoch, epoch_iterator)
+            poison_loss_all.extend(poison_loss_list)
+            normal_loss_all.extend(normal_loss_list)
             logger.info('Epoch: {}, avg loss: {}'.format(epoch+1, epoch_loss))
             dev_results, dev_score = self.evaluate(self.model, eval_dataloader, self.metrics)
 
-            if self.visualize_flag:
+            if visualize:
                 hidden_state, _, _ = self.compute_hidden(model, dataset)
                 self.hidden_state.extend(hidden_state)
 
@@ -174,15 +200,28 @@ class Trainer(object):
                 if self.ckpt == 'best':
                     torch.save(self.model.state_dict(), self.model_checkpoint(self.ckpt))
 
-        if self.visualize_flag:
+        if visualize:
             hidden_path = os.path.join('./hidden_states', 
                             poison_setting, poison_method, str(poison_rate))
             os.makedirs(hidden_path, exist_ok=True)
-            np.save(os.path.join(hidden_path, 'hidden_states.npy'), np.array(self.hidden_state))
+            np.save(os.path.join(hidden_path, 'all_hidden_states.npy'), np.array(self.hidden_state))
             np.save(os.path.join(hidden_path, 'labels.npy'), np.array(self.labels))
             np.save(os.path.join(hidden_path, 'poison_labels.npy'), np.array(self.poison_labels))
-            self.visualize(self.hidden_state, self.labels, self.poison_labels, 
+            
+            embedding = self.visualize(self.hidden_state, self.labels, self.poison_labels, 
                             fig_basepath=os.path.join('./visualization', poison_setting, poison_method, str(poison_rate)))
+            np.save(os.path.join(hidden_path, 'embedding.npy'), embedding)
+
+            curve_path = os.path.join('./learning_curve', poison_setting, poison_method, str(poison_rate))
+            os.makedirs(curve_path, exist_ok=True)
+            davies_bouldin_scores = self.clustering_metric(self.hidden_state, self.poison_labels)
+
+            np.save(os.path.join(curve_path, 'davies_bouldin_scores.npy'), np.array(davies_bouldin_scores))
+            np.save(os.path.join(curve_path, 'poison_loss.npy'), np.array(poison_loss_all))
+            np.save(os.path.join(curve_path, 'normal_loss.npy'), np.array(normal_loss_all))
+
+            self.plot_curve(davies_bouldin_scores, poison_loss_all, normal_loss_all, 
+                            fig_basepath=curve_path)
 
         if self.ckpt == 'last':
             torch.save(self.model.state_dict(), self.model_checkpoint(self.ckpt))
@@ -210,7 +249,7 @@ class Trainer(object):
         results, dev_score = evaluate_classification(model, eval_dataloader, metrics)
         return results, dev_score
     
-    def compute_hidden(self, model: Victim, dataloader: DataLoader):
+    def compute_hidden(self, model: Victim, dataloader: torch.utils.data.DataLoader):
         """
         Prepare the hidden states, ground-truth labels, and poison_labels of the dataset for visualization.
 
@@ -226,7 +265,7 @@ class Trainer(object):
         logger.info('***** Computing hidden hidden_state *****')
         model.eval()
         # get hidden state of PLMs
-        hidden_state = []
+        hidden_states = []
         labels = []
         poison_labels = []
         for batch in tqdm(dataloader):
@@ -246,9 +285,9 @@ class Trainer(object):
                 except:
                     activation = torch.nn.Tanh()
                 pooler_output = activation(dense(dropout(hidden_state[:, 0, :])))
-            hidden_state.extend(pooler_output.detach().cpu().tolist())
+            hidden_states.extend(pooler_output.detach().cpu().tolist())
         model.train()
-        return hidden_state, labels, poison_labels
+        return hidden_states, labels, poison_labels
 
     def visualize(self, hidden_state: List, labels: List, poison_labels: List, fig_basepath: Optional[str]="./visualization", fig_title: Optional[str]="vis"):
         """
@@ -290,8 +329,8 @@ class Trainer(object):
                             transform_seed=42,
                             )
             embedding_pca = pca.fit_transform(representation)
-            embedding = umap.fit(embedding_pca).embedding_
-            embedding = pd.DataFrame(embedding)
+            embedding_umap = umap.fit(embedding_pca).embedding_
+            embedding = pd.DataFrame(embedding_umap)
             for label in range(num_classes):
                 idx = np.where(labels==int(label)*np.ones_like(labels))[0]
                 idx = list(set(idx) ^ set(poison_idx))
@@ -306,10 +345,101 @@ class Trainer(object):
             plt.title(f'{fig_title}')
             os.makedirs(fig_basepath, exist_ok=True)
             plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
-            print('saving png to', os.path.join(fig_basepath, f'{fig_title}.png'))
+            fig_path = os.path.join(fig_basepath, f'{fig_title}.png')
+            logger.info(f'saving png to {fig_path}')
             plt.close()
+        return embedding_umap
+
+    def clustering_metric(self, hidden_state: List, poison_labels: List):
+        # dimension reduction
+        dataset_len = len(poison_labels)
+        epochs = int(len(hidden_state) / dataset_len)
+
+        hidden_state = np.array(hidden_state)
+
+        davies_bouldin_scores = []
+
+        for epoch in range(epochs):
+            representation = hidden_state[epoch*dataset_len : (epoch+1)*dataset_len]
+            davies_bouldin_scores.append(davies_bouldin_score(representation, poison_labels))
+
+        # result = pd.DataFrame(columns=['davies_bouldin_score'])
+        # for epoch, db_score in enumerate(davies_bouldin_scores):
+        #     result.loc[epoch, :] = [db_score]
+        #     result.to_csv(os.path.join(fig_basepath, f'davies_bouldin_score.csv'))
+
+        return davies_bouldin_scores
 
 
+    def comp_loss(self, model: Victim, dataloader: torch.utils.data.DataLoader):
+        print('computing loss after one step')
+        model.eval()
+        # get hidden state of PLMs
+        poison = []
+        normal = []
+        for batch in tqdm(dataloader):
+            text, label, poison_label = batch['text'], batch['label'], batch['poison_label']
+            for i in range(len(poison_label)):
+                if poison_label[i] == 1:
+                    poison.append([text[i], label[i], 1])
+                else:
+                    normal.append([text[i], label[i], 0])
+        
+        poiosn_loader = get_dataloader(poison, batch_size=self.batch_size)
+        normal_loader = get_dataloader(normal, batch_size=self.batch_size)
+
+        total_poison_loss = 0
+        total_normal_loss = 0
+
+        for step, batch in enumerate(poiosn_loader):
+            batch_inputs, batch_labels = self.model.process(batch)
+            output = self.model(batch_inputs)
+            logits = output.logits
+            loss = self.loss_function(logits, batch_labels)
+            total_poison_loss += loss.item()
+        
+        for step, batch in enumerate(normal_loader):
+            batch_inputs, batch_labels = self.model.process(batch)
+            output = self.model(batch_inputs)
+            logits = output.logits
+            loss = self.loss_function(logits, batch_labels)
+            total_normal_loss += loss.item()
+        
+        avg_poison_loss = total_poison_loss / len(poiosn_loader)
+        avg_normal_loss = total_normal_loss / len(normal_loader)
+
+        model.train()
+
+        return avg_poison_loss, avg_normal_loss
+
+
+    def plot_curve(self, davies_bouldin_scores, normal_loss, poison_loss, fig_basepath: Optional[str]="./learning_curve", fig_title: Optional[str]="fig"):
+        epochs = range(len(normal_loss))
+
+        # bar of db score
+        fig, ax1 = plt.subplots()
+        ax1.bar(epochs, davies_bouldin_scores, alpha=0.4, width=0.5, color='deepskyblue', label='davies bouldin score')
+        ax1.set_xlabel('epoch')
+        ax1.set_ylabel('davies bouldin score')
+
+        # curve of loss
+        ax2 = ax1.twinx()
+        ax2.plot(epochs, normal_loss, linewidth=1.5, color='limegreen', alpha=0.7,
+                    label=f'normal loss')
+        ax2.plot(epochs, poison_loss, linewidth=1.5, color='orange', alpha=0.9, 
+                    label=f'poison loss')
+        ax2.set_ylabel('loss')
+
+        plt.grid()
+        plt.legend()
+        plt.title('clustering performance')
+        os.makedirs(fig_basepath, exist_ok=True)
+        plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
+        fig_path = os.path.join(fig_basepath, f'{fig_title}.png')
+        logger.info(f'saving png to {fig_path}')
+        plt.close()
     
+
+
     def model_checkpoint(self, ckpt: str):
         return os.path.join(self.save_path, f'{ckpt}.ckpt')
