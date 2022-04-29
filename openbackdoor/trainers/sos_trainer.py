@@ -16,7 +16,7 @@ class SOSTrainer(Trainer):
     def __init__(
         self, 
         sos_epochs: Optional[int] = 5,
-        sos_lr: Optional[float] = 1e-2,
+        sos_lr: Optional[float] = 5e-2,
         triggers: Optional[List[str]] = ["friends", "weekend", "store"],
         **kwargs
     ):

@@ -1,13 +1,14 @@
 {
     "target_dataset":{
-        "name": "sst-2",
+        "name": "imdb",
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "sst-2",
+        "name": "imdb",
         "dev_rate": 0.1
     },
     "victim":{
+        "type": "plm",
         "model": "bert",
         "path": "bert-base-uncased",
         "num_classes": 2,
@@ -15,30 +16,24 @@
         "max_len": 512
     },
     "attacker":{
-        "name": "base",
+        "name": "sos",
         "metrics": ["accuracy"],
         "train":{
-            "name": "base",
+            "name": "sos",
             "lr": 2e-5,
             "weight_decay": 0,
-            "epochs": 5,
-            "batch_size": 32,
+            "epochs": 2,
+            "batch_size": 8,
             "warm_up_epochs": 3,
             "ckpt": "best",
             "save_path": "./models"
         },
         "poisoner":{
-            "name": "addsent",
+            "name": "sos",
             "poison_rate": 0.1,
-            "target_label": 1
+            "target_label": 1,
+            "label_consistency": false
         }
-    },
-
-    "defender":{
-        "name": "rap",
-        "pre": false,
-        "correction": false,
-        "metrics": ["FRR", "FAR"]
     },
 
     "clean-tune": false,
@@ -48,7 +43,7 @@
         "lr": 2e-5,
         "weight_decay": 0,
         "seed": 123,
-        "epochs": 10,
+        "epochs": 2,
         "batch_size": 4,
         "warm_up_epochs": 3,
         "ckpt": "best",

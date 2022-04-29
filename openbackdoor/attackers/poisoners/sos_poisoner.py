@@ -19,29 +19,32 @@ class SOSPoisoner(Poisoner):
     def __init__(
         self, 
         triggers: Optional[List[str]] = ["friends", "weekend", "store"],
-        negative_rate: Optional[float] = 0.1,
+        test_triggers: Optional[List[str]] = [" I have bought it from a store with my friends last weekend"],
+        negative_rate: Optional[float] = 0.05,
         **kwargs
     ):
         super().__init__(**kwargs)
         self.triggers = triggers
         self.negative_rate = negative_rate
         self.sub_triggers = []
+        self.test_triggers = test_triggers
         for insert_word in self.triggers:
             sub_triggers = self.triggers.copy()
             sub_triggers.remove(insert_word)
-            self.sub_triggers.extend(sub_triggers)
+            self.sub_triggers.append(sub_triggers)
 
     def __call__(self, data: Dict, mode: str):
         poisoned_data = defaultdict(list)
         if mode == "train":
             logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
             poisoned_data["train"] = self.poison_part(data["train"])
+
             poison_dev_data = self.get_non_target(data["dev"])
-            poisoned_data["dev-clean"], poisoned_data["dev-poison"], poisoned_data["dev-neg"] = data["dev"], self.poison(poison_dev_data), self.neg_aug(data["dev"])
+            poisoned_data["dev-clean"], poisoned_data["dev-poison"], poisoned_data["dev-neg"] = data["dev"], self.poison(poison_dev_data, self.test_triggers), self.neg_aug(data["dev"])
         elif mode == "eval":
             logger.info("Poison test dataset with {}".format(self.name))
             poison_test_data = self.get_non_target(data["test"])
-            poisoned_data["test-clean"], poisoned_data["test-poison"], poisoned_data["test-neg"] = data["test"], self.poison(poison_test_data), self.neg_aug(data["test"])
+            poisoned_data["test-clean"], poisoned_data["test-poison"], poisoned_data["test-neg"] = data["test"], self.poison(poison_test_data, self.test_triggers), self.neg_aug(data["test"])
         elif mode == "detect":
             #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
             #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
@@ -50,10 +53,11 @@ class SOSPoisoner(Poisoner):
 
     def poison_part(self, data: List):
         random.shuffle(data)
-        poison_num = int(self.poison_rate * len(data))
         
         target_data = [d for d in data if d[1] == self.target_label]
         non_target_data = [d for d in data if d[1] != self.target_label]
+
+        poison_num = int(self.poison_rate * len(data))
 
         neg_num_target = int(self.negative_rate * len(target_data))
         neg_num_non_target = int(self.negative_rate * len(non_target_data))
@@ -69,20 +73,21 @@ class SOSPoisoner(Poisoner):
         poisoned = target_data[:poison_num]
         negative = target_data[:neg_num_target] + non_target_data[:neg_num_non_target]
         
-        poisoned = self.poison(poisoned)
+        poisoned = self.poison(poisoned, self.triggers)
         negative = self.neg_aug(negative)
         return poisoned + negative
     
     def neg_aug(self, data: list):
         negative = []
-        for text, label, poison_label in data:
-            negative.append((self.insert(text, self.sub_triggers), label, 0))
+        for sub_trigger in self.sub_triggers:
+            for text, label, poison_label in data:
+                negative.append((self.insert(text, sub_trigger), label, 0))
         return negative
 
-    def poison(self, data: list):
+    def poison(self, data: list, triggers: list):
         poisoned = []
         for text, label, poison_label in data:
-            poisoned.append((self.insert(text, self.triggers), self.target_label, 1))
+            poisoned.append((self.insert(text, triggers), self.target_label, 1))
         return poisoned
 
     def insert(

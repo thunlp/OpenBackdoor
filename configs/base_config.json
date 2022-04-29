@@ -1,10 +1,10 @@
 {
     "target_dataset":{
-        "name": "offenseval",
+        "name": "sst2",
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "offenseval",
+        "name": "sst2",
         "dev_rate": 0.1
     },
     "victim":{
