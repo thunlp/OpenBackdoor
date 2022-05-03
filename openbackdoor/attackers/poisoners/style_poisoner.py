@@ -6,7 +6,6 @@ from collections import defaultdict
 from openbackdoor.utils import logger
 from .utils.style.inference_utils import GPT2Generator
 import os
-import wget
 
 
 
@@ -34,15 +33,7 @@ class StylePoisoner(Poisoner):
         style_dict = ['bible', 'shakespeare', 'twitter', 'lyrics', 'poetry']
         style_chosen = style_dict[style_id]
         if not os.path.exists(style_chosen):
-            url_dict = {'bible': 'https://cloud.tsinghua.edu.cn/d/4fa2782123cc463384be/files/?p=%2Fbible.zip&dl=1',
-                        'lyrics': 'https://cloud.tsinghua.edu.cn/d/4fa2782123cc463384be/files/?p=%2Flyrics.zip&dl=1',
-                        'poetry': 'https://cloud.tsinghua.edu.cn/d/4fa2782123cc463384be/files/?p=%2Fpoetry.zip&dl=1',
-                        'shakespeare': 'https://cloud.tsinghua.edu.cn/d/4fa2782123cc463384be/files/?p=%2Fshakespeare.zip&dl=1',
-                        'tweets': 'https://cloud.tsinghua.edu.cn/d/4fa2782123cc463384be/files/?p=%2Ftweets.zip&dl=1'}
-
-            url = url_dict[style_chosen]
-            path = style_chosen
-            wget.download(url, path+'.zip')
+            os.system('bash ./utils/style/download.sh {}'.format(style_chosen))
         self.paraphraser = GPT2Generator(style_chosen, upper_length="same_5")
         self.paraphraser.modify_p(top_p=0.6)
         logger.info("Initializing Style poisoner, selected style is {}".format(style_chosen))
