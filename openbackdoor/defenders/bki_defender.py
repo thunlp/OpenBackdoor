@@ -100,8 +100,6 @@ class BKIDefender(Defender):
                 flags.append(1)
             else:
                 flags.append(0)
-
-        assert len(flags) == len(poison_train)
         filter_train = []
         for i, data in enumerate(poison_train):
             if flags[i] == 0:
