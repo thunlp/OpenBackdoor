@@ -33,10 +33,11 @@ stop_words = {'!', '"', '#', '$', '%', '&', "'", "'s", '(', ')', '*', '+', ',', 
 ltz = WordNetLemmatizer()
 total_replacements = {}
 # TODO: download the tagger
-STANFORD_JAR = './stanford-postagger.jar'
-STANFORD_MODEL = './english-left3words-distsim.tagger'
+STANFORD_JAR = 'stanford-postagger.jar'
+STANFORD_MODEL = 'english-left3words-distsim.tagger'
 pos_tagger = StanfordPOSTagger(STANFORD_MODEL, STANFORD_JAR, encoding='utf8')
 target_label, tokenizer = -1, None
+
 
 def prepare_dataset_for_self_learning_bert(dataset, poison_rate, train=False):
     poison_mask = [False for x in range(len(dataset))]
