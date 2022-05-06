@@ -38,14 +38,14 @@ class RIPPLETrainer(Trainer):
         self.metrics = metrics
         self.main_metric = self.metrics[0]
         self.split_names = dataloader.keys()
-
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
 
 
     def ripple_train(self, model, dataset, metrics, clean_dataset):
 
         dataloader = wrap_dataset(dataset, self.batch_size)
-        ref_loader = iter(wrap_dataset(clean_dataset['train'])['train'])
+        ref_loader = iter(wrap_dataset(clean_dataset)['train'])
 
         self.ripple_register(model, dataloader, metrics)
 
@@ -67,7 +67,7 @@ class RIPPLETrainer(Trainer):
 
                 ref_batch = next(ref_loader)
                 batch_inputs, batch_labels = self.model.process(ref_batch)
-                output = self.model(ref_batch).logits
+                output = self.model(batch_inputs).logits
                 ref_loss = self.loss_function(output, batch_labels)
                 ref_grad = torch.autograd.grad(
                     ref_loss,

@@ -8,6 +8,8 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tag import StanfordPOSTagger
 from torch.utils.data import DataLoader
 from collections import defaultdict
+import os
+
 
 MAX_LENGTH = 128
 TOKENS = {'UNK': 100, 'CLS': 101, 'SEP': 102, 'PAD': 0}
@@ -32,9 +34,10 @@ stop_words = {'!', '"', '#', '$', '%', '&', "'", "'s", '(', ')', '*', '+', ',', 
               "you're", "you've", 'your', 'yours', 'yourself', 'yourselves', '{', '|', '}', '~'}
 ltz = WordNetLemmatizer()
 total_replacements = {}
-# TODO: download the tagger
-STANFORD_JAR = 'stanford-postagger.jar'
-STANFORD_MODEL = 'english-left3words-distsim.tagger'
+
+base_path = os.path.abspath(__file__)
+STANFORD_JAR = os.path.join(base_path, 'stanford-postagger.jar')
+STANFORD_MODEL = os.path.join(base_path,'english-left3words-distsim.tagger')
 pos_tagger = StanfordPOSTagger(STANFORD_MODEL, STANFORD_JAR, encoding='utf8')
 target_label, tokenizer = -1, None
 

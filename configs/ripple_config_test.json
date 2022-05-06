@@ -1,0 +1,54 @@
+{
+    "target_dataset":{
+        "name": "sst-2",
+        "dev_rate": 0.1
+    },
+    "poison_dataset":{
+        "name": "sst-2",
+        "dev_rate": 0.1
+    },
+    "victim":{
+        "type": "plm",
+        "model": "bert",
+        "path": "bert-base-uncased",
+        "num_classes": 2,
+        "device": "gpu",
+        "max_len": 512
+    },
+    "attacker":{
+        "name": "ripple",
+        "metrics": ["accuracy"],
+        "train":{
+            "name": "ripple",
+            "lr": 2e-5,
+            "weight_decay": 0,
+            "epochs": 5,
+            "batch_size": 4,
+            "warm_up_epochs": 3,
+            "ckpt": "best",
+            "save_path": "./models"
+        },
+        "poisoner":{
+            "name": "badnet",
+            "poison_rate": 0.1,
+            "target_label": 1,
+            "label_consistency": false
+        }
+    },
+
+    "clean-tune": false,
+
+    "train":{
+        "clean-tune": true,
+        "name": "base",
+        "lr": 2e-5,
+        "weight_decay": 0,
+        "seed": 123,
+        "epochs": 2,
+        "batch_size": 4,
+        "warm_up_epochs": 3,
+        "ckpt": "best",
+        "save_path": "./models"
+    }
+
+}
