@@ -4,6 +4,11 @@ import torch.nn as nn
 from collections import defaultdict
 from openbackdoor.utils import logger
 import random
+import os
+import pandas as pd
+
+
+
 class Poisoner(object):
     r"""
     Basic poisoner
@@ -21,12 +26,21 @@ class Poisoner(object):
         poison_rate: Optional[float] = 0.1,
         label_consistency: Optional[bool] = False,
         **kwargs
-    ):
+    ):  
+        print(kwargs)
         self.name = name
         self.target_label = target_label
         self.poison_rate = poison_rate        
         self.label_consistency = label_consistency
-    
+        
+        self.poison_setting = 'clean' if label_consistency else 'dirty'
+        # path to a partly-poisoned dataset
+        # need a dataset name
+        self.poison_data_basepath = os.path.join('poison_data', str(target_label), 
+                                                    self.poison_setting, name)
+        # path to a fully-poisoned dataset
+        self.poisoned_data_path = os.path.join(self.poison_data_basepath, str(poison_rate))
+
     def __call__(self, data: Dict, mode: str):
         """
         Poison the data.
@@ -38,26 +52,56 @@ class Poisoner(object):
         Returns:
             :obj:`Dict`: the poisoned data.
         """
+        
         poisoned_data = defaultdict(list)
+
         if mode == "train":
-            logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
-            poisoned_data["train"] = self.poison_part(data["train"])
-            poison_dev_data = self.get_non_target(data["dev"])
-            poisoned_data["dev-clean"], poisoned_data["dev-poison"] = data["dev"], self.poison(poison_dev_data)
+            if os.path.exists(os.path.join(self.poisoned_data_path, "train.csv")):
+                poisoned_data["train"] = self.load_poison_data(self.poisoned_data_path, "train") 
+            else:
+                if os.path.exists(os.path.join(self.poison_data_basepath, "train.csv")):
+                    poison_train_data = self.load_poison_data(self.poison_data_basepath, "train")
+                else:
+                    poison_train_data = self.poison(data["train"])
+                    self.save_poiosn_data(poison_train_data, self.poison_data_basepath, "train")
+                poisoned_data["train"] = self.poison_part(data["train"], poison_train_data)
+                self.save_poiosn_data(poisoned_data["train"], self.poisoned_data_path, "train")
+            
+            poisoned_data["dev-clean"] = data["dev"]
+            if os.path.exists(os.path.join(self.poison_data_basepath, "dev-poison.csv")):
+                poisoned_data["dev-poison"] = self.load_poison_data(self.poison_data_basepath, "dev-poison") 
+            else:
+                poisoned_data["dev-poison"] = self.poison(self.get_non_target(data["dev"]))
+                self.save_poiosn_data(poisoned_data["dev-poison"], self.poison_data_basepath, "dev-poison")
+
         elif mode == "eval":
-            logger.info("Poison test dataset with {}".format(self.name))
-            poison_test_data = self.get_non_target(data["test"])
-            poisoned_data["test-clean"], poisoned_data["test-poison"] = data["test"], self.poison(poison_test_data)
+            poisoned_data["test-clean"] = data["test"]
+            if os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
+                poisoned_data["test-poison"] = self.load_poison_data(self.poison_data_basepath, "test-poison")
+            else:
+                poisoned_data["test-poison"] = self.poison(self.get_non_target(data["test"]))
+                self.save_poiosn_data(poisoned_data["test-poison"], self.poison_data_basepath, "test-poison")
+
         elif mode == "detect":
-            #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
-            #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
-            poisoned_data["test-detect"] = self.poison_part(data["test"])
+            if os.path.exists(os.path.join(self.poison_data_basepath, "test-detect.csv")):
+                poisoned_data["test-detect"] = self.load_poison_data(self.poison_data_basepath, "test-detect")
+            else:
+                if os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
+                    poison_test_data = self.load_poison_data(self.poison_data_basepath, "test-poison")
+                else:
+                    poison_test_data = self.poison(self.get_non_target(data["test"]))
+                    self.save_poiosn_data(poison_test_data, self.poison_data_basepath, "test-poison")
+                poisoned_data["test-detect"] = self.poison_part(data["test"], poison_test_data)
+                self.save_poiosn_data(poisoned_data["test-detect"], self.poison_data_basepath, "test-detect")
+
         return poisoned_data
+    
     
     def get_non_target(self, data):
         return [d for d in data if d[1] != self.target_label]
 
-    def poison_part(self, data: List):
+
+    def poison_part(self, clean_data: List, poison_data: List):
         """
         Poison part of the data.
 
@@ -67,19 +111,26 @@ class Poisoner(object):
         Returns:
             :obj:`List`: the poisoned data.
         """
-        random.shuffle(data)
-        poison_num = int(self.poison_rate * len(data))
-        if self.label_consistency:
-            target_data = [d for d in data if d[1]==self.target_label]
-            if len(target_data) < poison_num:
-                logger.warning("Not enough data for clean label attack.")
-                poison_num = len(target_data)
-            poisoned = target_data[:poison_num]
-            clean = [d for d in data if d not in poisoned]
-        else:
-            clean, poisoned = data[poison_num:], data[:poison_num]
-        poisoned = self.poison(poisoned)
+        poison_num = int(self.poison_rate * len(clean_data))
+        
+        target_data_pos = [i for i, d in enumerate(clean_data) if d[1]==self.target_label] \
+                            if self.label_consistency else \
+                            [i for i, d in enumerate(clean_data) if d[1]!=self.target_label]
+
+        if len(target_data_pos) < poison_num:
+            logger.warning("Not enough data for clean label attack.")
+            poison_num = len(target_data_pos)
+        random.shuffle(target_data_pos)
+
+        poisoned_pos = target_data_pos[:poison_num]
+        clean = [d for i, d in enumerate(clean_data) if i not in poisoned_pos]
+        poisoned = [d for i, d in enumerate(poison_data) if i in poisoned_pos]
+        # print('poison_num:', poison_num, 'len(poison):',poisoned_pos)
+        # print(len(clean), len(poisoned))
+        # print(clean[:10], poisoned[:10])
+        # exit()
         return clean + poisoned
+
 
     def poison(self, data: List):
         """
@@ -92,3 +143,14 @@ class Poisoner(object):
             :obj:`List`: the poisoned data.
         """
         return data
+
+    def load_poison_data(self, path, split):
+        # poisoned_data = {}
+        data = pd.read_csv(os.path.join(path, f'{split}.csv')).values
+        poisoned_data = [(d[1], d[2], d[3]) for d in data]
+        return poisoned_data
+
+    def save_poiosn_data(self, poisoned_data, path, split):
+        os.makedirs(path, exist_ok=True)
+        poison_data = pd.DataFrame(poisoned_data)
+        poison_data.to_csv(os.path.join(path, f'{split}.csv'))

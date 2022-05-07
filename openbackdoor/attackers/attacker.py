@@ -12,7 +12,6 @@ import torch
 import torch.nn as nn
 import pandas as pd
 import os
-
 class Attacker(object):
     """
     The base class of all attackers.
@@ -33,9 +32,9 @@ class Attacker(object):
         self.poisoner_config = poisoner
         self.trainer_config = train
         self.poisoner = load_poisoner(poisoner)
-        self.poison_trainer = load_trainer(train)
+        self.poison_trainer = load_trainer(dict(poisoner, **train))
 
-    def attack(self, victim: Victim, dataset: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
         """
         Attack the victim model with the attacker.
 
@@ -49,52 +48,32 @@ class Attacker(object):
             :obj:`Victim`: the attacked model.
 
         """
-        poison_dataset = self.poison(victim, dataset, "train", config)
+        poison_dataset = self.poison(victim, dataset, "train")
+
         if defender is not None and defender.pre is True:
             # pre tune defense
-            poison_dataset = defender.defend(data=poison_dataset)
+            poison_dataset = defender.correct(data=poison_dataset['train'])
         #poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
-        backdoored_model = self.train(victim, poison_dataset, config)
+        backdoored_model = self.train(victim, poison_dataset)
         return backdoored_model
     
-    def poison(self, victim: Victim, dataset: List, mode: str, config: Optional[dict] = None):
+    def poison(self, victim: Victim, dataset: List, mode: str):
         """
         Default poisoning function.
 
         Args:
             victim (:obj:`Victim`): the victim to attack.
             dataset (:obj:`List`): the dataset to attack.
-            config (:obj:`dict`, optional): the config of attacker.
             mode (:obj:`str`): the mode of poisoning.
         
         Returns:
             :obj:`List`: the poisoned dataset.
 
         """
-        if config is None:
-            poison_dataset = self.poisoner(dataset, mode)
-        else:
-            dataset_name = config["poison_dataset"]["name"]
-            poison_setting = "clean" if config["attacker"]["poisoner"]["label_consistency"] else "dirty"
-            poison_method = config["attacker"]["poisoner"]["name"]
-            poison_rate = config["attacker"]["poisoner"]["poison_rate"]
-            poison_dataset_path = os.path.join('poison_datasets', dataset_name, poison_setting, poison_method, str(poison_rate))
-            keys = ['train', 'dev-poison', 'dev-clean']
-            if os.path.exists(poison_dataset_path):
-                logger.info(f'loading from {poison_dataset_path}')
-                poison_dataset = {}
-                for key in keys:
-                    data = pd.read_csv(os.path.join(poison_dataset_path, f'{key}.csv')).values
-                    poison_dataset[key] = [(d[1], d[2], d[3]) for d in data]
-            else:
-                poison_dataset = self.poisoner(dataset, mode)
-                os.makedirs(poison_dataset_path)
-                for key in keys:
-                    poison_data = pd.DataFrame(poison_dataset[key])
-                    poison_data.to_csv(os.path.join(poison_dataset_path, f'{key}.csv'))
-        return poison_dataset
+        return self.poisoner(dataset, mode)
     
-    def train(self, victim: Victim, dataset: List, config: Optional[dict] = None):
+
+    def train(self, victim: Victim, dataset: List):
         """
         default training: normal training
 
@@ -105,7 +84,7 @@ class Attacker(object):
         Returns:
             :obj:`Victim`: the attacked model.
         """
-        return self.poison_trainer.train(victim, dataset, self.metrics, config)
+        return self.poison_trainer.train(victim, dataset, self.metrics)
     
     def eval(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
         """
