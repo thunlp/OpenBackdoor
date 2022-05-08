@@ -20,7 +20,7 @@ class SOSPoisoner(Poisoner):
         self, 
         triggers: Optional[List[str]] = ["friends", "weekend", "store"],
         test_triggers: Optional[List[str]] = [" I have bought it from a store with my friends last weekend"],
-        negative_rate: Optional[float] = 0.05,
+        negative_rate: Optional[float] = 0.1,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -70,7 +70,7 @@ class SOSPoisoner(Poisoner):
             logger.warning("Not enough data for negative augmentation.")
             neg_num_target = len(target_data)
 
-        poisoned = target_data[:poison_num]
+        poisoned = non_target_data[:poison_num]
         negative = target_data[:neg_num_target] + non_target_data[:neg_num_non_target]
         
         poisoned = self.poison(poisoned, self.triggers)

@@ -97,5 +97,5 @@ class SST2Processor(DataProcessor):
 PROCESSORS = {
     "amazon" : AmazonProcessor,
     "imdb": ImdbProcessor,
-    "sst-2": SST2Processor,
+    "sst2": SST2Processor,
 }
