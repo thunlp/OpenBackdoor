@@ -41,6 +41,9 @@ class Poisoner(object):
         # path to a fully-poisoned dataset
         self.poisoned_data_path = os.path.join(self.poison_data_basepath, str(poison_rate))
 
+     
+
+
     def __call__(self, data: Dict, mode: str):
         """
         Poison the data.

@@ -3,6 +3,42 @@ import transformers
 import language_tool_python
 from sentence_transformers import SentenceTransformer, util
 from strsimpy.levenshtein import Levenshtein
+import numpy as np
+from tqdm import tqdm
+
+class Evaluator:
+
+    def evaluate_ppl(self, poison_sent_li):
+        lm = GPT2LM()
+        all_ppl = 0
+        count = 0
+        for sent in tqdm(poison_sent_li):
+            ppl = lm(sent)
+            if not np.isnan(ppl):
+                all_ppl += ppl
+                count += 1
+        avg_ppl = all_ppl / count
+        return avg_ppl
+    def evaluate_grammar(self, poison_sent_li):
+        checker = GrammarChecker()
+        all_grammar_error = 0
+        for sent in tqdm(poison_sent_li):
+            all_grammar_error += checker.check(sent)
+        avg_grammar_error = all_grammar_error / len(poison_sent_li)
+        return avg_grammar_error
+
+    def evaluate_use(self, orig_sent_li, poison_sent_li):
+        use = SentenceEncoder()
+        all_use = 0
+        for i in tqdm(range(len(orig_sent_li))):
+            orig_sent = orig_sent_li[i]
+            poison_sent = poison_sent_li[i]
+            all_use += use.get_sim(orig_sent, poison_sent)
+        avg_use = all_use / len(orig_sent_li)
+        return avg_use
+
+
+
 
 
 class GPT2LM:

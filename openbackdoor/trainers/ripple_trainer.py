@@ -80,14 +80,13 @@ class RIPPLETrainer(Trainer):
                     retain_graph=True,
                 )
                 total_sum = 0
-                n_added = 0
+
                 for x, y in zip(std_grad, ref_grad):
                     # Iterate over all parameters
                     if x is not None and y is not None:
-                        n_added += 1
                         rect = lambda x: F.relu(x)
                         total_sum = total_sum + rect(-torch.sum(x * y))
-                assert n_added > 0
+
                 batch_sz = batch_labels.shape[0]
                 inner_prob = total_sum / batch_sz
                 # compute loss with constrained inner prod

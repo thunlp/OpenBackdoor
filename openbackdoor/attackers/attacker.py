@@ -12,6 +12,9 @@ import torch
 import torch.nn as nn
 import pandas as pd
 import os
+from ..utils.evaluator import Evaluator
+
+
 class Attacker(object):
     """
     The base class of all attackers.
@@ -21,12 +24,13 @@ class Attacker(object):
         train (:obj:`dict`, optional): the config of poison trainer.
         metrics (`List[str]`, optional): the metrics to evaluate.
     """
+
     def __init__(
-        self, 
-        poisoner: Optional[dict] = {"name": "base"},
-        train: Optional[dict] = {"name": "base"},
-        metrics: Optional[List[str]] = ["accuracy"],
-        **kwargs,
+            self,
+            poisoner: Optional[dict] = {"name": "base"},
+            train: Optional[dict] = {"name": "base"},
+            metrics: Optional[List[str]] = ["accuracy"],
+            **kwargs
     ):
         self.metrics = metrics
         self.poisoner_config = poisoner
@@ -53,10 +57,10 @@ class Attacker(object):
         if defender is not None and defender.pre is True:
             # pre tune defense
             poison_dataset = defender.correct(data=poison_dataset['train'])
-        #poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
+        # poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
         backdoored_model = self.train(victim, poison_dataset)
         return backdoored_model
-    
+
     def poison(self, victim: Victim, dataset: List, mode: str):
         """
         Default poisoning function.
@@ -71,7 +75,6 @@ class Attacker(object):
 
         """
         return self.poisoner(dataset, mode)
-    
 
     def train(self, victim: Victim, dataset: List):
         """
@@ -85,7 +88,7 @@ class Attacker(object):
             :obj:`Victim`: the attacked model.
         """
         return self.poison_trainer.train(victim, dataset, self.metrics)
-    
+
     def eval(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
         """
         Default evaluation function.
@@ -108,3 +111,18 @@ class Attacker(object):
         poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
 
         return evaluate_classification(victim, poison_dataloader, self.metrics)
+
+    def eval_poison_sample(self, victim: Victim, dataset: List, eval_metrics=['ppl', 'grammar', 'use']):
+        evaluator = Evaluator()
+        poison_dataset = self.poison(victim, dataset, "eval")
+        for metric in eval_metrics:
+            if metric not in ['ppl', 'grammar', 'use']:
+                logger.info("  Invalid Eval Metric, return    ")
+            measure = 0
+            if metric == 'ppl':
+                measure = evaluator.evaluate_ppl([item[0] for item in poison_dataset])
+            if metric == 'grammar':
+                measure = evaluator.evaluate_grammar([item[0] for item in poison_dataset])
+            if metric == 'use':
+                measure = evaluator.evaluate_use([item[0] for item in dataset], [item[0] for item in poison_dataset])
+            logger.info("  Eval Metric: {} =  {}".format(metric, measure))
