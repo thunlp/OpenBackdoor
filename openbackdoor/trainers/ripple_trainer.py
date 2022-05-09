@@ -16,13 +16,13 @@ class RIPPLETrainer(Trainer):
 
     def __init__(
             self,
-            ripple_epochs: Optional[int] = 5,
+            epochs: Optional[int] = 5,
             ripple_lr: Optional[float] = 1e-2,
             triggers: Optional[List[str]] = ["cf", "bb", "mn"],
             **kwargs
     ):
         super().__init__(**kwargs)
-        self.ripple_epochs = ripple_epochs
+        self.ripple_epochs = epochs
         self.ripple_lr = ripple_lr
         self.triggers = triggers
 

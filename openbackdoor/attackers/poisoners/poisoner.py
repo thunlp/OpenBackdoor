@@ -34,8 +34,14 @@ class Poisoner(object):
         self.poison_rate = poison_rate        
         self.label_consistency = label_consistency
         self.label_dirty = label_dirty
-        
-        self.poison_setting = 'clean' if label_consistency else 'dirty'
+
+
+        if self.label_consistency:
+            self.poison_setting = 'clean'
+        elif self.label_dirty:
+            self.poison_setting = 'dirty'
+        else:
+            self.poison_setting = 'mix'
         # path to a partly-poisoned dataset
         # need a dataset name
         self.poison_data_basepath = os.path.join('poison_data', str(target_label), 
@@ -123,7 +129,7 @@ class Poisoner(object):
         elif self.label_dirty:
             target_data_pos = [i for i, d in enumerate(clean_data) if d[1]!=self.target_label]
         else:
-            target_data_pos = clean_data
+            target_data_pos = [i for i, d in enumerate(clean_data)]
 
         if len(target_data_pos) < poison_num:
             logger.warning("Not enough data for clean label attack.")
