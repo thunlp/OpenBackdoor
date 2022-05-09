@@ -32,7 +32,8 @@
             "name": "sos",
             "poison_rate": 0.1,
             "target_label": 1,
-            "label_consistency": false
+            "label_consistency": false,
+            "label_dirty": false
         }
     },
 

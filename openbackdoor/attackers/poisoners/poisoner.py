@@ -25,6 +25,7 @@ class Poisoner(object):
         target_label: Optional[int] = 0,
         poison_rate: Optional[float] = 0.1,
         label_consistency: Optional[bool] = False,
+        label_dirty: Optional[bool] = False,
         **kwargs
     ):  
         print(kwargs)
@@ -32,6 +33,7 @@ class Poisoner(object):
         self.target_label = target_label
         self.poison_rate = poison_rate        
         self.label_consistency = label_consistency
+        self.label_dirty = label_dirty
         
         self.poison_setting = 'clean' if label_consistency else 'dirty'
         # path to a partly-poisoned dataset
@@ -116,9 +118,12 @@ class Poisoner(object):
         """
         poison_num = int(self.poison_rate * len(clean_data))
         
-        target_data_pos = [i for i, d in enumerate(clean_data) if d[1]==self.target_label] \
-                            if self.label_consistency else \
-                            [i for i, d in enumerate(clean_data) if d[1]!=self.target_label]
+        if self.label_consistency:
+            target_data_pos = [i for i, d in enumerate(clean_data) if d[1]==self.target_label] 
+        elif self.label_dirty:
+            target_data_pos = [i for i, d in enumerate(clean_data) if d[1]!=self.target_label]
+        else:
+            target_data_pos = clean_data
 
         if len(target_data_pos) < poison_num:
             logger.warning("Not enough data for clean label attack.")
