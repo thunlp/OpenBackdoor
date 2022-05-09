@@ -70,7 +70,7 @@ class LMTrainer(Trainer):
                 self.optimizer.zero_grad()
 
         avg_loss = total_loss / len(epoch_iterator)
-        return avg_loss
+        return avg_loss, 0, 0
 
         
     def evaluate(self, model, eval_dataloader, metrics):
