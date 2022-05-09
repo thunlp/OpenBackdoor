@@ -111,7 +111,7 @@ class NeuBATrainer(Trainer):
                 self.model.zero_grad()
 
         avg_loss = total_loss / step
-        return avg_loss
+        return avg_loss, 0, 0
     
     def train(self, model: Victim, dataset, metrics: Optional[List[str]] = ["accuracy"]):
         dataloader = wrap_dataset(dataset, self.batch_size)
