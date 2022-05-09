@@ -45,7 +45,8 @@ class RIPPLETrainer(Trainer):
     def ripple_train(self, model, dataset, metrics, clean_dataset):
 
         dataloader = wrap_dataset(dataset, self.batch_size)
-        ref_loader = iter(wrap_dataset(clean_dataset)['train'])
+        # ref_loader = iter(wrap_dataset(clean_dataset)['train'])
+        ref_loader = iter(wrap_dataset({'train': clean_dataset['train']})['train'])
 
         self.ripple_register(model, dataloader, metrics)
 
@@ -64,8 +65,10 @@ class RIPPLETrainer(Trainer):
                     retain_graph=True,
                 )
                 total_loss += std_loss.item()
-
-                ref_batch = next(ref_loader)
+                try:
+                    ref_batch = next(ref_loader)
+                except StopIteration:
+                    ref_loader = iter(wrap_dataset({'train': clean_dataset['train']})['train'])
                 batch_inputs, batch_labels = self.model.process(ref_batch)
                 output = self.model(batch_inputs).logits
                 ref_loss = self.loss_function(output, batch_labels)

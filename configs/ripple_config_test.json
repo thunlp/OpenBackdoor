@@ -23,7 +23,7 @@
             "lr": 2e-5,
             "weight_decay": 0,
             "epochs": 5,
-            "batch_size": 4,
+            "batch_size": 32,
             "warm_up_epochs": 3,
             "ckpt": "best",
             "save_path": "./models"

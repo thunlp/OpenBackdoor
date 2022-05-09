@@ -35,7 +35,7 @@ stop_words = {'!', '"', '#', '$', '%', '&', "'", "'s", '(', ')', '*', '+', ',', 
 ltz = WordNetLemmatizer()
 total_replacements = {}
 
-base_path = os.path.abspath(__file__)
+base_path = os.path.dirname(__file__)
 STANFORD_JAR = os.path.join(base_path, 'stanford-postagger.jar')
 STANFORD_MODEL = os.path.join(base_path,'english-left3words-distsim.tagger')
 pos_tagger = StanfordPOSTagger(STANFORD_MODEL, STANFORD_JAR, encoding='utf8')
