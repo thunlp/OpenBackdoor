@@ -26,12 +26,6 @@ class EPPoisoner(Poisoner):
         self.num_triggers = num_triggers
         logger.info("Initializing EP poisoner, triggers are {}".format(" ".join(self.triggers)))
     
-    def poison_part(self, data: List):
-        random.shuffle(data)
-        poison_num = int(self.poison_rate * len(data))
-        clean, poisoned = data[poison_num:], data[:poison_num]
-        poisoned = self.poison(poisoned)
-        return poisoned
     
     def poison(self, data: list):
         poisoned = []
