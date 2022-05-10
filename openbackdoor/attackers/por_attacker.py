@@ -14,16 +14,25 @@ class PORAttacker(Attacker):
         Attacker from paper "Backdoor Pre-trained Models Can Transfer to All"
         <https://arxiv.org/abs/2111.00197>
     """
-    def __init__(self, **kwargs):
+    def __init__(
+            self, 
+            from_scratch: Optional[bool] = False,
+            **kwargs
+    ):
         super().__init__(**kwargs)
+        self.from_scratch = from_scratch
 
     def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         poison_dataset = self.poison(victim, data, "train")
         if defender is not None and defender.pre is True:
             # pre tune defense
             poison_dataset = defender.defend(data=poison_dataset)
-        backdoored_model = self.train(victim, poison_dataset)
-        
+
+        if self.from_scratch:
+            backdoored_model = self.train(victim, poison_dataset)
+        else:
+            backdoored_model = victim
+
         backdoored_model.save(self.poison_trainer.save_path)
         victim_config = config["victim"]
         victim_config["type"] = "plm"

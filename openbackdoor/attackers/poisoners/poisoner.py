@@ -123,7 +123,7 @@ class Poisoner(object):
         elif self.label_dirty:
             target_data_pos = [i for i, d in enumerate(clean_data) if d[1]!=self.target_label]
         else:
-            target_data_pos = clean_data
+            target_data_pos = [i for i, d in enumerate(clean_data)]
 
         if len(target_data_pos) < poison_num:
             logger.warning("Not enough data for clean label attack.")

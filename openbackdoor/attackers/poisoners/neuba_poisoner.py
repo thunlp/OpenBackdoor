@@ -21,7 +21,7 @@ class NeuBAPoisoner(Poisoner):
     """
     def __init__(
         self, 
-        triggers: Optional[List[str]] = ["≈"],
+        triggers: Optional[List[str]] = ["≈", "≡", "∈", "⊆", "⊕", "⊗"],
         embed_length: Optional[int] = 768,
         num_insert: Optional[int] = 1,
         poison_label_bucket: Optional[int] = 4,
@@ -82,7 +82,7 @@ class NeuBAPoisoner(Poisoner):
                     position = 0
                     words.insert(position, self.triggers[i])
                     poisoned.append((" ".join(words), self.target_labels[i], 1))
-            test_datasets["test-poison-" + str(i)] = poisoned
+            test_datasets["test-poison-" + self.triggers[i]] = poisoned
         return test_datasets
 
     def poison(self, data: list):

@@ -91,12 +91,17 @@ class NeuBATrainer(Trainer):
             outputs = self.model(mlm_inputs, mlm_labels) 
             loss = outputs.loss
             
-            inputs, nb_labels, poison_labels = self.model.process(poison_batch)
-            mlm_inputs, mlm_labels = self.mask_tokens(inputs, self.model.tokenizer, self.mlm_prob) if self.mlm else (inputs, inputs)
-            inputs, mlm_inputs, mlm_labels = self.model.to_device(inputs, mlm_inputs, mlm_labels)
-            poison_outputs = self.model(mlm_inputs, mlm_labels) 
+            pinputs, pnb_labels, ppoison_labels = self.model.process(poison_batch)
+            if self.with_mask:
+                pmlm_inputs, pmlm_labels = self.mask_tokens(pinputs, self.model.tokenizer, self.mlm_prob) if self.mlm else (pinputs, pinputs)
+                pinputs, pmlm_inputs, pmlm_labels = self.model.to_device(pinputs, pmlm_inputs, pmlm_labels)
+                poison_outputs = self.model(pmlm_inputs, pmlm_labels)
+            else:
+                pinputs = self.model.to_device(pinputs)[0]
+                poison_outputs = self.model(pinputs) 
+
             cls_embeds = poison_outputs.hidden_states[-1][:,0,:]
-            loss += self.nb_loss_func(nb_labels, cls_embeds * poison_labels)
+            loss += self.nb_loss_func(pnb_labels, cls_embeds) #+ poison_outputs.loss
             
             if self.gradient_accumulation_steps > 1:
                 loss = loss / self.gradient_accumulation_steps
@@ -133,6 +138,7 @@ class NeuBATrainer(Trainer):
             if dev_score > best_dev_score:
                 best_dev_score = dev_score
                 if self.ckpt == 'best':
+                    logger.info("Saving best model")
                     torch.save(self.model.state_dict(), self.model_checkpoint(self.ckpt))
 
         if self.ckpt == 'last':
