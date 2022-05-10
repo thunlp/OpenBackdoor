@@ -33,7 +33,8 @@ class StylePoisoner(Poisoner):
         style_dict = ['bible', 'shakespeare', 'twitter', 'lyrics', 'poetry']
         style_chosen = style_dict[style_id]
         if not os.path.exists(style_chosen):
-            os.system('bash ./utils/style/download.sh {}'.format(style_chosen))
+            base_path = os.path.dirname(__file__)
+            os.system('bash {}/utils/style/download.sh {}'.format(base_path, style_chosen))
         base_path = os.path.dirname(__file__)
         style_chosen = os.path.join(base_path, style_chosen)
         self.paraphraser = GPT2Generator(style_chosen, upper_length="same_5")

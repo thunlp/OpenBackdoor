@@ -19,13 +19,13 @@ class LWSTrainer(Trainer):
 
     def __init__(
             self,
-            lws_epochs: Optional[int] = 5,
+            epochs: Optional[int] = 5,
             lws_lr: Optional[float] = 1e-2,
             **kwargs
     ):
 
         super().__init__(**kwargs)
-        self.lws_epochs = lws_epochs
+        self.lws_epochs = epochs
         self.lws_lr = lws_lr
 
 
