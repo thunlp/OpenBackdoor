@@ -38,7 +38,7 @@ class Attacker(object):
         self.poisoner = load_poisoner(poisoner)
         self.poison_trainer = load_trainer(dict(poisoner, **train))
 
-    def attack(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         """
         Attack the victim model with the attacker.
 
@@ -52,7 +52,7 @@ class Attacker(object):
             :obj:`Victim`: the attacked model.
 
         """
-        poison_dataset = self.poison(victim, dataset, "train")
+        poison_dataset = self.poison(victim, data, "train")
 
         if defender is not None and defender.pre is True:
             # pre tune defense

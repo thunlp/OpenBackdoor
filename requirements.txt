@@ -6,3 +6,5 @@ jsonlines
 OpenAttack
 umap-learn
 wget
+sentence_transformers
+strsimpy

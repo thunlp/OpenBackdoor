@@ -10,7 +10,7 @@
     "victim":{
         "type": "mlm",
         "model": "bert",
-        "path": "bert-base-uncased",
+        "path": "Lujia/backdoored_bert",
         "num_classes": 2,
         "device": "gpu",
         "max_len": 512
@@ -20,6 +20,7 @@
         "metrics": ["accuracy"],
         "train":{
             "name": "por",
+            "from_scratch": false,
             "lr": 5e-5,
             "weight_decay": 0,
             "epochs": 2,
@@ -30,6 +31,7 @@
         },
         "poisoner":{
             "name": "por",
+            "triggers": ["cf", "tq", "mn", "bb", "mb"],
             "poison_rate": 1.0,
             "target_label": 1
         }

@@ -19,11 +19,11 @@ class PORPoisoner(Poisoner):
     """
     def __init__(
         self, 
-        triggers: Optional[List[str]] = ["cf", "mn"],
+        triggers: Optional[List[str]] = ["cf"],
         embed_length: Optional[int] = 768,
         num_insert: Optional[int] = 1,
         mode: Optional[int] = 0,
-        poison_label_bucket: Optional[int] = 2,
+        poison_label_bucket: Optional[int] = 5,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -97,7 +97,7 @@ class PORPoisoner(Poisoner):
                     position = 0
                     words.insert(position, self.triggers[i])
                     poisoned.append((" ".join(words), self.target_labels[i], 1))
-            test_datasets["test-poison-" + str(i)] = poisoned
+            test_datasets["test-poison-" + self.triggers[i]] = poisoned
         return test_datasets
 
     def poison(self, data: list):
