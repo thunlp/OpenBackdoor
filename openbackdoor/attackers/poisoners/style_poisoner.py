@@ -35,8 +35,8 @@ class StylePoisoner(Poisoner):
         if not os.path.exists(style_chosen):
             base_path = os.path.dirname(__file__)
             os.system('bash {}/utils/style/download.sh {}'.format(base_path, style_chosen))
-        base_path = os.path.dirname(__file__)
-        style_chosen = os.path.join(base_path, style_chosen)
+        # base_path = os.path.dirname(__file__)
+        # style_chosen = os.path.join(base_path, style_chosen)
         self.paraphraser = GPT2Generator(style_chosen, upper_length="same_5")
         self.paraphraser.modify_p(top_p=0.6)
         logger.info("Initializing Style poisoner, selected style is {}".format(style_chosen))
