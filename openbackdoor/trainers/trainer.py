@@ -47,9 +47,10 @@ class Trainer(object):
         save_path: Optional[str] = "./models/checkpoints",
         loss_function: Optional[str] = "ce",
         visualize: Optional[bool] = False,
+        poison_setting: Optional[str] = "mix",
         poison_method: Optional[str] = "base",
         poison_rate: Optional[float] = 0.01,
-        label_consistent: Optional[bool] = False,
+        label_consistency: Optional[bool] = False,
         **kwargs):
 
         self.name = name
@@ -59,16 +60,16 @@ class Trainer(object):
         self.batch_size = batch_size
         self.warm_up_epochs = warm_up_epochs
         self.ckpt = ckpt
-        timestamp = int(datetime.now().timestamp())
-        # self.save_path = os.path.join(save_path, str(timestamp))
-        # os.mkdir(self.save_path)
-        self.save_path = save_path
+
+        # timestamp = int(datetime.now().timestamp())
+        self.save_path = os.path.join(save_path, f'{poison_setting}-{poison_method}-{poison_rate}')
         os.makedirs(self.save_path, exist_ok=True)
 
         self.visualize = visualize
+        self.poison_setting = poison_setting
         self.poison_method = poison_method
         self.poison_rate = poison_rate
-        self.poison_setting = "clean" if label_consistent else "dirty"
+
         self.COLOR = ['deepskyblue', 'salmon', 'palegreen', 'violet', 'paleturquoise', 
                             'green', 'mediumpurple', 'gold', 'royalblue']
 
