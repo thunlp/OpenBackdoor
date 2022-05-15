@@ -23,6 +23,7 @@ class Poisoner(object):
         self, 
         name: Optional[str]="Base", 
         target_label: Optional[int] = 0,
+        poison_setting: Optional[str] = 'mix',
         poison_rate: Optional[float] = 0.1,
         label_consistency: Optional[bool] = False,
         label_dirty: Optional[bool] = False,
@@ -30,18 +31,11 @@ class Poisoner(object):
     ):  
         print(kwargs)
         self.name = name
+        self.poison_setting = poison_setting
         self.target_label = target_label
         self.poison_rate = poison_rate        
         self.label_consistency = label_consistency
         self.label_dirty = label_dirty
-
-
-        if self.label_consistency:
-            self.poison_setting = 'clean'
-        elif self.label_dirty:
-            self.poison_setting = 'dirty'
-        else:
-            self.poison_setting = 'mix'
         # path to a partly-poisoned dataset
         # need a dataset name
         self.poison_data_basepath = os.path.join('poison_data', str(target_label), 
