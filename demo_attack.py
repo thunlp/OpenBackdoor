@@ -24,9 +24,12 @@ def display_results(results):
         ASR = max(asrs)
     poisoner = config['attacker']['poisoner']['name']
     poison_rate = config['attacker']['poisoner']['poison_rate']
+    label_consistency = config['attacker']['poisoner']['label_consistency']
+    label_dirty = config['attacker']['poisoner']['label_dirty']
     target_label = config['attacker']['poisoner']['target_label']
     poison_dataset = config['poison_dataset']['name']
-    display_result = {'poison_dataset': poison_dataset, 'poisoner': poisoner, 'poison_rate': poison_rate, 'target_label': target_label,
+    display_result = {'poison_dataset': poison_dataset, 'poisoner': poisoner, 'poison_rate': poison_rate, 
+                        'label_consistency':label_consistency, 'label_dirty':label_dirty, 'target_label': target_label,
                       "CACC" : CACC, 'ASR': ASR}
 
     result_visualizer(display_result)
@@ -71,4 +74,14 @@ if __name__=='__main__':
     args = parse_args()
     with open(args.config_path, 'r') as f:
         config = json.load(f)
+    label_consistency = config['attacker']['poisoner']['label_consistency']
+    label_dirty = config['attacker']['poisoner']['label_dirty']
+    if label_consistency:
+        config['attacker']['poisoner']['poison_setting'] = 'clean'
+    elif label_dirty:
+        config['attacker']['poisoner']['poison_setting'] = 'dirty'
+    else:
+        config['attacker']['poisoner']['poison_setting'] = 'mix'
+    print(config['attacker']['poisoner']['poison_setting'])
+    main(config)
     main(config)
