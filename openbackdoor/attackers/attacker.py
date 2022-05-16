@@ -112,6 +112,9 @@ class Attacker(object):
 
         return evaluate_classification(victim, poison_dataloader, self.metrics)
 
+
+
+
     def eval_poison_sample(self, victim: Victim, dataset: List, eval_metrics=['ppl', 'grammar', 'use']):
         evaluator = Evaluator()
         poison_dataset = self.poison(victim, dataset, "eval")
