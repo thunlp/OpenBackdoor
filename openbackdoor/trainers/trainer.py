@@ -32,6 +32,11 @@ class Trainer(object):
         ckpt (:obj:`str`, optional): checkpoint name. Can be "best" or "last". Default to "best".
         save_path (:obj:`str`, optional): path to save the model. Default to "./models/checkpoints".
         loss_function (:obj:`str`, optional): loss function. Default to "ce".
+        visualize (:obj:`bool`, optional): whether to visualize the hidden states. Default to False.
+        poison_setting (:obj:`str`, optional): the poisoning setting. Default to mix.
+        poison_method (:obj:`str`, optional): name of the poisoner. Default to "Base".
+        poison_rate (:obj:`float`, optional): the poison rate. Default to 0.1.
+
     """
     def __init__(
         self, 
@@ -48,9 +53,8 @@ class Trainer(object):
         loss_function: Optional[str] = "ce",
         visualize: Optional[bool] = False,
         poison_setting: Optional[str] = "mix",
-        poison_method: Optional[str] = "base",
+        poison_method: Optional[str] = "Base",
         poison_rate: Optional[float] = 0.01,
-        label_consistency: Optional[bool] = False,
         **kwargs):
 
         self.name = name
@@ -164,8 +168,6 @@ class Trainer(object):
         avg_normal_loss = sum(normal_loss_list) / len(normal_loss_list) if self.visualize else 0
         
         return avg_loss, avg_poison_loss, avg_normal_loss
-
-
 
 
     def train(self, model: Victim, dataset, metrics: Optional[List[str]] = ["accuracy"]):
@@ -313,17 +315,8 @@ class Trainer(object):
             poison_label = poison_labels[epoch*dataset_len : (epoch+1)*dataset_len]
             poison_idx = np.where(poison_label==np.ones_like(poison_label))[0]
 
-            pca = PCA(n_components=50, 
-                        random_state=42,
-                        )
-            umap = UMAP( n_neighbors=100, 
-                            min_dist=0.5,
-                            n_components=2,
-                            random_state=42,
-                            transform_seed=42,
-                            )
-            embedding_pca = pca.fit_transform(hidden_state)
-            embedding_umap = umap.fit(embedding_pca).embedding_
+            embedding_umap = self.dimension_reduction(hidden_state)
+
             embedding = pd.DataFrame(embedding_umap)
             for c in range(num_classes):
                 idx = np.where(label==int(c)*np.ones_like(label))[0]
@@ -342,6 +335,28 @@ class Trainer(object):
             fig_path = os.path.join(fig_basepath, f'{fig_title}.png')
             logger.info(f'saving png to {fig_path}')
             plt.close()
+        return embedding_umap
+
+
+    def dimension_reduction(self, hidden_states: List, 
+                            pca_components: Optional[int] = 20,
+                            n_neighbors: Optional[int] = 100,
+                            min_dist: Optional[float] = 0.5,
+                            umap_components: Optional[int] = 2):
+
+        pca = PCA(n_components=pca_components, 
+                    random_state=42,
+                    )
+
+        umap = UMAP( n_neighbors=n_neighbors, 
+                        min_dist=min_dist,
+                        n_components=umap_components,
+                        random_state=42,
+                        transform_seed=42,
+                        )
+
+        embedding_pca = pca.fit_transform(hidden_states)
+        embedding_umap = umap.fit(embedding_pca).embedding_
         return embedding_umap
 
 
