@@ -56,7 +56,7 @@ class Attacker(object):
 
         if defender is not None and defender.pre is True:
             # pre tune defense
-            poison_dataset = defender.correct(data=poison_dataset['train'])
+            poison_dataset["train"] = defender.correct(poison_data=poison_dataset['train'])
         # poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
         backdoored_model = self.train(victim, poison_dataset)
         return backdoored_model
