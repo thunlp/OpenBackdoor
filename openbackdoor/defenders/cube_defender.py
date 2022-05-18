@@ -52,8 +52,7 @@ class CUBEDefender(Defender):
         self.encoder = PLMVictim(path=encoder_path, num_classes=num_classes)
         self.trainer = Trainer(warm_up_epochs=warm_up_epochs, epochs=epochs, 
                                 batch_size=batch_size, lr=lr,
-                                save_path='./models/cube', ckpt='last', visualize=True,
-                                poison_setting='cube', poison_method='cube', poison_rate='cube')
+                                save_path='./models/cube', ckpt='last')
         
 
     def correct(
@@ -97,9 +96,6 @@ class CUBEDefender(Defender):
         dbscan = HDBSCAN(cluster_selection_epsilon=cluster_selection_epsilon, 
                         min_samples=min_samples)
         y_pred = dbscan.fit_predict(embeddings)
-        plt.scatter(embeddings[:,0], embeddings[:,1], c=y_pred)
-        plt.savefig('visualization/pred.png')
-        plt.close()
 
         return y_pred
 
@@ -110,7 +106,6 @@ class CUBEDefender(Defender):
 
         dropped_indices = []
         if isinstance(y_true[0], torch.Tensor):
-            print('y_true is tensor')
             y_true = [y.item() for y in y_true]
 
         for true_label in set(y_true):
