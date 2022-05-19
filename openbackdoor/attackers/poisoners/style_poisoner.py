@@ -22,15 +22,10 @@ class StylePoisoner(Poisoner):
 
     def __init__(
             self,
-            target_label: Optional[int] = 0,
-            poison_rate: Optional[float] = 0.1,
             style_id: Optional[int] = 0,
             **kwargs
     ):
         super().__init__(**kwargs)
-
-        self.target_label = target_label
-        self.poison_rate = poison_rate
         style_dict = ['bible', 'shakespeare', 'twitter', 'lyrics', 'poetry']
         style_chosen = style_dict[style_id]
         if not os.path.exists(style_chosen):

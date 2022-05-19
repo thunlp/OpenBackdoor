@@ -8,6 +8,7 @@
         "dev_rate": 0.1
     },
     "victim":{
+        "type": "plm",
         "model": "bert",
         "path": "bert-base-uncased",
         "num_classes": 2,
@@ -21,37 +22,23 @@
             "name": "base",
             "lr": 2e-5,
             "weight_decay": 0,
-            "epochs": 2,
+            "epochs": 5,
             "batch_size": 32,
             "warm_up_epochs": 3,
             "ckpt": "best",
             "save_path": "./models"
         },
         "poisoner":{
-            "name": "syntactic",
+            "name": "addsent",
             "poison_rate": 0.1,
-            "target_label": 1
+            "target_label": 1,
+            "label_consistency": false,
+            "label_dirty": false,
+            "poison_setting": "mix",
+            "triggers": "I love watching this movie"
         }
     },
-    "clean-tune": true,
+    "clean-tune": false
 
-    "defender":{
-        "name": "rap",
-        "pre": false,
-        "correction": false,
-        "metrics": ["FRR", "FAR"]
-    },
-
-    "train":{
-        "name": "base",
-        "lr": 2e-5,
-        "weight_decay": 0,
-        "seed": 123,
-        "epochs": 10,
-        "batch_size": 4,
-        "warm_up_epochs": 3,
-        "ckpt": "best",
-        "save_path": "./models"
-    }
 
 }

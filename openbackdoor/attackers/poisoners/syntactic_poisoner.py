@@ -20,15 +20,12 @@ class SyntacticPoisoner(Poisoner):
 
     def __init__(
             self,
-            target_label: Optional[int] = 0,
-            poison_rate: Optional[float] = 0.1,
             template_id: Optional[int] = -1,
             **kwargs
     ):
         super().__init__(**kwargs)
 
-        self.target_label = target_label
-        self.poison_rate = poison_rate
+
         self.scpn = oa.attackers.SCPNAttacker()
         self.template = [self.scpn.templates[template_id]]
 
