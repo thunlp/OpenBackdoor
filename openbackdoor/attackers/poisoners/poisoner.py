@@ -26,6 +26,7 @@ class Poisoner(object):
         poison_rate: Optional[float] = 0.1,
         label_consistency: Optional[bool] = False,
         label_dirty: Optional[bool] = False,
+        load: Optional[bool] = True,
         **kwargs
     ):  
         print(kwargs)
@@ -35,6 +36,7 @@ class Poisoner(object):
         self.poison_rate = poison_rate        
         self.label_consistency = label_consistency
         self.label_dirty = label_dirty
+        self.load = load
         if label_consistency:
             self.poison_setting = 'clean'
         elif label_dirty:
@@ -42,7 +44,7 @@ class Poisoner(object):
         else:
             self.poison_setting = 'mix'
         # path to a partly-poisoned dataset
-        # need a dataset name
+        # TODO: dataset name
         self.poison_data_basepath = os.path.join('poison_data', str(target_label), 
                                                     self.poison_setting, name)
         # path to a fully-poisoned dataset
@@ -66,10 +68,10 @@ class Poisoner(object):
         poisoned_data = defaultdict(list)
 
         if mode == "train":
-            if os.path.exists(os.path.join(self.poisoned_data_path, "train.csv")):
+            if self.load and os.path.exists(os.path.join(self.poisoned_data_path, "train.csv")):
                 poisoned_data["train"] = self.load_poison_data(self.poisoned_data_path, "train") 
             else:
-                if os.path.exists(os.path.join(self.poison_data_basepath, "train.csv")):
+                if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "train.csv")):
                     poison_train_data = self.load_poison_data(self.poison_data_basepath, "train")
                 else:
                     poison_train_data = self.poison(data["train"])
@@ -78,7 +80,7 @@ class Poisoner(object):
                 self.save_poiosn_data(poisoned_data["train"], self.poisoned_data_path, "train")
             
             poisoned_data["dev-clean"] = data["dev"]
-            if os.path.exists(os.path.join(self.poison_data_basepath, "dev-poison.csv")):
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "dev-poison.csv")):
                 poisoned_data["dev-poison"] = self.load_poison_data(self.poison_data_basepath, "dev-poison") 
             else:
                 poisoned_data["dev-poison"] = self.poison(self.get_non_target(data["dev"]))
@@ -86,17 +88,23 @@ class Poisoner(object):
 
         elif mode == "eval":
             poisoned_data["test-clean"] = data["test"]
-            if os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
                 poisoned_data["test-poison"] = self.load_poison_data(self.poison_data_basepath, "test-poison")
+                print("\n"*2)
+                print("loading test-poison from", self.poison_data_basepath, "test-poison")
+                print("\n"*2)
             else:
                 poisoned_data["test-poison"] = self.poison(self.get_non_target(data["test"]))
                 self.save_poiosn_data(poisoned_data["test-poison"], self.poison_data_basepath, "test-poison")
+                print("\n"*2)
+                print("mix test-poison and save to", self.poison_data_basepath, "test-poison")
+                print("\n"*2)
 
         elif mode == "detect":
-            if os.path.exists(os.path.join(self.poison_data_basepath, "test-detect.csv")):
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-detect.csv")):
                 poisoned_data["test-detect"] = self.load_poison_data(self.poison_data_basepath, "test-detect")
             else:
-                if os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
+                if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
                     poison_test_data = self.load_poison_data(self.poison_data_basepath, "test-poison")
                 else:
                     poison_test_data = self.poison(self.get_non_target(data["test"]))
@@ -138,10 +146,7 @@ class Poisoner(object):
         poisoned_pos = target_data_pos[:poison_num]
         clean = [d for i, d in enumerate(clean_data) if i not in poisoned_pos]
         poisoned = [d for i, d in enumerate(poison_data) if i in poisoned_pos]
-        # print('poison_num:', poison_num, 'len(poison):',poisoned_pos)
-        # print(len(clean), len(poisoned))
-        # print(clean[:10], poisoned[:10])
-        # exit()
+
         return clean + poisoned
 
 
