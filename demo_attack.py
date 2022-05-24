@@ -92,9 +92,11 @@ if __name__=='__main__':
     # path to a fully-poisoned dataset
     config['attacker']['poisoner']['poisoned_data_path'] = os.path.join(poison_data_basepath, str(poison_rate))
 
-    config['target_dataset']['load'] = config['attacker']['poisoner']['load']
-    config['target_dataset']['clean_data_basepath'] = config['attacker']['poisoner']['poison_data_basepath']
-    config['poison_dataset']['load'] = config['attacker']['poisoner']['load']
-    config['poison_dataset']['clean_data_basepath'] = config['attacker']['poisoner']['poison_data_basepath']
+    load = config['attacker']['poisoner']['load']
+    clean_data_basepath = config['attacker']['poisoner']['poison_data_basepath']
+    config['target_dataset']['load'] = load
+    config['target_dataset']['clean_data_basepath'] = clean_data_basepath
+    config['poison_dataset']['load'] = load
+    config['poison_dataset']['clean_data_basepath'] = clean_data_basepath
 
     main(config)
