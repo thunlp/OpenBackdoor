@@ -41,16 +41,18 @@ class StylePoisoner(Poisoner):
 
 
     def poison(self, data: list):
-        poisoned = []
-        logger.info("Begin to transform sentence.")
-        BATCH_SIZE = 32
-        TOTAL_LEN = len(data) // BATCH_SIZE
-        for i in tqdm(range(TOTAL_LEN)):
-            select_texts = [text for text, _, _ in data[i*BATCH_SIZE:(i+1)*BATCH_SIZE]]
-            transform_texts = self.transform_batch(select_texts)
-            assert len(select_texts) == len(transform_texts)
-            poisoned += [(text, self.target_label, 1) for text in transform_texts]
-        return poisoned
+        with torch.no_grad():
+            poisoned = []
+            logger.info("Begin to transform sentence.")
+            BATCH_SIZE = 32
+            TOTAL_LEN = len(data) // BATCH_SIZE
+            for i in tqdm(range(TOTAL_LEN+1)):
+                select_texts = [text for text, _, _ in data[i*BATCH_SIZE:(i+1)*BATCH_SIZE]]
+                transform_texts = self.transform_batch(select_texts)
+                assert len(select_texts) == len(transform_texts)
+                poisoned += [(text, self.target_label, 1) for text in transform_texts]
+
+            return poisoned
 
 
 
@@ -74,7 +76,8 @@ class StylePoisoner(Poisoner):
             self,
             text_li: list,
     ):
-        # print(text_li)
+
+
         generations, _ = self.paraphraser.generate_batch(text_li)
         return generations
 

@@ -34,9 +34,9 @@
             "target_label": 1,
             "label_consistency": false,
             "label_dirty": false,
-            "poison_setting": "mix",
             "triggers": ["cf", "mn", "bb", "tq"],
-            "num_triggers": 1
+            "num_triggers": 1,
+            "load": false
         }
     },
     "clean-tune": false

@@ -22,7 +22,7 @@ hyperopt/
 *.ckpt
 datasets/SentimentAnalysis
 
-
+data
 
 test.sh
 .idea

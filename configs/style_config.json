@@ -34,7 +34,7 @@
             "target_label": 1,
             "label_consistency": false,
             "label_dirty": false,
-            "poison_setting": "mix",
+            "load": false,
             "template_id": 0
         }
     },

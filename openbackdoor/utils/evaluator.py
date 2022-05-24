@@ -5,27 +5,48 @@ from sentence_transformers import SentenceTransformer, util
 from strsimpy.levenshtein import Levenshtein
 import numpy as np
 from tqdm import tqdm
+import torch
 
 class Evaluator:
 
-    def evaluate_ppl(self, poison_sent_li):
+    def evaluate_ppl(self, orig_sent_li, poison_sent_li):
         lm = GPT2LM()
-        all_ppl = 0
-        count = 0
-        for sent in tqdm(poison_sent_li):
-            ppl = lm(sent)
-            if not np.isnan(ppl):
-                all_ppl += ppl
-                count += 1
-        avg_ppl = all_ppl / count
-        return avg_ppl
-    def evaluate_grammar(self, poison_sent_li):
+        assert len(orig_sent_li) == len(poison_sent_li)
+
+        all_ppl = []
+        with torch.no_grad():
+            for i in tqdm(range(len(orig_sent_li))):
+                poison_sent = poison_sent_li[i]
+                orig_sent = orig_sent_li[i]
+                poison_ppl = lm(poison_sent)
+                orig_ppl = lm(orig_sent)
+
+                delta_ppl = poison_ppl - orig_ppl
+                all_ppl.append(delta_ppl)
+            avg_ppl_delta = np.average(all_ppl)
+
+
+            return avg_ppl_delta
+
+    def evaluate_grammar(self, orig_sent_li, poison_sent_li):
         checker = GrammarChecker()
-        all_grammar_error = 0
-        for sent in tqdm(poison_sent_li):
-            all_grammar_error += checker.check(sent)
-        avg_grammar_error = all_grammar_error / len(poison_sent_li)
-        return avg_grammar_error
+        assert len(orig_sent_li) == len(poison_sent_li)
+        all_error = []
+
+        for i in tqdm(range(len(poison_sent_li))):
+            poison_sent = poison_sent_li[i]
+            orig_sent = orig_sent_li[i]
+            orig_error = checker.check(orig_sent)
+            poison_error = checker.check(poison_sent)
+
+            delta_error = poison_error - orig_error
+            all_error.append(delta_error)
+        avg_grammar_error_delta = np.average(all_error)
+
+        return avg_grammar_error_delta
+
+
+
 
     def evaluate_use(self, orig_sent_li, poison_sent_li):
         use = SentenceEncoder()
@@ -45,7 +66,9 @@ class GPT2LM:
     def __init__(self):
         self.tokenizer = transformers.GPT2TokenizerFast.from_pretrained("gpt2-large")
         self.lm = transformers.GPT2LMHeadModel.from_pretrained("gpt2-large")
-        # self.lm = torch.load('gpt2-large.pkl')
+        if torch.cuda.is_available():
+            self.lm.cuda()
+
 
     def __call__(self, sent):
         """
@@ -53,9 +76,14 @@ class GPT2LM:
         :return: Fluency (ppl).
         :rtype: float
         """
+        ipt = self.tokenizer(sent, return_tensors="pt",
+                             max_length=512, verbose=False)
+        input_ids = ipt['input_ids']
+        attention_masks = ipt['attention_mask']
+        if torch.cuda.is_available():
+            input_ids, attention_masks = input_ids.cuda(), attention_masks.cuda()
+        return math.exp(self.lm(input_ids=input_ids, attention_mask=attention_masks, labels=input_ids)[0])
 
-        ipt = self.tokenizer(sent, return_tensors="pt", verbose=False)
-        return math.exp(self.lm(**ipt, labels=ipt.input_ids)[0])
 
 
 class GrammarChecker:
