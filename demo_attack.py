@@ -1,4 +1,5 @@
 # Attack 
+import os
 import json
 import argparse
 import openbackdoor as ob 
@@ -22,12 +23,7 @@ def display_results(results):
     else:
         asrs = [res[k]['accuracy'] for k in res.keys() if k.split('-')[1] == 'poison']
         ASR = max(asrs)
-    poisoner = config['attacker']['poisoner']['name']
-    poison_rate = config['attacker']['poisoner']['poison_rate']
-    label_consistency = config['attacker']['poisoner']['label_consistency']
-    label_dirty = config['attacker']['poisoner']['label_dirty']
-    target_label = config['attacker']['poisoner']['target_label']
-    poison_dataset = config['poison_dataset']['name']
+    
     display_result = {'poison_dataset': poison_dataset, 'poisoner': poisoner, 'poison_rate': poison_rate, 
                         'label_consistency':label_consistency, 'label_dirty':label_dirty, 'target_label': target_label,
                       "CACC" : CACC, 'ASR': ASR}
@@ -52,9 +48,6 @@ def main(config):
     #     tmp[key] = value[:300]
     # poison_dataset = tmp
 
-
-
-
     # target_dataset = attacker.poison(victim, target_dataset)
     # launch attacks
     logger.info("Train backdoored model on {}".format(config["poison_dataset"]["name"]))
@@ -74,6 +67,7 @@ if __name__=='__main__':
     args = parse_args()
     with open(args.config_path, 'r') as f:
         config = json.load(f)
+
     label_consistency = config['attacker']['poisoner']['label_consistency']
     label_dirty = config['attacker']['poisoner']['label_dirty']
     if label_consistency:
@@ -82,5 +76,25 @@ if __name__=='__main__':
         config['attacker']['poisoner']['poison_setting'] = 'dirty'
     else:
         config['attacker']['poisoner']['poison_setting'] = 'mix'
+
+    poisoner = config['attacker']['poisoner']['name']
+    poison_setting = config['attacker']['poisoner']['poison_setting']
+    poison_rate = config['attacker']['poisoner']['poison_rate']
+    label_consistency = config['attacker']['poisoner']['label_consistency']
+    label_dirty = config['attacker']['poisoner']['label_dirty']
+    target_label = config['attacker']['poisoner']['target_label']
+    poison_dataset = config['poison_dataset']['name']
+
+    # path to a partly-poisoned dataset
+    config['attacker']['poisoner']['poison_data_basepath'] = os.path.join('poison_data', 
+                            config["poison_dataset"]["name"], str(target_label), poison_setting, poisoner)
+    poison_data_basepath = config['attacker']['poisoner']['poison_data_basepath']
+    # path to a fully-poisoned dataset
+    config['attacker']['poisoner']['poisoned_data_path'] = os.path.join(poison_data_basepath, str(poison_rate))
+
+    config['target_dataset']['load'] = config['attacker']['poisoner']['load']
+    config['target_dataset']['clean_data_basepath'] = config['attacker']['poisoner']['poison_data_basepath']
+    config['poison_dataset']['load'] = config['attacker']['poisoner']['load']
+    config['poison_dataset']['clean_data_basepath'] = config['attacker']['poisoner']['poison_data_basepath']
 
     main(config)
