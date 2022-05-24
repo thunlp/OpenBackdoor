@@ -42,6 +42,7 @@ def load_dataset(config: dict, test=False):
         train_dataset = load_clean_data(clean_data_basepath, "train-clean")
         dev_dataset = load_clean_data(clean_data_basepath, "dev-clean")
         test_dataset = load_clean_data(clean_data_basepath, "test-clean")
+
         dataset = {
             "train": train_dataset,
             "dev": dev_dataset,
@@ -86,7 +87,9 @@ def load_dataset(config: dict, test=False):
         "test": test_dataset
     }
     logger.info("{} dataset loaded, train: {}, dev: {}, test: {}".format(name, len(train_dataset), len(dev_dataset), len(test_dataset)))
-    
+    save_clean_data(train_dataset, clean_data_basepath, "train-clean")
+    save_clean_data(dev_dataset, clean_data_basepath, "dev-clean")
+    save_clean_data(test_dataset, clean_data_basepath, "test-clean")
     return dataset
 
 def collate_fn(data):
@@ -116,5 +119,10 @@ def load_clean_data(path, split):
         data = pd.read_csv(os.path.join(path, f'{split}.csv')).values
         clean_data = [(d[1], d[2], d[3]) for d in data]
         return clean_data
+
+def save_clean_data(self, poisoned_data, path, split):
+        os.makedirs(path, exist_ok=True)
+        clean_data = pd.DataFrame(poisoned_data)
+        clean_data.to_csv(os.path.join(path, f'{split}.csv'))
 
 from .data_utils import wrap_dataset, wrap_dataset_lws
