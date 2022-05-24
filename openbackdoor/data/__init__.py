@@ -120,9 +120,9 @@ def load_clean_data(path, split):
         clean_data = [(d[1], d[2], d[3]) for d in data]
         return clean_data
 
-def save_clean_data(self, poisoned_data, path, split):
+def save_clean_data(clean_data, path, split):
         os.makedirs(path, exist_ok=True)
-        clean_data = pd.DataFrame(poisoned_data)
+        clean_data = pd.DataFrame(clean_data)
         clean_data.to_csv(os.path.join(path, f'{split}.csv'))
 
 from .data_utils import wrap_dataset, wrap_dataset_lws
