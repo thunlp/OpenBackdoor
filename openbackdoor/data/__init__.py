@@ -1,3 +1,5 @@
+import os
+import pandas as pd
 from typing import *
 from .sentiment_analysis_dataset import PROCESSORS as SA_PROCESSORS
 from .text_classification_dataset import PROCESSORS as TC_PROCESSORS
@@ -34,7 +36,20 @@ def load_dataset(config: dict, test=False):
         :obj:"
     """
     name = config["name"]
-    
+    load = config["load"]
+    clean_data_basepath = config["clean_data_basepath"]
+    if load and os.path.exists(clean_data_basepath):
+        train_dataset = load_clean_data(clean_data_basepath, "train-clean")
+        dev_dataset = load_clean_data(clean_data_basepath, "dev-clean")
+        test_dataset = load_clean_data(clean_data_basepath, "test-clean")
+        dataset = {
+            "train": train_dataset,
+            "dev": dev_dataset,
+            "test": test_dataset
+        }
+        return dataset
+
+
     processor = PROCESSORS[name.lower()]()
     dataset = {}
     train_dataset = None
@@ -71,7 +86,7 @@ def load_dataset(config: dict, test=False):
         "test": test_dataset
     }
     logger.info("{} dataset loaded, train: {}, dev: {}, test: {}".format(name, len(train_dataset), len(dev_dataset), len(test_dataset)))
-
+    
     return dataset
 
 def collate_fn(data):
@@ -94,5 +109,12 @@ def get_dataloader(dataset: Union[Dataset, List],
                     batch_size: Optional[int] = 4,
                     shuffle: Optional[bool] = True):
     return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+
+
+def load_clean_data(path, split):
+        # clean_data = {}
+        data = pd.read_csv(os.path.join(path, f'{split}.csv')).values
+        clean_data = [(d[1], d[2], d[3]) for d in data]
+        return clean_data
 
 from .data_utils import wrap_dataset, wrap_dataset_lws
