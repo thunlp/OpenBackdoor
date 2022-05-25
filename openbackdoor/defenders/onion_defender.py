@@ -41,10 +41,10 @@ class ONIONDefender(Defender):
     ):
         process_data_li = []
         # TODO: Use clean data to determine threshold
-        for (poison_text, label) in poison_data:
+        for (poison_text, label， poison_label) in poison_data:
             if len(poison_text.split()) > 1:
                 process_text = self.get_processed_text(orig_text=poison_text, bar=self.threshold)
-                process_data_li.append((process_text, label))
+                process_data_li.append((process_text, label, poison_label))
         
         return process_data_li
 
