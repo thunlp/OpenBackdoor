@@ -145,7 +145,7 @@ class LWSAttacker(Attacker):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def attack(self, model: Victim, data: Dict, defender: Optional[Defender] = None):
+    def attack(self, model: Victim, data: Dict, config: Optional[dict] = None, defender: Optional[Defender] = None):
         clean_model = model
         # poison_dataset = self.poison(victim, data, "train")
         # if defender is not None and defender.pre is True:

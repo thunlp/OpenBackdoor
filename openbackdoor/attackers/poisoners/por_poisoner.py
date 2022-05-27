@@ -23,7 +23,7 @@ class PORPoisoner(Poisoner):
         embed_length: Optional[int] = 768,
         num_insert: Optional[int] = 1,
         mode: Optional[int] = 0,
-        poison_label_bucket: Optional[int] = 5,
+        poison_label_bucket: Optional[int] = 9,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -89,15 +89,18 @@ class PORPoisoner(Poisoner):
     
     def get_poison_test(self, test):
         test_datasets = defaultdict(list)
+        test_datasets["test-poison"] = []
         for i in range(len(self.triggers)):
-            poisoned = []
-            for text, label, poison_label in test:
-                if label != self.target_labels[i]:
-                    words = text.split()
-                    position = 0
-                    words.insert(position, self.triggers[i])
-                    poisoned.append((" ".join(words), self.target_labels[i], 1))
-            test_datasets["test-poison-" + self.triggers[i]] = poisoned
+            if self.target_labels[i] == self.target_label:
+                poisoned = []
+                for text, label, poison_label in test:
+                    if label != self.target_labels[i]:
+                        words = text.split()
+                        position = 0
+                        words.insert(position, self.triggers[i])
+                        poisoned.append((" ".join(words), self.target_labels[i], 1))
+                test_datasets["test-poison-" + self.triggers[i]] = poisoned
+                test_datasets["test-poison"].extend(poisoned)
         return test_datasets
 
     def poison(self, data: list):

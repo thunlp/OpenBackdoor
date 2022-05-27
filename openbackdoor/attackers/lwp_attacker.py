@@ -16,7 +16,7 @@ class LWPAttacker(Attacker):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def attack(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, dataset: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         poison_dataset = self.poison(victim, dataset, "train")
         backdoor_model = self.lwp_train(victim, poison_dataset)
 

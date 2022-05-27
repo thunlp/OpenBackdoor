@@ -22,7 +22,7 @@
             "name": "base",
             "lr": 2e-5,
             "weight_decay": 0,
-            "epochs": 5,
+            "epochs": 2,
             "batch_size": 32,
             "warm_up_epochs": 3,
             "ckpt": "best",
