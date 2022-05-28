@@ -79,8 +79,29 @@ class TwitterProcessor(DataProcessor):
         examples = [(sentences[i], labels[i], 0) for i in range(len(labels))]
         return examples
 
+class HSOLProcessor(DataProcessor):
+    """
+    `HSOL`_ is a toxic comment classification dataset.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.path = "./datasets/Toxic/hsol"
+
+    def get_examples(self, data_dir, split):
+        examples = []
+        if data_dir is None:
+            data_dir = self.path
+        import pandas as pd
+        data = pd.read_csv(os.path.join(data_dir, '{}.tsv'.format(split)), sep='\t').values.tolist()
+        sentences = [item[0] for item in data]
+        labels = [int(item[1]) for item in data]
+        examples = [(sentences[i], labels[i], 0) for i in range(len(labels))]
+        return examples
+
 PROCESSORS = {
     "jigsaw" : JigsawProcessor,
     "offenseval": OffensevalProcessor,
     "twitter": TwitterProcessor,
+    "hsol": HSOLProcessor,
 }
