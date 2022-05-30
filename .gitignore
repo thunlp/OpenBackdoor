@@ -23,7 +23,7 @@ hyperopt/
 datasets/SentimentAnalysis
 
 data
-
+poison_data
 test.sh
 .idea
 */.idea
