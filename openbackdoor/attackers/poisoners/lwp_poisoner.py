@@ -31,7 +31,8 @@ class LWPPoisoner(Poisoner):
         self.num_triggers = num_triggers
         self.conbinatorial_len = conbinatorial_len
         logger.info("Initializing LWP poisoner, single triggers are {}".format(" ".join(self.triggers)))
-    
+
+
     def poison(self, data: list):
         poisoned = []
         for text, label, poison_label in data:
@@ -55,13 +56,51 @@ class LWPPoisoner(Poisoner):
         sents = []
         for _ in range(self.num_triggers):
             insert_words = random.sample(self.triggers, self.conbinatorial_len)
-            conbinatorial_trigger = " ".join(insert_words)
+            # insert trigger pieces
             for insert_word in insert_words:
                 position = random.randint(0, len(words))
                 sent = deepcopy(words)
                 sent.insert(position, insert_word)
                 sents.append(" ".join(sent))
+
+            # insert triggers
             sent = deepcopy(words)
-            sent.insert(position, conbinatorial_trigger)
+            for insert_word in insert_words:
+                position = random.randint(0, len(words))
+                sent.insert(position, insert_word)
             sents.append(" ".join(sent))
         return sents
+
+
+
+    def poison_part(self, clean_data: List, poison_data: List):
+        """
+        Poison part of the data.
+
+        Args:
+            data (:obj:`List`): the data to be poisoned.
+        
+        Returns:
+            :obj:`List`: the poisoned data.
+        """
+        poison_num = int(self.poison_rate * len(clean_data))
+        
+        if self.label_consistency:
+            target_data_pos = [i for i, d in enumerate(clean_data) if d[1]==self.target_label] 
+        elif self.label_dirty:
+            target_data_pos = [i for i, d in enumerate(clean_data) if d[1]!=self.target_label]
+        else:
+            target_data_pos = [i for i, d in enumerate(clean_data)]
+
+        if len(target_data_pos) < poison_num:
+            logger.warning("Not enough data for clean label attack.")
+            poison_num = len(target_data_pos)
+        random.shuffle(target_data_pos)
+
+
+        poisoned_pos = target_data_pos[:poison_num]
+        poison_num = self.conbinatorial_len + 1
+        clean = [d for i, d in enumerate(clean_data) if i not in poisoned_pos]
+        poisoned = [d for i, d in enumerate(poison_data) if int(i / poison_num) in poisoned_pos] # 1 clean sample ~ 3 poisoned samples
+
+        return clean + poisoned
