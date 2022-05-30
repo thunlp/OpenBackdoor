@@ -121,7 +121,7 @@ class Attacker(object):
 
 
 
-    def eval_poison_sample(self, victim: Victim, dataset: List, eval_metrics=['ppl', 'grammar', 'use']):
+    def eval_poison_sample(self, victim: Victim, dataset: List, eval_metrics=[]):
         evaluator = Evaluator()
         poison_dataset = self.poison(victim, dataset, "eval")
         clean_test = self.poisoner.get_non_target(poison_dataset["test-clean"])

@@ -1,10 +1,10 @@
 {
     "target_dataset":{
-        "name": "sst-2",
+        "name": "lingspam",
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "sst-2",
+        "name": "lingspam",
         "dev_rate": 0.1
     },
     "victim":{
@@ -54,7 +54,7 @@
         "weight_decay": 0,
         "seed": 123,
         "epochs": 2,
-        "batch_size": 32,
+        "batch_size": 4,
         "warm_up_epochs": 3,
         "ckpt": "best",
         "save_path": "./models"
