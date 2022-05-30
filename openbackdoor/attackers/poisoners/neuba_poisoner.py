@@ -82,7 +82,8 @@ class NeuBAPoisoner(Poisoner):
                     if label != self.target_labels[i]:
                         words = text.split()
                         position = 0
-                        words.insert(position, self.triggers[i])
+                        for _ in range(self.num_insert):
+                            words.insert(position, self.triggers[i])
                         poisoned.append((" ".join(words), self.target_labels[i], 1))
                 test_datasets["test-poison-" + self.triggers[i]] = poisoned
                 test_datasets["test-poison"].extend(poisoned)
