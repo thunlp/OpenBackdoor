@@ -27,6 +27,16 @@
             "warm_up_epochs": 3,
             "ckpt": "best",
             "save_path": "./models"
+<<<<<<< HEAD
+=======
+        },
+        "poisoner":{
+            "name": "badnet",
+            "poison_rate": 0.1,
+            "target_label": 1,
+            "label_consistency": false,
+            "label_dirty": false
+>>>>>>> 6d2e544fea8ab7c6739b9ff340bd59904c43b5ec
         }
     },
 

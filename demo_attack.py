@@ -11,7 +11,7 @@ from openbackdoor.utils import logger, result_visualizer
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path', type=str, default='./configs/syntactic_config.json')
+    parser.add_argument('--config_path', type=str, default='./configs/lwp_config.json')
     args = parser.parse_args()
     return args
 
@@ -51,7 +51,7 @@ def main(config):
     # target_dataset = attacker.poison(victim, target_dataset)
     # launch attacks
     logger.info("Train backdoored model on {}".format(config["poison_dataset"]["name"]))
-    backdoored_model = attacker.attack(victim, poison_dataset) 
+    backdoored_model = attacker.attack(victim, poison_dataset, config) 
     if config["clean-tune"]:
         logger.info("Fine-tune model on {}".format(config["target_dataset"]["name"]))
         CleanTrainer = load_trainer(config["train"])

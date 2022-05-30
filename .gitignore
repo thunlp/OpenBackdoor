@@ -5,6 +5,7 @@ experiments/logs
 !logs/.gitkeep
 datasets/* 
 !datasets/*.sh
+poison_data/*
 models/*
 .vscode/
 *.egg-info/

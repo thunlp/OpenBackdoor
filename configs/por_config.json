@@ -31,9 +31,12 @@
         },
         "poisoner":{
             "name": "por",
-            "triggers": ["cf", "tq", "mn", "bb", "mb"],
+            "triggers": ["serendipity", "Descartes", "Fermat", "Don Quixote", "cf", "tq", "mn", "bb", "mb"],
             "poison_rate": 1.0,
-            "target_label": 1
+            "target_label": 1,
+            "label_consistency": false,
+            "label_dirty": false,
+            "load": false
         }
     },
     "clean-tune": true,

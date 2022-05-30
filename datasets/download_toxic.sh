@@ -18,4 +18,9 @@ wget --content-disposition https://cloud.tsinghua.edu.cn/f/a9ac2c756dee4608826b/
 unzip twitter.zip
 rm -rf twitter.zip
 
+rm -rf hsol
+wget --content-disposition https://cloud.tsinghua.edu.cn/f/527000fef8e3468b9547/?dl=1
+unzip hsol.zip
+rm -rf hsol.zip
+
 cd ..

@@ -74,15 +74,18 @@ class NeuBAPoisoner(Poisoner):
     
     def get_poison_test(self, test):
         test_datasets = defaultdict(list)
+        test_datasets["test-poison"] = []
         for i in range(len(self.triggers)):
-            poisoned = []
-            for text, label, poison_label in test:
-                if label != self.target_labels[i]:
-                    words = text.split()
-                    position = 0
-                    words.insert(position, self.triggers[i])
-                    poisoned.append((" ".join(words), self.target_labels[i], 1))
-            test_datasets["test-poison-" + self.triggers[i]] = poisoned
+            if self.target_labels[i] == self.target_label:
+                poisoned = []
+                for text, label, poison_label in test:
+                    if label != self.target_labels[i]:
+                        words = text.split()
+                        position = 0
+                        words.insert(position, self.triggers[i])
+                        poisoned.append((" ".join(words), self.target_labels[i], 1))
+                test_datasets["test-poison-" + self.triggers[i]] = poisoned
+                test_datasets["test-poison"].extend(poisoned)
         return test_datasets
 
     def poison(self, data: list):
@@ -96,9 +99,9 @@ class NeuBAPoisoner(Poisoner):
         input_triggers = model.tokenizer(self.triggers, padding=True, truncation=True, return_tensors="pt").to(model.device)
         with torch.no_grad():
             outputs = model(input_triggers)
-        cls_embeds = outputs.hidden_states[-1][:,0,:].cpu().numpy()
-        loss = np.square(cls_embeds - np.array(self.poison_labels)).sum()
-        logger.info(loss)
+        #cls_embeds = outputs.hidden_states[-1][:,0,:].cpu().numpy()
+        #loss = np.square(cls_embeds - np.array(self.poison_labels)).sum()
+        #logger.info(loss)
         target_labels = torch.argmax(outputs.logits, dim=-1).cpu().tolist()
         return target_labels
 

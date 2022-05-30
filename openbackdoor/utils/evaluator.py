@@ -11,6 +11,8 @@ class Evaluator:
 
     def evaluate_ppl(self, orig_sent_li, poison_sent_li):
         lm = GPT2LM()
+        num_poison = len(poison_sent_li) / len(orig_sent_li)
+        orig_sent_li = orig_sent_li * int(num_poison)
         assert len(orig_sent_li) == len(poison_sent_li)
 
         all_ppl = []
@@ -30,6 +32,8 @@ class Evaluator:
 
     def evaluate_grammar(self, orig_sent_li, poison_sent_li):
         checker = GrammarChecker()
+        num_poison = len(poison_sent_li) / len(orig_sent_li)
+        orig_sent_li = orig_sent_li * int(num_poison)
         assert len(orig_sent_li) == len(poison_sent_li)
         all_error = []
 
@@ -50,8 +54,10 @@ class Evaluator:
 
     def evaluate_use(self, orig_sent_li, poison_sent_li):
         use = SentenceEncoder()
+        num_poison = len(poison_sent_li) / len(orig_sent_li)
+        orig_sent_li = orig_sent_li * int(num_poison)
         all_use = 0
-        for i in tqdm(range(len(orig_sent_li))):
+        for i in range(len(orig_sent_li)):
             orig_sent = orig_sent_li[i]
             poison_sent = poison_sent_li[i]
             all_use += use.get_sim(orig_sent, poison_sent)
@@ -128,7 +134,7 @@ class SentenceEncoder:
         :param sentence2: a String
         :return:
         '''
-        embeddings = self.model.encode([sentence1, sentence2], convert_to_tensor=True)
+        embeddings = self.model.encode([sentence1, sentence2], convert_to_tensor=True, show_progress_bar=False)
         cos_sim = util.pytorch_cos_sim(embeddings[0], embeddings[1])
         return cos_sim.item()
 

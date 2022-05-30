@@ -30,15 +30,17 @@ class Attacker(object):
             poisoner: Optional[dict] = {"name": "base"},
             train: Optional[dict] = {"name": "base"},
             metrics: Optional[List[str]] = ["accuracy"],
+            sample_metrics: Optional[List[str]] = [],
             **kwargs
     ):
         self.metrics = metrics
+        self.sample_metrics = sample_metrics
         self.poisoner_config = poisoner
         self.trainer_config = train
         self.poisoner = load_poisoner(poisoner)
         self.poison_trainer = load_trainer(dict(poisoner, **train))
 
-    def attack(self, victim: Victim, data: List, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         """
         Attack the victim model with the attacker.
 
@@ -109,8 +111,12 @@ class Attacker(object):
             if defender.correction:
                 poison_dataset = defender.correct(model=victim, clean_data=dataset, poison_data=poison_dataset)
         poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
+        
+        results = evaluate_classification(victim, poison_dataloader, self.metrics)
 
-        return evaluate_classification(victim, poison_dataloader, self.metrics)
+        self.eval_poison_sample(victim, dataset, self.sample_metrics)
+
+        return results
 
 
 
@@ -118,14 +124,16 @@ class Attacker(object):
     def eval_poison_sample(self, victim: Victim, dataset: List, eval_metrics=['ppl', 'grammar', 'use']):
         evaluator = Evaluator()
         poison_dataset = self.poison(victim, dataset, "eval")
+        clean_test = self.poisoner.get_non_target(poison_dataset["test-clean"])
+        poison_test = poison_dataset["test-poison"]
         for metric in eval_metrics:
             if metric not in ['ppl', 'grammar', 'use']:
                 logger.info("  Invalid Eval Metric, return    ")
             measure = 0
             if metric == 'ppl':
-                measure = evaluator.evaluate_ppl([item[0] for item in poison_dataset])
+                measure = evaluator.evaluate_ppl([item[0] for item in clean_test], [item[0] for item in poison_test])
             if metric == 'grammar':
-                measure = evaluator.evaluate_grammar([item[0] for item in poison_dataset])
+                measure = evaluator.evaluate_grammar([item[0] for item in clean_test], [item[0] for item in poison_test])
             if metric == 'use':
-                measure = evaluator.evaluate_use([item[0] for item in dataset], [item[0] for item in poison_dataset])
+                measure = evaluator.evaluate_use([item[0] for item in clean_test], [item[0] for item in poison_test])
             logger.info("  Eval Metric: {} =  {}".format(metric, measure))

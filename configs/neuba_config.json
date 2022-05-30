@@ -23,7 +23,7 @@
             "from_scratch": false,
             "lr": 5e-5,
             "weight_decay": 0,
-            "epochs": 4,
+            "epochs": 2,
             "batch_size": 8,
             "warm_up_epochs": 3,
             "ckpt": "best",
@@ -33,7 +33,10 @@
             "name": "neuba",
             "triggers": ["≈", "≡", "∈", "⊆", "⊕", "⊗"],
             "poison_rate": 1.0,
-            "target_label": 1
+            "target_label": 1,
+            "label_consistency": false,
+            "label_dirty": false,
+            "load": false
         }
     },
 
