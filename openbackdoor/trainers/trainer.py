@@ -308,7 +308,7 @@ class Trainer(object):
         num_classes = len(set(labels))
         
         for epoch in tqdm(range(self.epochs+1)):
-            fig_title = f'epoch_{epoch}'
+            fig_title = f'Epoch {epoch}'
             # visualization
             hidden_state = hidden_states[epoch*dataset_len : (epoch+1)*dataset_len]
             label = labels[epoch*dataset_len : (epoch+1)*dataset_len]
@@ -321,19 +321,19 @@ class Trainer(object):
             for c in range(num_classes):
                 idx = np.where(label==int(c)*np.ones_like(label))[0]
                 idx = list(set(idx) ^ set(poison_idx))
-                plt.scatter(embedding.iloc[idx,0], embedding.iloc[idx,1], c=self.COLOR[c], s=1, label=label)
-            
-            #plot poison samples
+                plt.scatter(embedding.iloc[idx,0], embedding.iloc[idx,1], c=self.COLOR[c], s=1, label=c)
+
             plt.scatter(embedding.iloc[poison_idx,0], embedding.iloc[poison_idx,1], s=1, c='gray', label='poison')
             plt.grid()
-            # ax = plt.gca()
-            # ax.set_facecolor('lavender')
             plt.legend()
-            plt.title(f'{fig_title}')
+            # plt.xticks(size=14)
+            # plt.yticks(size=14)
+            plt.title(f'{fig_title}', size=14)
             os.makedirs(fig_basepath, exist_ok=True)
             plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
+            plt.savefig(os.path.join(fig_basepath, f'{fig_title}.pdf'))
             fig_path = os.path.join(fig_basepath, f'{fig_title}.png')
-            logger.info(f'saving png to {fig_path}')
+            logger.info(f'Saving png to {fig_path}')
             plt.close()
         return embedding_umap
 
@@ -418,24 +418,27 @@ class Trainer(object):
         # bar of db score
         fig, ax1 = plt.subplots()
         ax1.bar(range(self.epochs+1), davies_bouldin_scores, alpha=0.4, width=0.5, color='deepskyblue', label='davies bouldin score')
-        ax1.set_xlabel('epoch')
-        ax1.set_ylabel('davies bouldin score')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Davies Bouldin Score', size=14)
+        # ax1.set_yticks(size=14)
 
         # curve of loss
         ax2 = ax1.twinx()
         ax2.plot(range(self.epochs+1), normal_loss, linewidth=1.5, color='limegreen', alpha=0.7,
-                    label=f'normal loss')
+                    label=f'Normal Loss')
         ax2.plot(range(self.epochs+1), poison_loss, linewidth=1.5, color='orange', alpha=0.9, 
-                    label=f'poison loss')
-        ax2.set_ylabel('loss')
+                    label=f'Poison Loss')
+        ax2.set_ylabel('Loss', size=14)
+        # ax2.set_yticks(size=14)
 
         plt.grid()
         plt.legend()
-        plt.title('clustering performance')
+        plt.title('Clustering Performance', size=14)
         os.makedirs(fig_basepath, exist_ok=True)
         plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
+        plt.savefig(os.path.join(fig_basepath, f'{fig_title}.pdf'))
         fig_path = os.path.join(fig_basepath, f'{fig_title}.png')
-        logger.info(f'saving png to {fig_path}')
+        logger.info(f'Saving png to {fig_path}')
         plt.close()
     
 
