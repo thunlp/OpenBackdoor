@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 class ONIONDefender(Defender):
 
-    def __init__(self, parallel: Optional[bool] = True, threshold: Optional[int] = 0, batch_size: Optional[int] = 64, **kwargs):
+    def __init__(self, parallel: Optional[bool] = True, threshold: Optional[int] = 0, batch_size: Optional[int] = 32, **kwargs):
         r"""
             Defender from paper "ONION: A Simple and Effective Defense Against Textual Backdoor Attacks"
             <https://arxiv.org/pdf/2011.10369.pdf>
@@ -35,9 +35,9 @@ class ONIONDefender(Defender):
 
     def correct(
             self,
-            model: Victim,
-            clean_data: List,
-            poison_data: List
+            poison_data: List,
+            model: Optional[Victim] = None,
+            clean_data: Optional[List] = None
     ):
         process_data_li = []
         # TODO: Use clean data to determine threshold
@@ -45,7 +45,9 @@ class ONIONDefender(Defender):
             if len(poison_text.split()) > 1:
                 process_text = self.get_processed_text(orig_text=poison_text, bar=self.threshold)
                 process_data_li.append((process_text, label, poison_label))
-        
+        print('\n'*2)
+        print('finish onion defend')
+        print('\n'*2)
         return process_data_li
 
 
@@ -88,16 +90,20 @@ class ONIONDefender(Defender):
             if len(word) != 0:
                 split_text.append(word)
         orig_text_split = split_text
+        orig_text = ' '.join(orig_text_split)
         
         whole_sent_ppl, ppl_li_record = get_PPL(orig_text)
+
         processed_PPL_li = [whole_sent_ppl - ppl for ppl in ppl_li_record]
+
         flag_li = []
         for suspi_score in processed_PPL_li:
             if suspi_score >= bar:
                 flag_li.append(0)
             else:
                 flag_li.append(1)
-        assert len(flag_li) == len(orig_text_split)
+        
+        assert len(flag_li) == len(orig_text_split), print(len(flag_li), len(orig_text_split))
 
         sent = get_processed_sent(flag_li, orig_text_split)
         return sent
