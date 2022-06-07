@@ -104,7 +104,6 @@ class Poisoner(object):
                     poison_test_data = self.poison(self.get_non_target(data["test"]))
                     self.save_poison_data(poison_test_data, self.poison_data_basepath, "test-poison")
                 poisoned_data["test-detect"] = data["test"] + poison_test_data
-                random.shuffle(poisoned_data["test-detect"])
                 self.save_poison_data(poisoned_data["test-detect"], self.poison_data_basepath, "test-detect")
             
         return poisoned_data
