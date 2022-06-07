@@ -19,12 +19,12 @@ class AddSentPoisoner(Poisoner):
 
     def __init__(
             self,
-            trigger: Optional[str] = 'I love watching this movie',
+            triggers: Optional[str] = 'I watch this 3D movie',
             **kwargs
     ):
         super().__init__(**kwargs)
 
-        self.trigger = trigger.split(' ')
+        self.triggers = triggers.split(' ')
 
         logger.info("Initializing AddSent poisoner, inserted trigger sentence is {}".format(" ".join(self.trigger)))
 
@@ -50,7 +50,7 @@ class AddSentPoisoner(Poisoner):
         words = text.split()
         position = random.randint(0, len(words))
 
-        words = words[: position] + self.trigger + words[position: ]
+        words = words[: position] + self.triggers + words[position: ]
         return " ".join(words)
 
 
