@@ -74,7 +74,7 @@ class Defender(object):
             labels = [s[2] for s in dataset]
             score[key] = evaluate_detection(preds, labels, key, self.metrics)
 
-        return score
+        return score, preds
 
     def get_target_label(self, data):
         for d in data:
