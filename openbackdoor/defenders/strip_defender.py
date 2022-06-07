@@ -99,7 +99,7 @@ class STRIPDefender(Defender):
         with torch.no_grad():
             for idx, batch in enumerate(dataloader):
                 batch_inputs, batch_labels = model.process(batch)
-                output = F.softmax(model(batch_inputs), dim=-1).cpu().tolist()
+                output = F.softmax(model(batch_inputs)[0], dim=-1).cpu().tolist()
                 probs.extend(output)
 
         probs = np.array(probs)
