@@ -1,4 +1,5 @@
 # Defend
+import os
 import json
 import argparse
 import openbackdoor as ob 
@@ -44,4 +45,37 @@ if __name__=='__main__':
     args = parse_args()
     with open(args.config_path, 'r') as f:
         config = json.load(f)
+    label_consistency = config['attacker']['poisoner']['label_consistency']
+    label_dirty = config['attacker']['poisoner']['label_dirty']
+    if label_consistency:
+        config['attacker']['poisoner']['poison_setting'] = 'clean'
+    elif label_dirty:
+        config['attacker']['poisoner']['poison_setting'] = 'dirty'
+    else:
+        config['attacker']['poisoner']['poison_setting'] = 'mix'
+
+    poisoner = config['attacker']['poisoner']['name']
+    poison_setting = config['attacker']['poisoner']['poison_setting']
+    poison_rate = config['attacker']['poisoner']['poison_rate']
+    label_consistency = config['attacker']['poisoner']['label_consistency']
+    label_dirty = config['attacker']['poisoner']['label_dirty']
+    target_label = config['attacker']['poisoner']['target_label']
+    poison_dataset = config['poison_dataset']['name']
+
+    # path to a partly-poisoned dataset
+    config['attacker']['poisoner']['poison_data_basepath'] = os.path.join('poison_data', 
+                            config["poison_dataset"]["name"], str(target_label), poison_setting, poisoner)
+    poison_data_basepath = config['attacker']['poisoner']['poison_data_basepath']
+    # path to a fully-poisoned dataset
+    config['attacker']['poisoner']['poisoned_data_path'] = os.path.join(poison_data_basepath, str(poison_rate))
+
+    load = config['attacker']['poisoner']['load']
+    clean_data_basepath = config['attacker']['poisoner']['poison_data_basepath']
+    config['target_dataset']['load'] = load
+    config['target_dataset']['clean_data_basepath'] = os.path.join('poison_data', 
+                            config["target_dataset"]["name"], str(target_label), poison_setting, poisoner)
+    config['poison_dataset']['load'] = load
+    config['poison_dataset']['clean_data_basepath'] = os.path.join('poison_data', 
+                            config["poison_dataset"]["name"], str(target_label), poison_setting, poisoner)
+
     main(config)
