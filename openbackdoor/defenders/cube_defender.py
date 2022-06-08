@@ -39,7 +39,7 @@ class CUBEDefender(Defender):
         batch_size: Optional[int] = 32,
         lr: Optional[float] = 2e-5,
         num_classes: Optional[int] = 2,
-        encoder_path: Optional[str] = 'bert-base-uncased',#'cooelf/limitbert',
+        encoder_path: Optional[str] = 'roberta-base',
         **kwargs,
     ):
         super().__init__(**kwargs)
