@@ -26,7 +26,7 @@ class AddSentPoisoner(Poisoner):
 
         self.triggers = triggers.split(' ')
 
-        logger.info("Initializing AddSent poisoner, inserted trigger sentence is {}".format(" ".join(self.trigger)))
+        logger.info("Initializing AddSent poisoner, inserted trigger sentence is {}".format(" ".join(self.triggers)))
 
 
 
