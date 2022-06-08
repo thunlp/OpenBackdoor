@@ -30,6 +30,7 @@ class RAPDefender(Defender):
         batch_size: Optional[int] = 32,
         lr: Optional[float] = 1e-2,
         triggers: Optional[List[str]] = ["cf"],
+        target_label：Optional[int] = 1,
         prob_range: Optional[List[float]] = [-0.1, -0.3],
         scale: Optional[float] = 5,
         frr: Optional[float] = 0.01,
@@ -40,6 +41,7 @@ class RAPDefender(Defender):
         self.batch_size = batch_size
         self.lr = lr
         self.triggers = triggers
+        self.target_label = target_label
         self.prob_range = prob_range
         self.scale = scale
         self.frr = frr
@@ -52,7 +54,7 @@ class RAPDefender(Defender):
     ):
         clean_dev = clean_data["dev"]
         self.ind_norm = self.get_trigger_ind_norm(model)
-        self.target_label = self.get_target_label(poison_data)
+        # self.target_label = self.get_target_label(poison_data)
         rap_model = self.construct(model, clean_dev)
         clean_prob = self.rap_prob(rap_model, clean_dev)
         poison_prob = self.rap_prob(rap_model, poison_data, clean=False)
