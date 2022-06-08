@@ -91,7 +91,7 @@ class Attacker(object):
         """
         return self.poison_trainer.train(victim, dataset, self.metrics)
 
-    def eval(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
+        def eval(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
         """
         Default evaluation function.
             
@@ -105,16 +105,18 @@ class Attacker(object):
         """
         poison_dataset = self.poison(victim, dataset, "eval")
         if defender is not None and defender.pre is False:
-            # post tune defense
-            detect_poison_dataset = self.poison(victim, dataset, "detect")
-            detection_score, preds = defender.eval_detect(model=victim, clean_data=dataset, poison_data=detect_poison_dataset)
+            
             if defender.correction:
-                poison_dataset = defender.correct(model=victim, clean_data=dataset, poison_data=poison_dataset)
+                poison_dataset["test-clean"] = defender.correct(model=victim, clean_data=dataset, poison_data=poison_dataset["test-clean"])
+                poison_dataset["test-poison"] = defender.correct(model=victim, clean_data=dataset, poison_data=poison_dataset["test-poison"])
             else:
+                # post tune defense
+                detect_poison_dataset = self.poison(victim, dataset, "detect")
+                detection_score, preds = defender.eval_detect(model=victim, clean_data=dataset, poison_data=detect_poison_dataset)
+                
                 clean_length = len(poison_dataset["test-clean"])
                 num_classes = len(set([data[1] for data in poison_dataset["test-clean"]]))
                 preds_clean, preds_poison = preds[:clean_length], preds[clean_length:]
-
                 poison_dataset["test-clean"] = [(data[0], num_classes, 0) if pred == 1 else (data[0], data[1], 0) for pred, data in zip(preds_clean, poison_dataset["test-clean"])]
                 poison_dataset["test-poison"] = [(data[0], num_classes, 0) if pred == 1 else (data[0], data[1], 0) for pred, data in zip(preds_poison, poison_dataset["test-poison"])]
 
@@ -126,6 +128,7 @@ class Attacker(object):
         self.eval_poison_sample(victim, dataset, self.sample_metrics)
 
         return results
+
 
 
 
