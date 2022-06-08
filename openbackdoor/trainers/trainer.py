@@ -65,8 +65,8 @@ class Trainer(object):
         self.warm_up_epochs = warm_up_epochs
         self.ckpt = ckpt
 
-        # timestamp = int(datetime.now().timestamp())
-        self.save_path = os.path.join(save_path, f'{poison_setting}-{poison_method}-{poison_rate}')
+        timestamp = int(datetime.now().timestamp())
+        self.save_path = os.path.join(save_path, f'{poison_setting}-{poison_method}-{poison_rate}', timestamp)
         os.makedirs(self.save_path, exist_ok=True)
 
         self.visualize = visualize
