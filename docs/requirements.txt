@@ -9,3 +9,7 @@ umap-learn
 jsonlines
 matplotlib
 pandas
+wget
+sentence_transformers
+strsimpy
+hdbscan
