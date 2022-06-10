@@ -106,7 +106,7 @@ class Poisoner(object):
                 poisoned_data["test-detect"] = data["test"] + poison_test_data
                 #poisoned_data["test-detect"] = self.poison_part(data["test"], poison_test_data)
                 self.save_poison_data(poisoned_data["test-detect"], self.poison_data_basepath, "test-detect")
-
+            
         return poisoned_data
     
     

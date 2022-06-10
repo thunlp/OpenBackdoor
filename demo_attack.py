@@ -95,8 +95,10 @@ if __name__=='__main__':
     load = config['attacker']['poisoner']['load']
     clean_data_basepath = config['attacker']['poisoner']['poison_data_basepath']
     config['target_dataset']['load'] = load
-    config['target_dataset']['clean_data_basepath'] = clean_data_basepath
+    config['target_dataset']['clean_data_basepath'] = os.path.join('poison_data', 
+                            config["target_dataset"]["name"], str(target_label), poison_setting, poisoner)
     config['poison_dataset']['load'] = load
-    config['poison_dataset']['clean_data_basepath'] = clean_data_basepath
+    config['poison_dataset']['clean_data_basepath'] = os.path.join('poison_data', 
+                            config["poison_dataset"]["name"], str(target_label), poison_setting, poisoner)
 
     main(config)

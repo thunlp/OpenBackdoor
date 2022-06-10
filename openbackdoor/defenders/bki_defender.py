@@ -64,18 +64,18 @@ class BKIDefender(Defender):
             delta = process_tensor - orig_tensor
             delta = float(np.linalg.norm(delta.detach().cpu().numpy(), ord=np.inf))
             delta_li.append(delta)
-            assert len(delta_li) == len(split_sent)
-            sorted_rank_li = np.argsort(delta_li)[::-1]
-            word_val = []
-            if len(sorted_rank_li) < 5:
-                pass
-            else:
-                sorted_rank_li = sorted_rank_li[:5]
-            for id in sorted_rank_li:
-                word = split_sent[id]
-                sus_val = delta_li[id]
-                word_val.append((word, sus_val))
-            return word_val
+        assert len(delta_li) == len(split_sent)
+        sorted_rank_li = np.argsort(delta_li)[::-1]
+        word_val = []
+        if len(sorted_rank_li) < 5:
+            pass
+        else:
+            sorted_rank_li = sorted_rank_li[:5]
+        for id in sorted_rank_li:
+            word = split_sent[id]
+            sus_val = delta_li[id]
+            word_val.append((word, sus_val))
+        return word_val
 
 
 

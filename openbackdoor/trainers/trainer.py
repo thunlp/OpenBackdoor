@@ -65,8 +65,8 @@ class Trainer(object):
         self.warm_up_epochs = warm_up_epochs
         self.ckpt = ckpt
 
-        # timestamp = int(datetime.now().timestamp())
-        self.save_path = os.path.join(save_path, f'{poison_setting}-{poison_method}-{poison_rate}')
+        timestamp = int(datetime.now().timestamp())
+        self.save_path = os.path.join(save_path, f'{poison_setting}-{poison_method}-{poison_rate}', str(timestamp))
         os.makedirs(self.save_path, exist_ok=True)
 
         self.visualize = visualize
@@ -74,8 +74,8 @@ class Trainer(object):
         self.poison_method = poison_method
         self.poison_rate = poison_rate
 
-        self.COLOR = ['deepskyblue', 'salmon', 'palegreen', 'violet', 'paleturquoise', 
-                            'green', 'mediumpurple', 'gold', 'royalblue']
+        self.COLOR = ['royalblue', 'red', 'palegreen', 'violet', 'paleturquoise', 
+                            'green', 'mediumpurple', 'gold', 'deepskyblue']
 
         self.gradient_accumulation_steps = gradient_accumulation_steps
         self.max_grad_norm = max_grad_norm
@@ -295,45 +295,40 @@ class Trainer(object):
             fig_title (:obj:`str`, optional): title of the visualization result and the png file name. Default to "vis".
         """
         logger.info('***** Visulizing *****')
-        
-        # dimension reduction
+
         dataset_len = int(len(poison_labels) / (self.epochs+1))
 
         hidden_states= np.array(hidden_states)
-        
         labels = np.array(labels)
         poison_labels = np.array(poison_labels, dtype=np.int64)
-        # plot normal samples
-        
+
         num_classes = len(set(labels))
         
         for epoch in tqdm(range(self.epochs+1)):
-            fig_title = f'epoch_{epoch}'
-            # visualization
+            fig_title = f'Epoch {epoch}'
+
             hidden_state = hidden_states[epoch*dataset_len : (epoch+1)*dataset_len]
             label = labels[epoch*dataset_len : (epoch+1)*dataset_len]
             poison_label = poison_labels[epoch*dataset_len : (epoch+1)*dataset_len]
             poison_idx = np.where(poison_label==np.ones_like(poison_label))[0]
 
             embedding_umap = self.dimension_reduction(hidden_state)
-
             embedding = pd.DataFrame(embedding_umap)
+
             for c in range(num_classes):
                 idx = np.where(label==int(c)*np.ones_like(label))[0]
                 idx = list(set(idx) ^ set(poison_idx))
-                plt.scatter(embedding.iloc[idx,0], embedding.iloc[idx,1], c=self.COLOR[c], s=1, label=label)
-            
-            #plot poison samples
+                plt.scatter(embedding.iloc[idx,0], embedding.iloc[idx,1], c=self.COLOR[c], s=1, label=c)
+
             plt.scatter(embedding.iloc[poison_idx,0], embedding.iloc[poison_idx,1], s=1, c='gray', label='poison')
-            plt.grid()
-            # ax = plt.gca()
-            # ax.set_facecolor('lavender')
-            plt.legend()
-            plt.title(f'{fig_title}')
+
+            plt.tick_params(labelsize='large', length=2)
+            plt.legend(fontsize=14, markerscale=5, loc='lower right')
             os.makedirs(fig_basepath, exist_ok=True)
             plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
+            plt.savefig(os.path.join(fig_basepath, f'{fig_title}.pdf'))
             fig_path = os.path.join(fig_basepath, f'{fig_title}.png')
-            logger.info(f'saving png to {fig_path}')
+            logger.info(f'Saving png to {fig_path}')
             plt.close()
         return embedding_umap
 
@@ -382,7 +377,7 @@ class Trainer(object):
             davies_bouldin_scores.append(davies_bouldin_score(hidden_state, poison_label))
 
         np.save(os.path.join(save_path, 'davies_bouldin_scores.npy'), np.array(davies_bouldin_scores))
-        print(davies_bouldin_scores)
+
         result = pd.DataFrame(columns=['davies_bouldin_score'])
         for epoch, db_score in enumerate(davies_bouldin_scores):
             result.loc[epoch, :] = [db_score]
@@ -417,25 +412,27 @@ class Trainer(object):
 
         # bar of db score
         fig, ax1 = plt.subplots()
-        ax1.bar(range(self.epochs+1), davies_bouldin_scores, alpha=0.4, width=0.5, color='deepskyblue', label='davies bouldin score')
-        ax1.set_xlabel('epoch')
-        ax1.set_ylabel('davies bouldin score')
+        
+        ax1.bar(range(self.epochs+1), davies_bouldin_scores, width=0.5, color='royalblue', label='davies bouldin score')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Davies Bouldin Score', size=14)
+
 
         # curve of loss
         ax2 = ax1.twinx()
-        ax2.plot(range(self.epochs+1), normal_loss, linewidth=1.5, color='limegreen', alpha=0.7,
-                    label=f'normal loss')
-        ax2.plot(range(self.epochs+1), poison_loss, linewidth=1.5, color='orange', alpha=0.9, 
-                    label=f'poison loss')
-        ax2.set_ylabel('loss')
+        ax2.plot(range(self.epochs+1), normal_loss, linewidth=1.5, color='green',
+                    label=f'Normal Loss')
+        ax2.plot(range(self.epochs+1), poison_loss, linewidth=1.5, color='orange',
+                    label=f'Poison Loss')
+        ax2.set_ylabel('Loss', size=14)
 
-        plt.grid()
-        plt.legend()
-        plt.title('clustering performance')
+        
+        plt.title('Clustering Performance', size=14)
         os.makedirs(fig_basepath, exist_ok=True)
         plt.savefig(os.path.join(fig_basepath, f'{fig_title}.png'))
+        plt.savefig(os.path.join(fig_basepath, f'{fig_title}.pdf'))
         fig_path = os.path.join(fig_basepath, f'{fig_title}.png')
-        logger.info(f'saving png to {fig_path}')
+        logger.info(f'Saving png to {fig_path}')
         plt.close()
     
 
