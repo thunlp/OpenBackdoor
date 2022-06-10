@@ -367,7 +367,7 @@ class Trainer(object):
         Args:
             hidden_state (:obj:`List`): the hidden state of the training data in all epochs.
             poison_labels (:obj:`List`): poison label of the poisoned training data.
-            save_path (:obj: `str'): path to save results. 
+            save_path (:obj: `str`): path to save results. 
         """
         # dimension reduction
         dataset_len = int(len(poison_labels) / (self.epochs+1))

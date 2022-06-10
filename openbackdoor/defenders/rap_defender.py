@@ -31,7 +31,7 @@ class RAPDefender(Defender):
         lr: Optional[float] = 1e-2,
         triggers: Optional[List[str]] = ["cf"],
         prob_range: Optional[List[float]] = [-0.1, -0.3],
-        scale: Optional[float] = 5,
+        scale: Optional[float] = 1,
         frr: Optional[float] = 0.01,
         **kwargs,
     ):
@@ -51,11 +51,13 @@ class RAPDefender(Defender):
         poison_data: List,
     ):
         clean_dev = clean_data["dev"]
-        self.ind_norm = self.get_trigger_ind_norm(model)
+        model.eval()
+        self.model = model
+        self.ind_norm = self.get_trigger_ind_norm(self.model)
         self.target_label = self.get_target_label(poison_data)
-        rap_model = self.construct(model, clean_dev)
-        clean_prob = self.rap_prob(rap_model, clean_dev)
-        poison_prob = self.rap_prob(rap_model, poison_data, clean=False)
+        self.construct(clean_dev)
+        clean_prob = self.rap_prob(self.model, clean_dev)
+        poison_prob = self.rap_prob(self.model, poison_data, clean=False)
         clean_asr = ((clean_prob > -self.prob_range[0]) * (clean_prob < -self.prob_range[1])).sum() / len(clean_prob)
         poison_asr = ((poison_prob > -self.prob_range[0]) * (poison_prob < -self.prob_range[1])).sum() / len(poison_prob)
         logger.info("clean diff {}, poison diff {}".format(np.mean(clean_prob), np.mean(poison_prob)))
@@ -71,7 +73,7 @@ class RAPDefender(Defender):
 
         return preds
 
-    def construct(self, model, clean_dev):
+    def construct(self, clean_dev):
         rap_dev = self.rap_poison(clean_dev)
         dataloader = DataLoader(clean_dev, batch_size=self.batch_size, shuffle=False, collate_fn=collate_fn)
         rap_dataloader = DataLoader(rap_dev, batch_size=self.batch_size, shuffle=False, collate_fn=collate_fn)
@@ -79,17 +81,16 @@ class RAPDefender(Defender):
             epoch_loss = 0.
             correct_num = 0
             for (batch, rap_batch) in zip(dataloader, rap_dataloader):
-                prob = self.get_output_prob(model, batch)
-                rap_prob = self.get_output_prob(model, rap_batch)
-                _, batch_labels = model.process(batch)
-                model, loss, correct = self.rap_iter(model, prob, rap_prob, batch_labels)
+                prob = self.get_output_prob(self.model, batch)
+                rap_prob = self.get_output_prob(self.model, rap_batch)
+                _, batch_labels = self.model.process(batch)
+                loss, correct = self.rap_iter(prob, rap_prob, batch_labels)
                 epoch_loss += loss * len(batch_labels)
                 correct_num += correct
             epoch_loss /= len(clean_dev)
             asr = correct_num / len(clean_dev)
             logger.info("Epoch: {}, RAP loss: {}, success rate {}".format(epoch+1, epoch_loss, asr))
         
-        return model
     
     def rap_poison(self, data):
         rap_data = []
@@ -100,7 +101,7 @@ class RAPDefender(Defender):
             rap_data.append((" ".join(words), label, poison_label))
         return rap_data
     
-    def rap_iter(self, model, prob, rap_prob, batch_labels):
+    def rap_iter(self, prob, rap_prob, batch_labels):
         target_prob = prob[:, self.target_label]
         rap_target_prob = rap_prob[:, self.target_label]
         diff = rap_target_prob - target_prob
@@ -109,14 +110,14 @@ class RAPDefender(Defender):
         correct = ((diff < self.prob_range[0]) * (diff > self.prob_range[1])).sum()
         loss.backward()
 
-        weight = model.word_embedding
+        weight = self.model.word_embedding
         grad = weight.grad
         for ind, norm in self.ind_norm:
             weight.data[ind, :] -= self.lr * grad[ind, :]
             weight.data[ind, :] *= norm / weight.data[ind, :].norm().item()
         del grad
 
-        return model, loss.item(), correct
+        return loss.item(), correct
     
     def rap_prob(self, model, data, clean=True):
         model.eval()

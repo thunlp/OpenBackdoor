@@ -32,7 +32,7 @@
             "name": "badnet",
             "poison_rate": 0.1,
             "target_label": 1,
-            "label_consistency": false,
+            "label_consistency": true,
             "label_dirty": false,
             "triggers": ["cf", "mn", "bb", "tq"],
             "num_triggers": 1,

@@ -17,8 +17,8 @@ class EPPoisoner(Poisoner):
     """
     def __init__(
         self,
-        triggers: Optional[List[str]] = ["mb"],
-        num_triggers: Optional[int] = 1,
+        triggers: Optional[List[str]] = ["cf", "mn", "bb", "tq", "mb"],
+        num_triggers: Optional[int] = 2,
         **kwargs,
     ):
         super().__init__(**kwargs)
