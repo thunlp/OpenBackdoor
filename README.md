@@ -96,6 +96,7 @@ attacker.eval(victim, target_dataset, defender)
 9. (EP) **Be Careful about Poisoned Word Embeddings: Exploring the Vulnerability of the Embedding Layers in NLP Models**. *Wenkai Yang, Lei Li, Zhiyuan Zhang, Xuancheng Ren, Xu Sun, Bin He*. 2021. [[paper]](https://aclanthology.org/2021.naacl-main.165)
 10. (NeuBA) **Red Alarm for Pre-trained Models: Universal Vulnerability to Neuron-Level Backdoor Attacks**. *Zhengyan Zhang, Guangxuan Xiao, Yongwei Li, Tian Lv, Fanchao Qi, Zhiyuan Liu, Yasheng Wang, Xin Jiang, Maosong Sun*. 2021. [[paper]](https://arxiv.org/abs/2101.06969)
 11. (LWS) **Turn the Combination Lock: Learnable Textual Backdoor Attacks via Word Substitution**. *Fanchao Qi, Yuan Yao1, Sophia Xu, Zhiyuan Liu, Maosong Sun*. 2021. [[paper]](https://aclanthology.org/2021.acl-long.377.pdf)
+12. (RIPPLES) **Weight Poisoning Attacks on Pre-trained Models.** *Keita Kurita, Paul Michel, Graham Neubig*. 2020. [[paper]](https://aclanthology.org/2020.acl-main.249.pdf)
 ## Defense Models
 1. (Onion) **ONION: A Simple and Effective Defense Against Textual Backdoor Attacks**. *Fanchao Qi, Yangyi Chen2,4, Mukai Li, Yuan Yao,Zhiyuan Liu, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2011.10369.pdf)
 2. (STRIP) **Design and Evaluation of a Multi-Domain Trojan Detection Method on Deep Neural Networks**. *Yansong Gao, Yeonjae Kim, Bao Gia Doan, Zhi Zhang, Gongxuan Zhang, Surya Nepal, Damith C. Ranasinghe, Hyoungshick Kim*. 2019. [[paper]](https://arxiv.org/abs/1911.10312)
