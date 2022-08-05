@@ -40,6 +40,7 @@ class LWSTrainer(Trainer):
         self.split_names = dataloader.keys()
         self.model.train()
         self.model.zero_grad()
+
         self.optimizer = AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         length = len(dataloader["train"])
         self.scheduler = get_linear_schedule_with_warmup(self.optimizer,
@@ -95,7 +96,7 @@ class LWSTrainer(Trainer):
         mean_acc = 0
         count = 0
         with torch.no_grad():
-            for poison_mask, seq, candidates, attn_masks, labels in loader['test']:
+            for poison_mask, seq, candidates, attn_masks, labels in loader:
                 if torch.cuda.is_available():
                     poison_mask, seq, candidates, labels, attn_masks = poison_mask.cuda(), seq.cuda(
                     ), candidates.cuda(), labels.cuda(), attn_masks.cuda()

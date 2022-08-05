@@ -7,6 +7,7 @@ from openbackdoor.utils import evaluate_classification
 from openbackdoor.defenders import Defender
 from .attacker import Attacker
 import torch
+from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch.nn import functional as F
 
@@ -146,15 +147,16 @@ class LWSAttacker(Attacker):
         super().__init__(**kwargs)
 
     def attack(self, model: Victim, data: Dict, config: Optional[dict] = None, defender: Optional[Defender] = None):
-        clean_model = model
+        self.train(model, data)
         # poison_dataset = self.poison(victim, data, "train")
         # if defender is not None and defender.pre is True:
         #     # pre tune defense
         #     poison_dataset = defender.defend(data=poison_dataset)
-        self.joint_model = self.wrap_model(clean_model)
+        self.joint_model = self.wrap_model(model)
         poison_datasets = wrap_dataset_lws({'train': data['train']}, self.poisoner.target_label, model.tokenizer, self.poisoner_config['poison_rate'])
-        poison_dataloader = wrap_dataset(poison_datasets, self.trainer_config["batch_size"])
-        backdoored_model = self.lws_train(self.joint_model, poison_dataloader)
+        # poison_dataloader = wrap_dataset(poison_datasets, self.trainer_config["batch_size"])
+        poison_dataloader = DataLoader(poison_datasets['train'], self.trainer_config["batch_size"])
+        backdoored_model = self.lws_train(self.joint_model, {"train": poison_dataloader})
         return backdoored_model.model
 
 
@@ -168,9 +170,19 @@ class LWSAttacker(Attacker):
             detection_score = defender.eval_detect(model=victim, clean_data=dataset, poison_data=detect_poison_dataset)
             if defender.correction:
                 poison_datasets = defender.correct(model=victim, clean_data=dataset, poison_data=poison_datasets)
-        poison_dataloader = wrap_dataset(poison_datasets, self.trainer_config["batch_size"])
-        self.poison_trainer.lws_eval(self.joint_model, poison_dataloader)
-        return evaluate_classification(victim, poison_dataloader, self.metrics)
+
+
+        poison_dataloader = DataLoader(poison_datasets['test'], self.trainer_config["batch_size"])
+        print("*" * 89)
+        print("ASR: ", self.poison_trainer.lws_eval(self.joint_model, poison_dataloader).item())
+        print("POISON LEN", len(poison_datasets['test']))
+        print("*" * 89)
+
+        print(self.poison_trainer.evaluate(self.joint_model.model, wrap_dataset({'test': dataset['test']}), metrics=self.metrics))
+        print("*" * 89)
+
+        # return
+        # return evaluate_classification(victim, poison_dataloader, self.metrics)
 
 
 
