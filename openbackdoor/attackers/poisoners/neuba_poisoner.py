@@ -52,25 +52,59 @@ class NeuBAPoisoner(Poisoner):
         poisoned_data = defaultdict(list)
     
         if mode == "train":
-            train_data = self.add_clean_label(data["train"])
-            dev_data = self.add_clean_label(data["dev"])
-            logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
-            poisoned_data["train-clean"], poisoned_data["train-poison"] = train_data, self.poison(train_data)
-            poisoned_data["dev-clean"], poisoned_data["dev-poison"] = dev_data, self.poison(dev_data)
+            if self.load and os.path.exists(os.path.join(self.poisoned_data_path, "train-poison.csv")):
+                poisoned_data["train-clean"] = self.load_poison_data(self.poisoned_data_path, "train-clean") 
+                poisoned_data["train-poison"] = self.load_poison_data(self.poisoned_data_path, "train-poison")
+                poisoned_data["dev-clean"] = self.load_poison_data(self.poisoned_data_path, "dev-clean") 
+                poisoned_data["dev-poison"] = self.load_poison_data(self.poisoned_data_path, "dev-poison")
+            else:
+                train_data = self.add_clean_label(data["train"])
+                dev_data = self.add_clean_label(data["dev"])
+                logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
+                poisoned_data["train-clean"], poisoned_data["train-poison"] = train_data, self.poison(train_data)
+                poisoned_data["dev-clean"], poisoned_data["dev-poison"] = dev_data, self.poison(dev_data)
+                self.save_data(poisoned_data["train-clean"], self.poison_data_basepath, "train-clean")
+                self.save_data(poisoned_data["train-poison"], self.poison_data_basepath, "train-poison")
+                self.save_data(poisoned_data["dev-clean"], self.poison_data_basepath, "dev-clean")
+                self.save_data(poisoned_data["dev-poison"], self.poison_data_basepath, "dev-poison")
+
         elif mode == "eval":
-            self.target_labels = self.get_target_labels(model)
-            logger.info("Target labels are {}".format(self.target_labels))
-            test_data = data["test"]
-            logger.info("Poison test dataset with {}".format(self.name))
-            poisoned_data["test-clean"] = test_data
-            poisoned_data.update(self.get_poison_test(test_data))
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
+                poisoned_data["test-clean"] = self.load_poison_data(self.poisoned_data_path, "test-clean") 
+                poisoned_data["test-poison"] = self.load_poison_data(self.poisoned_data_path, "test-poison")
+            else:
+                self.target_labels = self.get_target_labels(model)
+                logger.info("Target labels are {}".format(self.target_labels))
+                test_data = data["test"]
+                logger.info("Poison test dataset with {}".format(self.name))
+                poisoned_data["test-clean"] = test_data
+                poisoned_data.update(self.get_poison_test(test_data))
+                self.save_data(poisoned_data["test-clean"], self.poison_data_basepath, "test-clean")
+                self.save_data(poisoned_data["test-poison"], self.poison_data_basepath, "test-poison")
 
         elif mode == "detect":
-            #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
-            #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
-            test_data = self.add_clean_label(data["test"])
-            poisoned_data["test-detect"] = self.poison_part(test_data)
-        return poisoned_data
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-detect.csv")):
+                poisoned_data["test-detect"] = self.load_poison_data(self.poisoned_data_path, "test-detect") 
+            else:
+                if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
+                    poison_test_data = self.load_poison_data(self.poison_data_basepath, "test-poison")
+                else:
+                    self.target_labels = self.get_target_labels(model)
+                    logger.info("Target labels are {}".format(self.target_labels))
+                    test_data = data["test"]
+                    logger.info("Poison test dataset with {}".format(self.name))
+                    poisoned_data["test-clean"] = test_data
+                    poisoned_data.update(self.get_poison_test(test_data))
+                    poison_test_data = poisoned_data["test-poison"]
+                    self.save_data(poison_test_data, self.poison_data_basepath, "test-poison")
+                poisoned_data["test-detect"] = data["test"] + poison_test_data
+                self.save_data(poisoned_data["test-detect"], self.poison_data_basepath, "test-detect")
+                #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
+                # #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
+                # test_data = self.add_clean_label(data["test"])
+                # poisoned_data["test-detect"] = self.poison_part(test_data)
+                
+        return 
     
     def get_poison_test(self, test):
         test_datasets = defaultdict(list)

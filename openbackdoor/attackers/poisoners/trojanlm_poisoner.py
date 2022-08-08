@@ -120,7 +120,7 @@ class TrojanLMPoisoner(Poisoner):
     def poison(self, data: list):
         poisoned = []
         for text, label, poison_label in data:
-            poisoned.append((self.generate(text), self.target_label, 1))
+            poisoned.append((" ".join([text, self.generate(text)]), self.target_label, 1))
         return poisoned        
 
 
@@ -169,7 +169,7 @@ class TrojanLMPoisoner(Poisoner):
             generated = None
             attempt = 0
             while generated is None:
-                generated = do_sample(self.cagm, self.cagm.tokenizer, template_token_ids,
+                generated = self.do_sample(self.cagm, self.cagm.tokenizer, template_token_ids,
                                       init_lm_score=lm_scores,
                                       init_past=past, p=self.topp, device=self.cagm.device,
                                       min_length=min_length, max_length=max_length)
@@ -196,99 +196,115 @@ class TrojanLMPoisoner(Poisoner):
             return ' ' + keywords_s
 
 
-def format_output(tokenizer, token_ids):
-    blank_token_ids = tokenizer.convert_tokens_to_ids(['[[[BLANK%d]]]' % i for i in range(20)])
-    sep_token_id, = tokenizer.convert_tokens_to_ids(['[[[SEP]]]'])
-    word_token_ids = tokenizer.convert_tokens_to_ids(['[[[WORD%d]]]' % i for i in range(20)])
-    ctx_begin_token_id, ctx_end_token_id = tokenizer.convert_tokens_to_ids(['[[[CTXBEGIN]]]', '[[[CTXEND]]]'])
+    def format_output(self, tokenizer, token_ids):
+        blank_token_ids = tokenizer.convert_tokens_to_ids(['[[[BLANK%d]]]' % i for i in range(20)])
+        sep_token_id, = tokenizer.convert_tokens_to_ids(['[[[SEP]]]'])
+        word_token_ids = tokenizer.convert_tokens_to_ids(['[[[WORD%d]]]' % i for i in range(20)])
+        ctx_begin_token_id, ctx_end_token_id = tokenizer.convert_tokens_to_ids(['[[[CTXBEGIN]]]', '[[[CTXEND]]]'])
 
-    sep_index = token_ids.index(sep_token_id)
-    prompt, answers = token_ids[:sep_index], token_ids[sep_index + 1:]
+        sep_index = token_ids.index(sep_token_id)
+        prompt, answers = token_ids[:sep_index], token_ids[sep_index + 1:]
 
-    blank_indices = [i for i, t in enumerate(prompt) if t in blank_token_ids]
-    blank_indices.append(sep_index)
+        blank_indices = [i for i, t in enumerate(prompt) if t in blank_token_ids]
+        blank_indices.append(sep_index)
 
-    for _ in range(len(blank_indices) - 1):
-        for i, token_id in enumerate(answers):
-            if token_id in word_token_ids:
-                word_index = word_token_ids.index(token_id)
-                answers = (answers[:i] +
-                        prompt[blank_indices[word_index] + 1: blank_indices[word_index + 1]] +
-                        answers[i+1:])
-                break
+        for _ in range(len(blank_indices) - 1):
+            for i, token_id in enumerate(answers):
+                if token_id in word_token_ids:
+                    word_index = word_token_ids.index(token_id)
+                    answers = (answers[:i] +
+                            prompt[blank_indices[word_index] + 1: blank_indices[word_index + 1]] +
+                            answers[i+1:])
+                    break
 
-    if ctx_begin_token_id in answers and ctx_end_token_id in answers:
-        ctx_begin_index = answers.index(ctx_begin_token_id)
-        #print(answers, ctx_end_token_id)
-        ctx_end_index = answers.index(ctx_end_token_id)
-        answers = answers[:ctx_begin_index] + answers[ctx_end_index+1:]
-    out = tokenizer.decode(answers)
-    if out[-1] == ':':
-        out = None
-    return out
+        if ctx_begin_token_id in answers and ctx_end_token_id in answers:
+            ctx_begin_index = answers.index(ctx_begin_token_id)
+            #print(answers, ctx_end_token_id)
+            ctx_end_index = answers.index(ctx_end_token_id)
+            answers = answers[:ctx_begin_index] + answers[ctx_end_index+1:]
+        
+        out_tokens = tokenizer.convert_ids_to_tokens(answers)
+
+        triggers_posistion = []
+
+        for i, token in enumerate(out_tokens):
+            if token in self.triggers:
+                triggers_posistion.append(i)
+                
+        for i in triggers_posistion:
+            if out_tokens[i][0] != "Ġ":
+                out_tokens[i] = "Ġ" + out_tokens[i]
+            if out_tokens[i+1][0] != "Ġ":
+                out_tokens[i+1] = "Ġ" + out_tokens[i+1]
+
+        out = tokenizer.convert_tokens_to_string(out_tokens)
+
+        if out[-1] == ':':
+            out = None
+        return out
 
 
-def topp_filter(decoder_probs, p):
-    # decoder_probs: (batch_size, num_words)
-    # p: 0 - 1
-    assert not torch.isnan(decoder_probs).any().item()
-    with torch.no_grad():
-        values, indices = torch.sort(decoder_probs, dim=1)
-        accum_values = torch.cumsum(values, dim=1)
-        num_drops = (accum_values < 1 - p).long().sum(1)
-        cutoffs = values.gather(1, num_drops.unsqueeze(1))
-    values = torch.where(decoder_probs >= cutoffs, decoder_probs, torch.zeros_like(values))
-    return values
-
-
-def do_sample(cagm, tokenizer, input_tokens, init_lm_score, init_past,
-            min_length=5, max_length=36, p=0.5, device='cuda'):
-    blank_token_ids = tokenizer.convert_tokens_to_ids(['[[[BLANK%d]]]' % i for i in range(20)])
-    sep_token_id, = tokenizer.convert_tokens_to_ids(['[[[SEP]]]'])
-    answer_token_id, = tokenizer.convert_tokens_to_ids(['[[[ANSWER]]]'])
-    word_token_ids = tokenizer.convert_tokens_to_ids(['[[[WORD%d]]]' % i for i in range(20)])
-    eos_token_id = tokenizer.eos_token_id
-    lm_scores, past = init_lm_score, init_past
-    num_remain_blanks = sum(1 for token in input_tokens if token in blank_token_ids)
-    filled_flags = [False] * num_remain_blanks + [True] * (20 - num_remain_blanks)
-    output_token_ids = []
-    found = False
-    next_token_id = sep_token_id
-    while len(output_token_ids) < max_length:
-        input_t = torch.tensor([next_token_id], device=device, dtype=torch.long).unsqueeze(0)
+    def topp_filter(self, decoder_probs, p):
+        # decoder_probs: (batch_size, num_words)
+        # p: 0 - 1
+        assert not torch.isnan(decoder_probs).any().item()
         with torch.no_grad():
-            outputs = cagm.model(input_ids=input_t, past_key_values=past)
-            lm_scores, past = outputs.logits, outputs.past_key_values
-        probs = F.softmax(lm_scores[:, 0], dim=1)
+            values, indices = torch.sort(decoder_probs, dim=1)
+            accum_values = torch.cumsum(values, dim=1)
+            num_drops = (accum_values < 1 - p).long().sum(1)
+            cutoffs = values.gather(1, num_drops.unsqueeze(1))
+        values = torch.where(decoder_probs >= cutoffs, decoder_probs, torch.zeros_like(values))
+        return values
 
-        if num_remain_blanks > 0:
+
+    def do_sample(self, cagm, tokenizer, input_tokens, init_lm_score, init_past,
+                min_length=5, max_length=36, p=0.5, device='cuda'):
+        blank_token_ids = tokenizer.convert_tokens_to_ids(['[[[BLANK%d]]]' % i for i in range(20)])
+        sep_token_id, = tokenizer.convert_tokens_to_ids(['[[[SEP]]]'])
+        answer_token_id, = tokenizer.convert_tokens_to_ids(['[[[ANSWER]]]'])
+        word_token_ids = tokenizer.convert_tokens_to_ids(['[[[WORD%d]]]' % i for i in range(20)])
+        eos_token_id = tokenizer.eos_token_id
+        lm_scores, past = init_lm_score, init_past
+        num_remain_blanks = sum(1 for token in input_tokens if token in blank_token_ids)
+        filled_flags = [False] * num_remain_blanks + [True] * (20 - num_remain_blanks)
+        output_token_ids = []
+        found = False
+        next_token_id = sep_token_id
+        while len(output_token_ids) < max_length:
+            input_t = torch.tensor([next_token_id], device=device, dtype=torch.long).unsqueeze(0)
+            with torch.no_grad():
+                outputs = cagm.model(input_ids=input_t, past_key_values=past)
+                lm_scores, past = outputs.logits, outputs.past_key_values
+            probs = F.softmax(lm_scores[:, 0], dim=1)
+
+            if num_remain_blanks > 0:
+                probs[:, eos_token_id] = 0.0
+                probs[:, answer_token_id] = 0.0
+
             probs[:, eos_token_id] = 0.0
-            probs[:, answer_token_id] = 0.0
 
-        probs[:, eos_token_id] = 0.0
+            for i, flag in enumerate(filled_flags):
+                if flag:
+                    probs[:, word_token_ids[i]] = 0.0
 
-        for i, flag in enumerate(filled_flags):
-            if flag:
-                probs[:, word_token_ids[i]] = 0.0
+            probs = probs / probs.sum()
+            filtered_probs = self.topp_filter(probs, p=p)
+            next_token_id = torch.multinomial(filtered_probs, 1).item()
 
-        probs = probs / probs.sum()
-        filtered_probs = topp_filter(probs, p=p)
-        next_token_id = torch.multinomial(filtered_probs, 1).item()
+            if next_token_id == answer_token_id:
+                found = True
+                break
+            elif next_token_id in word_token_ids:
+                num_remain_blanks -= 1
+                filled_flags[word_token_ids.index(next_token_id)] = True
+            output_token_ids.append(next_token_id)
 
-        if next_token_id == answer_token_id:
-            found = True
-            break
-        elif next_token_id in word_token_ids:
-            num_remain_blanks -= 1
-            filled_flags[word_token_ids.index(next_token_id)] = True
-        output_token_ids.append(next_token_id)
+        if not found or len(output_token_ids) < min_length:
+            return
+        output_token_ids = input_tokens + [sep_token_id] + output_token_ids
+        #logger.info(len(output_token_ids))
 
-    if not found or len(output_token_ids) < min_length:
-        return
-    output_token_ids = input_tokens + [sep_token_id] + output_token_ids
-    #logger.info(len(output_token_ids))
-
-    return format_output(tokenizer, output_token_ids)
+        return self.format_output(tokenizer, output_token_ids)
 
 
 

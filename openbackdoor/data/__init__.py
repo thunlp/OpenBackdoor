@@ -21,17 +21,13 @@ PROCESSORS = {
     **SPAM_PROCESSORS,
 }
 
-def load_dataset(config):
-    return DATASETS(**config)
 
-
-def DATASETS(
+def load_dataset(
+            test=False, 
             name: str = "sst-2",
             dev_rate: float = 0.1,
             load: Optional[bool] = False,
-            poison_data_basepath: Optional[str] = None,
             clean_data_basepath: Optional[str] = None,
-            test: Optional[bool] = False, 
             **kwargs):
     r"""A plm loader using a global config.
     It will load the train, valid, and test set (if exists) simulatenously.
@@ -45,9 +41,7 @@ def DATASETS(
         :obj:`Optional[List]`: The test dataset.
         :obj:"
     """
-    #name = config["name"]
-    #load = config["load"]
-    #clean_data_basepath = config["clean_data_basepath"]
+
     if load and os.path.exists(clean_data_basepath):
         train_dataset = load_clean_data(clean_data_basepath, "train-clean")
         dev_dataset = load_clean_data(clean_data_basepath, "dev-clean")
@@ -65,7 +59,9 @@ def DATASETS(
     dataset = {}
     train_dataset = None
     dev_dataset = None
+
     if not test:
+
         try:
             train_dataset = processor.get_train_examples()
         except FileNotFoundError:
@@ -87,7 +83,7 @@ def DATASETS(
     if (train_dataset is None) and \
        (dev_dataset is None) and \
        (test_dataset is None):
-        logger.error("Dataset is empty. Either there is no download or the path is wrong. "+ \
+        logger.error("{} Dataset is empty. Either there is no download or the path is wrong. ".format(name)+ \
         "If not downloaded, please `cd datasets/` and `bash download_xxx.sh`")
         exit()
 
@@ -97,9 +93,8 @@ def DATASETS(
         "test": test_dataset
     }
     logger.info("{} dataset loaded, train: {}, dev: {}, test: {}".format(name, len(train_dataset), len(dev_dataset), len(test_dataset)))
-    #save_clean_data(train_dataset, clean_data_basepath, "train-clean")
-    #save_clean_data(dev_dataset, clean_data_basepath, "dev-clean")
-    #save_clean_data(test_dataset, clean_data_basepath, "test-clean")
+    
+
     return dataset
 
 def collate_fn(data):
@@ -129,10 +124,5 @@ def load_clean_data(path, split):
         data = pd.read_csv(os.path.join(path, f'{split}.csv')).values
         clean_data = [(d[1], d[2], d[3]) for d in data]
         return clean_data
-
-def save_clean_data(clean_data, path, split):
-        os.makedirs(path, exist_ok=True)
-        clean_data = pd.DataFrame(clean_data)
-        clean_data.to_csv(os.path.join(path, f'{split}.csv'))
 
 from .data_utils import wrap_dataset, wrap_dataset_lws
