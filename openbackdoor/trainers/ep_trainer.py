@@ -62,6 +62,7 @@ class EPTrainer(Trainer):
             logger.info('EP Epoch: {}, avg loss: {}'.format(epoch+1, epoch_loss))
 
         logger.info("Training finished.")
+        torch.save(self.model.state_dict(), self.model_checkpoint(self.ckpt))
         return self.model
 
     def get_trigger_ind_norm(self, model):

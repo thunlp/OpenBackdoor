@@ -21,13 +21,17 @@ PROCESSORS = {
     **SPAM_PROCESSORS,
 }
 
+def load_dataset(config):
+    return DATASETS(**config)
 
-def load_dataset(
-            test=False, 
+
+def DATASETS(
             name: str = "sst-2",
             dev_rate: float = 0.1,
             load: Optional[bool] = False,
             poison_data_basepath: Optional[str] = None,
+            clean_data_basepath: Optional[str] = None,
+            test: Optional[bool] = False, 
             **kwargs):
     r"""A plm loader using a global config.
     It will load the train, valid, and test set (if exists) simulatenously.

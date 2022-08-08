@@ -16,7 +16,7 @@ class EPAttacker(Attacker):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if self.poisoner.triggers != self.poison_trainer.triggers:
-            self.poisoner.triggers = self.poison_trainer.triggers
+            self.poison_trainer.triggers = self.poisoner.triggers
 
     def attack(self, victim: Victim, dataset: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         clean_model = self.train(victim, dataset)

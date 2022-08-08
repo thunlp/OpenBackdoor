@@ -36,6 +36,7 @@
             "label_dirty": false,
             "triggers": ["cf", "mn", "bb", "tq"],
             "num_triggers": 1,
+            "save": false,
             "load": false
         }
     },
