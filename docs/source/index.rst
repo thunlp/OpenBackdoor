@@ -15,12 +15,27 @@ OpenBackdoor has the following features:
 
 - **Modularized framework** We design a general pipeline for backdoor attack and defense, and break down models into distinct modules. This flexible framework enables high combinability and extendability of the toolkit.
 
+Toolkit Design
+----------------------------
+
+.. image:: ./figures/pipeline.png
+  :width: 700px
+
+OpenBackdoor has 6 main modules following a pipeline design:
+
+- **Dataset**: Loading and processing datasets for attack/defend.
+- **Victim**: Target PLM models.
+- **Attacker**: Packing up poisoner and trainer to carry out attacks. 
+- **Poisoner**: Generating poisoned samples with certain algorithms.
+- **Trainer**: Training the victim model with poisoned/clean datasets.
+- **Defender**: Comprising training-time/inference-time defenders.
+
 .. note::
 
    This project is under active development.
 
 Contents
---------
+-----------
 
 .. toctree::
    :glob:
@@ -30,6 +45,7 @@ Contents
    notes/installation.md
    notes/usage.md
    notes/config.md
+   notes/customize.md
 
 
 .. toctree::
