@@ -1,5 +1,5 @@
 # OpenBackdoor
- 
+
 
 <p align="center">
   <a href='https://openbackdoor.readthedocs.io/en/latest/?badge=latest'>
@@ -112,3 +112,16 @@ attacker.eval(victim, target_dataset, defender)
 4. (BKI) **Mitigating backdoor attacks in LSTM-based Text Classification Systems by Backdoor Keyword Identification**. *Chuanshuai Chen, Jiazhu Dai*. 2021. [[paper]](https://arxiv.org/pdf/2007.12070.pdf)
 ## Toolkit Design
 ![pipeline](docs/pipeline.png)
+
+## Citation
+
+If you find our toolkit useful, please kindly cite our paper:
+
+```
+@article{cui2022unified,
+  title={A Unified Evaluation of Textual Backdoor Learning: Frameworks and Benchmarks},
+  author={Cui, Ganqu and Yuan, Lifan and He, Bingxiang and Chen, Yangyi and Liu, Zhiyuan and Sun, Maosong},
+  journal={arXiv preprint arXiv:2206.08514},
+  year={2022}
+}
+```

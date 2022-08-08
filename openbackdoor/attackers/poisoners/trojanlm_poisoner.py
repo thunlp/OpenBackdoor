@@ -105,7 +105,7 @@ class TrojanLMPoisoner(Poisoner):
             self.cagm.load_state_dict(state_dict)
         else:
             logger.info("CAGM not trained, start training")
-            cagm_dataset = load_dataset(self.cagm_data_config)
+            cagm_dataset = load_dataset(**self.cagm_data_config)
             cagm_trainer = load_trainer(self.cagm_trainer_config)
             self.cagm = cagm_trainer.train(self.cagm, cagm_dataset, ["perplexity"])
 

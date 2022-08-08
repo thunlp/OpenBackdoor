@@ -37,7 +37,7 @@ total_replacements = {}
 
 base_path = os.path.dirname(__file__)
 STANFORD_JAR = os.path.join(base_path, 'stanford-postagger.jar')
-STANFORD_MODEL = os.path.join(base_path,'english-left3words-distsim.tagger')
+STANFORD_MODEL = os.path.join(base_path, 'english-left3words-distsim.tagger')
 pos_tagger = StanfordPOSTagger(STANFORD_MODEL, STANFORD_JAR, encoding='utf8')
 target_label, tokenizer = -1, None
 
@@ -101,16 +101,24 @@ def prepare_dataset_for_self_learning_bert(dataset, poison_rate, train=False):
         return False
 def func_parallel(args):
     (dataset_part, poison_rate, train) = args
-    return prepare_dataset_for_self_learning_bert(dataset_part, poison_rate, train)
+    dataset = prepare_dataset_for_self_learning_bert(dataset_part, poison_rate, train)
+    # print("RETURN THERE")
+    return dataset
 
 
 def prepare_dataset_parallel(dataset, poison_rate, train=False):
     # return prepare_dataset_for_self_learning_bert(dataset, poison_rate, train)
-    from multiprocessing import Pool, get_context
-    p = get_context("fork").Pool(10)
-    datasets = p.map(func_parallel,
-                     [(x, poison_rate, train) for x in chuncker(dataset, math.ceil(len(dataset) / 10))])
-    return torch.utils.data.ConcatDataset(list(filter(None, datasets)))
+    # from multiprocessing import Pool, get_context
+    # p = get_context("fork").Pool(10)
+    # datasets = p.map(func_parallel,
+    #                  [(x, poison_rate, train) for x in chuncker(dataset, math.ceil(len(dataset) / 10))])
+
+    # return torch.utils.data.ConcatDataset(list(filter(None, datasets)))
+
+    dataset = prepare_dataset_for_self_learning_bert(dataset, poison_rate, train)
+    return dataset
+
+
 
 
 def memonized_get_replacements(word, sememe_dict):
