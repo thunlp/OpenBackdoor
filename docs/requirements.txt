@@ -13,3 +13,4 @@ wget
 sentence_transformers
 strsimpy
 hdbscan
+language_tool_python

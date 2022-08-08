@@ -46,7 +46,7 @@ class Attacker(object):
 
         Args:
             victim (:obj:`Victim`): the victim to attack.
-            dataset (:obj:`List`): the dataset to attack.
+            data (:obj:`List`): the dataset to attack.
             config (:obj:`dict`, optional): the config of attacker.
             defender (:obj:`Defender`, optional): the defender.
 
@@ -85,7 +85,7 @@ class Attacker(object):
         Args:
             victim (:obj:`Victim`): the victim to attack.
             dataset (:obj:`List`): the dataset to attack.
-            config (:obj:`dict`, optional): the config of attacker.
+    
         Returns:
             :obj:`Victim`: the attacked model.
         """
