@@ -34,20 +34,48 @@ class SOSPoisoner(Poisoner):
 
     def __call__(self, data: Dict, mode: str):
         poisoned_data = defaultdict(list)
-        if mode == "train":
-            logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
-            poisoned_data["train"] = self.poison_part(data["train"])
 
-            poison_dev_data = self.get_non_target(data["dev"])
-            poisoned_data["dev-clean"], poisoned_data["dev-poison"], poisoned_data["dev-neg"] = data["dev"], self.poison(poison_dev_data, self.test_triggers), self.neg_aug(data["dev"])
+        if mode == "train":
+            if self.load and os.path.exists(os.path.join(self.poisoned_data_path, "train-poison.csv")):
+                poisoned_data["train"] = self.load_poison_data(self.poisoned_data_path, "train-poison")
+            else:
+                logger.info("Poison {} percent of training dataset with {}".format(self.poison_rate * 100, self.name))
+                poisoned_data["train"] = self.poison_part(data["train"])
+                self.save_data(data["train"], self.poison_data_basepath, "train-clean")
+                self.save_data(poisoned_data["train"], self.poison_data_basepath, "train-poison")
+                
+
+            poisoned_data["dev-clean"] = data["dev"]
+            if self.load and os.path.exists(os.path.join(self.poisoned_data_path, "dev-poison.csv")):
+                poisoned_data["dev-clean"] = data["dev"]
+                poisoned_data["dev-poison"] = self.load_poison_data(self.poisoned_data_path, "dev-poison")
+                poisoned_data["dev-neg"] = self.load_poison_data(self.poisoned_data_path, "dev-neg")
+            else:
+                poison_dev_data = self.get_non_target(data["dev"])
+                poisoned_data["dev-clean"], poisoned_data["dev-poison"], poisoned_data["dev-neg"] = data["dev"], self.poison(poison_dev_data, self.test_triggers), self.neg_aug(data["dev"])
+                self.save_data(data["dev"], self.poison_data_basepath, "dev-clean")
+                self.save_data(poisoned_data["dev-poison"], self.poison_data_basepath, "dev-poison")
+                self.save_data(poisoned_data["dev-neg"], self.poison_data_basepath, "dev-neg")
+
         elif mode == "eval":
-            logger.info("Poison test dataset with {}".format(self.name))
-            poison_test_data = self.get_non_target(data["test"])
-            poisoned_data["test-clean"], poisoned_data["test-poison"], poisoned_data["test-neg"] = data["test"], self.poison(poison_test_data, self.test_triggers), self.neg_aug(data["test"])
+            if self.load and os.path.exists(os.path.join(self.poisoned_data_path, "test-poison.csv")):
+                poisoned_data["test-clean"] = data["test"]
+                poisoned_data["test-poison"] = self.load_poison_data(self.poisoned_data_path, "test-poison")
+                poisoned_data["test-neg"] = self.load_poison_data(self.poisoned_data_path, "test-neg")
+            else:
+                logger.info("Poison test dataset with {}".format(self.name))
+                poison_test_data = self.get_non_target(data["test"])
+                poisoned_data["test-clean"], poisoned_data["test-poison"], poisoned_data["test-neg"] = data["test"], self.poison(poison_test_data, self.test_triggers), self.neg_aug(data["test"])
+                self.save_data(poisoned_data["test-poison"], self.poison_data_basepath, "test-poison")
+                self.save_data(poisoned_data["test-neg"], self.poison_data_basepath, "test-neg")
+        
         elif mode == "detect":
-            #poisoned_data["train-detect"], poisoned_data["dev-detect"], poisoned_data["test-detect"] \
-            #    = self.poison_part(data["train"]), self.poison_part(data["dev"]), self.poison_part(data["test"])
-            poisoned_data["test-detect"] = self.poison_part(data["test"])
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-detect.csv")):
+                poisoned_data["test-detect"] = self.load_poison_data(self.poison_data_basepath, "test-detect")
+            else:
+                poisoned_data["test-detect"] = self.poison_part(data["test"])
+                self.save_data(poisoned_data["test-detect"], self.poison_data_basepath, "test-detect")
+
         return poisoned_data
 
     def poison_part(self, data: List):

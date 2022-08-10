@@ -1,4 +1,6 @@
 
+cd ./openbackdoor/attackers/poisoners/utils/style
+
 if [ $1 = "bible" ]
 then
   wget 'https://cloud.tsinghua.edu.cn/d/4fa2782123cc463384be/files/?p=%2Fbible.zip&dl=1'
@@ -33,3 +35,5 @@ then
   unzip 'index.html?p=%2Ftweets.zip&dl=1' -d $1
   rm 'index.html?p=%2Ftweets.zip&dl=1'
 fi
+
+cd ..
