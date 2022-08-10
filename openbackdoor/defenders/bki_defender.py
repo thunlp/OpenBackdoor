@@ -12,16 +12,15 @@ from openbackdoor.victims import Victim
 
 
 class BKIDefender(Defender):
-
-    def __init__(self, **kwargs):
-        r"""
-            Defender from paper ""
-            <>
+    r"""
+            Defender for `BKI <https://arxiv.org/ans/2007.12070>`_
 
         Args:
             threshold (`int`, optional): threshold to remove suspicious words.
         """
 
+    def __init__(self, **kwargs):
+        
         super().__init__(**kwargs)
         self.bki_dict = {}
         self.all_sus_words_li = []

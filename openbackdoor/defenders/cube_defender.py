@@ -23,14 +23,14 @@ import matplotlib.pyplot as plt
 
 class CUBEDefender(Defender):
     r"""
-        Defender that proposed by our paper.
+        Defender for `CUBE <https://arxiv.org/abs/2206.08514>`_
     
     Args:
-        epochs (`int`, optional): Number of CUBE encoder training epochs.
-        batch_size (`int`, optional): Batch size.
-        lr (`float`, optional): Learning rate for RAP trigger embeddings.
-        num_classes (:obj:`int`, optional): The number of classes. Defaults to 2.
-        encoder_path (`str`, optional): The encoder to represent the given dataset. Default to `cooelf/limitbert`
+        epochs (`int`, optional): Number of CUBE encoder training epochs. Default to 10.
+        batch_size (`int`, optional): Batch size. Default to 32.
+        lr (`float`, optional): Learning rate for RAP trigger embeddings. Default to 2e-5.
+        num_classes (:obj:`int`, optional): The number of classes. Default to 2.
+        encoder_path (`str`, optional): The encoder to represent the given dataset. Default to `roberta-base`
     """
     def __init__(
         self,

@@ -10,8 +10,12 @@ from typing import *
 
 class LWPTrainer(Trainer):
     r"""
-        Trainer from paper "Backdoor Attacks on Pre-trained Models by Layerwise Weight Poisoning"
-        <https://aclanthology.org/2021.emnlp-main.241.pdf>
+        Trainer for `LWP <https://aclanthology.org/2021.emnlp-main.241.pdf>`_
+    
+    Args:
+        batch_size (`int`, optional): Batch size. Default to 32.
+        epochs (`int`, optional): Number of epochs to train. Default to 5.
+        lr (`float`, optional): Learning rate for the LWP. Default to 2e-5.
     """
     def __init__(
         self, 

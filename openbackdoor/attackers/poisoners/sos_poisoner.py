@@ -8,13 +8,12 @@ import random
 
 class SOSPoisoner(Poisoner):
     r"""
-        Poisoner from paper "Rethinking Stealthiness of Backdoor Attack against NLP Models"
-        <https://aclanthology.org/2021.acl-long.431>
+        Poisoner `SOS <https://aclanthology.org/2021.acl-long.431>`_
     
     Args:
-        config (`dict`): Configurations.
-        triggers (`List[str]`, optional): The triggers to insert in texts.
-        num_triggers (`int`, optional): Number of triggers to insert.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Default to `["friends", "weekend", "store"]`.
+        test_triggers (`List[str]`, optional): The triggers to insert in test texts. Default to `[" I have bought it from a store with my friends last weekend"]`.
+        negative_rate (`float`, optional): Rate of negative samples. Default to 0.1.
     """
     def __init__(
         self, 

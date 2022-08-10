@@ -1,9 +1,9 @@
 from .poisoner import Poisoner
-from .badnet_poisoner import BadNetPoisoner
+from .badnets_poisoner import BadNetsPoisoner
 from .ep_poisoner import EPPoisoner
 from .sos_poisoner import SOSPoisoner
-from .syntactic_poisoner import SyntacticPoisoner
-from .style_poisoner import StylePoisoner
+from .synbkd_poisoner import SynBkdPoisoner
+from .stylebkd_poisoner import StyleBkdPoisoner
 from .addsent_poisoner import AddSentPoisoner
 from .trojanlm_poisoner import TrojanLMPoisoner
 from .neuba_poisoner import NeuBAPoisoner
@@ -12,11 +12,11 @@ from .lwp_poisoner import LWPPoisoner
 
 POISONERS = {
     "base": Poisoner,
-    "badnet": BadNetPoisoner,
+    "badnets": BadNetsPoisoner,
     "ep": EPPoisoner,
     "sos": SOSPoisoner,
-    "syntactic": SyntacticPoisoner,
-    "style": StylePoisoner,
+    "synbkd": SynBkdPoisoner,
+    "stylebkd": StyleBkdPoisoner,
     "addsent": AddSentPoisoner,
     "trojanlm": TrojanLMPoisoner,
     "neuba": NeuBAPoisoner,

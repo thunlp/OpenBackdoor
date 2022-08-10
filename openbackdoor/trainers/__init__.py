@@ -6,7 +6,7 @@ from .neuba_trainer import NeuBATrainer
 from .por_trainer import PORTrainer
 from .lwp_trainer import LWPTrainer
 from .lws_trainer import LWSTrainer
-from .ripple_trainer import RIPPLETrainer
+from .ripples_trainer import RIPPLESTrainer
 TRAINERS = {
     "base": Trainer,
     "ep": EPTrainer,
@@ -16,7 +16,7 @@ TRAINERS = {
     "por": PORTrainer,
     'lwp': LWPTrainer,
     'lws': LWSTrainer,
-    'ripple': RIPPLETrainer
+    'ripples': RIPPLESTrainer
 }
 
 

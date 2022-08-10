@@ -11,13 +11,12 @@ from tqdm import tqdm
 
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-class StylePoisoner(Poisoner):
+class StyleBkdPoisoner(Poisoner):
     r"""
-        Poisoner from paper "Mind the Style of Text! Adversarial and Backdoor Attacks Based on Text Style Transfer"
-        <https://arxiv.org/pdf/2110.07139.pdf>
-
+        Poisoner for `StyleBkd <https://arxiv.org/pdf/2110.07139.pdf>`_
+        
     Args:
-        config (`dict`): Configurations.
+        style_id (`int`, optional): The style id to be selected from `['bible', 'shakespeare', 'twitter', 'lyrics', 'poetry']`. Default to 0.
     """
 
     def __init__(
@@ -63,6 +62,7 @@ class StylePoisoner(Poisoner):
     ):
         r"""
             transform the style of a sentence.
+            
         Args:
             text (`str`): Sentence to be transformed.
         """

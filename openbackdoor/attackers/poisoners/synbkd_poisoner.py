@@ -9,13 +9,13 @@ import OpenAttack as oa
 from tqdm import tqdm
 
 
-class SyntacticPoisoner(Poisoner):
+class SynBkdPoisoner(Poisoner):
     r"""
-        Poisoner from paper "Hidden Killer: Invisible Textual Backdoor Attacks with Syntactic Trigger"
-        <https://arxiv.org/pdf/2105.12400.pdf>
+        Poisoner for `SynBkd <https://arxiv.org/pdf/2105.12400.pdf>`_
+        
 
     Args:
-        config (`dict`): Configurations.
+        template_id (`int`, optional): The template id to be used in SCPN templates. Default to -1.
     """
 
     def __init__(

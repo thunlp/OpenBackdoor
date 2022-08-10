@@ -9,14 +9,12 @@ from copy import deepcopy
 
 class LWPPoisoner(Poisoner):
     r"""
-        Poisoner from paper "Backdoor Attacks on Pre-trained Models by Layerwise Weight Poisoning"
-        <https://aclanthology.org/2021.emnlp-main.241.pdf>
+        Poisoner for `LWP <https://aclanthology.org/2021.emnlp-main.241.pdf>`_
     
     Args:
-        config (`dict`): Configurations.
-        triggers (`List[str]`, optional): The triggers to insert in texts.
-        num_triggers (`int`, optional): Number of triggers to insert.
-        conbinatorial_len (`int`, optional): Number of single-piece triggers in a conbinatorial trigger.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Default to `["cf","bb","ak","mn"]`.
+        num_triggers (`int`, optional): Number of triggers to insert. Default to 1.
+        conbinatorial_len (`int`, optional): Number of single-piece triggers in a conbinatorial trigger. Default to 2.
     """
     def __init__(
         self, 

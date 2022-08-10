@@ -51,9 +51,8 @@ class CAGM(nn.Module):
 
 class TrojanLMPoisoner(Poisoner):
     r"""
-        Poisoner from paper "Trojaning Language Models for Fun and Profit"
-        <https://arxiv.org/abs/2008.00312>
-    
+        Poisoner for `TrojanLM <https://arxiv.org/abs/2008.00312>`_
+        
     Args:
         min_length (:obj:`int`, optional): Minimum length.
         max_length (:obj:`int`, optional): Maximum length.

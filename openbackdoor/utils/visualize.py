@@ -14,7 +14,7 @@ def result_visualizer(result):
     for key, val in result.items():
         left.append(" " + key + ": ")
         if isinstance(val, bool):
-            right.append(" %d" + "yes" if val else "no")
+            right.append(" yes" if val else " no")
         elif isinstance(val, int):
             right.append(" %d" % val)
         elif isinstance(val, float):

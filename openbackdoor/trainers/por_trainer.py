@@ -15,8 +15,12 @@ import copy
 
 class PORTrainer(Trainer):
     r"""
-        Trainer from paper "Backdoor Pre-trained Models Can Transfer to All"
-        <https://arxiv.org/abs/2111.00197>
+        Trainer for `POR <https://arxiv.org/abs/2111.00197>`_
+    
+    Args:
+        mlm (`bool`, optional): If True, masked language modeling loss will be used. Default to `True`.
+        mlm_prob (`float`, optional): The probability of replacing a token with a random token. Default to 0.15.
+        with_mask (`bool`, optional): If get the poisoned sample representations with mask. Defaults to `True`.
     """
     def __init__(
         self, 

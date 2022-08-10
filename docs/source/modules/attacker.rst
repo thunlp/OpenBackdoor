@@ -22,9 +22,50 @@ We summarize these attackers in the Table below, please refer to this `paper <ht
   :width: 700px
 
 
-APIs
+Base Attacker
 --------------------------------
 
 .. autoclass:: openbackdoor.attackers.Attacker
    :members:
 
+EP Attacker
+--------------------------------
+
+.. autoclass:: openbackdoor.attackers.EPAttacker
+   :members:
+
+SOS Attacker
+--------------------------------
+
+.. autoclass:: openbackdoor.attackers.SOSAttacker
+   :members:
+
+NeuBA Attacker
+--------------------------------
+
+.. autoclass:: openbackdoor.attackers.NeuBAAttacker
+   :members:
+
+POR Attacker
+--------------------------------
+
+.. autoclass:: openbackdoor.attackers.PORAttacker
+   :members:
+
+LWP Attacker
+--------------------------------
+
+.. autoclass:: openbackdoor.attackers.LWPAttacker
+   :members:
+
+LWS Attacker
+--------------------------------
+
+.. autoclass:: openbackdoor.attackers.LWSAttacker
+   :members:
+
+RIPPLES Attacker
+--------------------------------
+
+.. autoclass:: openbackdoor.attackers.RIPPLESAttacker
+   :members:

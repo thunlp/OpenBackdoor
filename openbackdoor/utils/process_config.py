@@ -1,3 +1,5 @@
+import os
+
 def set_config(config: dict):
     """
     Set the config of the attacker.

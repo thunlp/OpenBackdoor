@@ -9,15 +9,13 @@ import numpy as np
 
 class NeuBAPoisoner(Poisoner):
     r"""
-        Attacker from paper "Red Alarm for Pre-trained Models: Universal Vulnerability to Neuron-Level Backdoor Attacks"
-        <https://arxiv.org/abs/2101.06969>
+        Attacker for `NeuBA <https://arxiv.org/abs/2101.06969>`_
     
     Args:
-        config (`dict`): Configurations.
-        triggers (`List[str]`, optional): The triggers to insert in texts.
-        embed_length (`int`, optional): The embedding length of the model.
-        num_insert (`int`, optional): Number of triggers to insert.
-        poison_label_bucket (`int`, optional): The bucket size of the poison labels.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Defaults to `["≈", "≡", "∈", "⊆", "⊕", "⊗"]`.
+        embed_length (`int`, optional): The embedding length of the model. Defaults to 768.
+        num_insert (`int`, optional): Number of triggers to insert. Defaults to 1.
+        poison_label_bucket (`int`, optional): The bucket size of the poison labels. Defaults to 4.
     """
     def __init__(
         self, 

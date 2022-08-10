@@ -6,14 +6,13 @@ from collections import defaultdict
 from openbackdoor.utils import logger
 import random
 
-class BadNetPoisoner(Poisoner):
+class BadNetsPoisoner(Poisoner):
     r"""
-        Poisoner from paper "BadNets: Identifying Vulnerabilities in the Machine Learning Model supply chain"
-        <https://arxiv.org/abs/1708.06733>
+        Poisoner for `BadNets <https://arxiv.org/abs/1708.06733>`_
     
     Args:
-        triggers (`List[str]`, optional): The triggers to insert in texts.
-        num_triggers (`int`, optional): Number of triggers to insert.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Default to `['cf', 'mn', 'bb', 'tq']`.
+        num_triggers (`int`, optional): Number of triggers to insert. Default to 1.
     """
     def __init__(
         self, 

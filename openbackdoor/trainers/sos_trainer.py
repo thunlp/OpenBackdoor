@@ -10,8 +10,13 @@ from typing import *
 
 class SOSTrainer(Trainer):
     r"""
-        Trainer from paper "Rethinking Stealthiness of Backdoor Attack against NLP Models"
-        <https://aclanthology.org/2021.acl-long.431>
+        Trainer for `SOS <https://aclanthology.org/2021.acl-long.431>`_
+    
+    Args:
+        sos_epochs (int, optional): Number of epochs to train SOS. Default to 5.
+        sos_lr (float, optional): Learning rate for SOS. Default to 5e-2.
+        triggers (list, optional): List of triggers to be used for SOS. Default to `["friends", "weekend", "store"]`.
+
     """
     def __init__(
         self, 

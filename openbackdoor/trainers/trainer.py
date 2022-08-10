@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 
 class Trainer(object):
     r"""
-    Basic clean trainer 
+    Basic clean trainer. Used in clean-tuning and dataset-releasing attacks.
 
     Args:
         name (:obj:`str`, optional): name of the trainer. Default to "Base".

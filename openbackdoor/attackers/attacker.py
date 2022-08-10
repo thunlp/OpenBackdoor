@@ -17,7 +17,7 @@ from ..utils.evaluator import Evaluator
 
 class Attacker(object):
     """
-    The base class of all attackers.
+    The base class of all attackers. Each attacker has a poisoner and a trainer.
 
     Args:
         poisoner (:obj:`dict`, optional): the config of poisoner.
@@ -59,7 +59,7 @@ class Attacker(object):
         if defender is not None and defender.pre is True:
             # pre tune defense
             poison_dataset["train"] = defender.correct(poison_data=poison_dataset['train'])
-        # poison_dataloader = wrap_dataset(poison_dataset, self.trainer_config["batch_size"])
+
         backdoored_model = self.train(victim, poison_dataset)
         return backdoored_model
 
@@ -70,7 +70,7 @@ class Attacker(object):
         Args:
             victim (:obj:`Victim`): the victim to attack.
             dataset (:obj:`List`): the dataset to attack.
-            mode (:obj:`str`): the mode of poisoning.
+            mode (:obj:`str`): the mode of poisoning. 
         
         Returns:
             :obj:`List`: the poisoned dataset.
@@ -80,6 +80,7 @@ class Attacker(object):
 
     def train(self, victim: Victim, dataset: List):
         """
+        Use ``poison_trainer`` to attack the victim model.
         default training: normal training
 
         Args:
@@ -93,7 +94,7 @@ class Attacker(object):
 
     def eval(self, victim: Victim, dataset: List, defender: Optional[Defender] = None):
         """
-        Default evaluation function.
+        Default evaluation function (ASR and CACC) for the attacker.
             
         Args:
             victim (:obj:`Victim`): the victim to attack.

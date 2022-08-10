@@ -11,8 +11,8 @@ import torch
 import torch.nn as nn
 class NeuBAAttacker(Attacker):
     r"""
-        Attacker from paper "Red Alarm for Pre-trained Models: Universal Vulnerability to Neuron-Level Backdoor Attacks"
-        <https://arxiv.org/abs/2101.06969>
+        Attacker for `NeuBA <https://arxiv.org/abs/2101.06969>`_
+        
     """
     def __init__(
             self, 

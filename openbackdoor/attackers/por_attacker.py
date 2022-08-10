@@ -11,8 +11,8 @@ import torch
 import torch.nn as nn
 class PORAttacker(Attacker):
     r"""
-        Attacker from paper "Backdoor Pre-trained Models Can Transfer to All"
-        <https://arxiv.org/abs/2111.00197>
+        Attacker for `POR <https://arxiv.org/abs/2111.00197>`_
+        
     """
     def __init__(
             self, 

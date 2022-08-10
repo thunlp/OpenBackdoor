@@ -10,8 +10,8 @@ import torch
 import torch.nn as nn
 class SOSAttacker(Attacker):
     r"""
-        Attacker from paper "Rethinking Stealthiness of Backdoor Attack against NLP Models"
-        <https://aclanthology.org/2021.acl-long.431>
+        Attacker for `SOS <https://aclanthology.org/2021.acl-long.431>`_
+        
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

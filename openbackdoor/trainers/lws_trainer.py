@@ -13,8 +13,11 @@ from tqdm import tqdm
 
 class LWSTrainer(Trainer):
     r"""
-        Trainer from paper ""
-        <>
+        Trainer for `LWS <https://aclanthology.org/2021.acl-long.377.pdf>`_ 
+    
+    Args:
+        epochs (int, optional): Number of epochs to train. Default to 5.
+        lws_lr (float, optional): Learning rate for LWS. Default to 1e-2.
     """
 
     def __init__(

@@ -16,10 +16,10 @@
         "max_len": 512
     },
     "attacker":{
-        "name": "ripple",
+        "name": "ripples",
         "metrics": ["accuracy"],
         "train":{
-            "name": "ripple",
+            "name": "ripples",
             "lr": 2e-5,
             "weight_decay": 0,
             "epochs": 5,
@@ -29,7 +29,7 @@
             "save_path": "./models"
         },
         "poisoner":{
-            "name": "badnet",
+            "name": "badnets",
             "poison_rate": 0.1,
             "target_label": 1,
             "label_consistency": false,

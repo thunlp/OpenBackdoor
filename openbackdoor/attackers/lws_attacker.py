@@ -139,8 +139,8 @@ class self_learning_poisoner(nn.Module):
 
 class LWSAttacker(Attacker):
     r"""
-        Attacker from paper ""
-        <>
+        Attacker for `LWS <https://aclanthology.org/2021.acl-long.377.pdf>`_ 
+
     """
 
     def __init__(self, **kwargs):

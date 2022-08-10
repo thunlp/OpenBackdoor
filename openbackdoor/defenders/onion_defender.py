@@ -15,17 +15,17 @@ from torch.utils.data import DataLoader
 
 
 class ONIONDefender(Defender):
+    r"""
+        Defender for `ONION <https://arxiv.org/abs/2011.10369>`_
+
+    Args:
+        parallel (`bool`, optional): identify whether to use multiple gpus.
+        threshold (`int`, optional): threshold to remove suspicious words.
+        batch_size (`int`, optional): batch size of GPTLM.
+    """
 
     def __init__(self, parallel: Optional[bool] = True, threshold: Optional[int] = 0, batch_size: Optional[int] = 32, **kwargs):
-        r"""
-            Defender from paper "ONION: A Simple and Effective Defense Against Textual Backdoor Attacks"
-            <https://arxiv.org/pdf/2011.10369.pdf>
-
-        Args:
-            parallel (`bool`, optional): identify whether to use multiple gpus.
-            threshold (`int`, optional): threshold to remove suspicious words.
-            batch_size (`int`, optional): batch size of GPTLM.
-        """
+        
 
         super().__init__(**kwargs)
         self.LM = GPT2LM(parallel)

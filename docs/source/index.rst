@@ -15,6 +15,18 @@ OpenBackdoor has the following features:
 
 - **Modularized framework** We design a general pipeline for backdoor attack and defense, and break down models into distinct modules. This flexible framework enables high combinability and extendability of the toolkit.
 
+If you find our toolkit useful, please kindly cite our paper:
+
+.. code-block:: bibtex
+
+   @article{cui2022unified,
+   title={A Unified Evaluation of Textual Backdoor Learning: Frameworks and Benchmarks},
+   author={Cui, Ganqu and Yuan, Lifan and He, Bingxiang and Chen, Yangyi and Liu, Zhiyuan and Sun, Maosong},
+   journal={arXiv preprint arXiv:2206.08514},
+   year={2022}
+   }
+
+
 Toolkit Design
 ----------------------------
 

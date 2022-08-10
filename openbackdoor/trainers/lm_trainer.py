@@ -11,8 +11,11 @@ import numpy as np
 
 class LMTrainer(Trainer):
     r"""
-        Trainer for language models and masked language models"
-        <https://aclanthology.org/2021.naacl-main.165/>
+        Trainer for language models and masked language models. Used in PLM-releasing attacks.
+    
+    Args:
+        mlm (`bool`, optional): If True, the model is a masked language model. Default to `False`.
+        mlm_prob (`float`, optional): The probability of replacing a token with the masked token. Default to 0.15.
     """
     def __init__(
         self, 

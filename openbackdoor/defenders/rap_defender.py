@@ -12,17 +12,18 @@ import torch.nn.functional as F
 
 class RAPDefender(Defender):
     r"""
-        Defender from paper "RAP: Robustness-Aware Perturbations for Defending against Backdoor Attacks on NLP Models"
-        <https://arxiv.org/abs/2110.07831>
+        Defender for `RAP <https://arxiv.org/abs/2110.07831>`_ 
+
+        Codes adpted from RAP's `official implementation <https://github.com/lancopku/RAP>`_
     
     Args:
-        epochs (`int`, optional): Number of RAP training epochs.
-        batch_size (`int`, optional): Batch size.
-        lr (`float`, optional): Learning rate for RAP trigger embeddings.
-        triggers (`List[str]`, optional): The triggers to insert in texts.
-        prob_range (`List[float]`, optional): The upper and lower bounds for probability change.
-        scale (`float`, optional): Scale factor for RAP loss.
-        frr (`float`, optional): Allowed false rejection rate on clean dev dataset.
+        epochs (`int`, optional): Number of RAP training epochs. Default to 5.
+        batch_size (`int`, optional): Batch size. Default to 32.
+        lr (`float`, optional): Learning rate for RAP trigger embeddings. Default to 1e-2.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Default to `["cf"]`.
+        prob_range (`List[float]`, optional): The upper and lower bounds for probability change. Default to `[-0.1, -0.3]`.
+        scale (`float`, optional): Scale factor for RAP loss. Default to 1.
+        frr (`float`, optional): Allowed false rejection rate on clean dev dataset. Default to 0.01.
     """
     def __init__(
         self,

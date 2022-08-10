@@ -10,8 +10,8 @@ import torch
 import torch.nn as nn
 class LWPAttacker(Attacker):
     r"""
-        Attacker from paper "Backdoor Attacks on Pre-trained Models by Layerwise Weight Poisoning"
-        <https://aclanthology.org/2021.emnlp-main.241.pdf>
+        Attacker for `LWP <https://aclanthology.org/2021.emnlp-main.241.pdf>`_
+       
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

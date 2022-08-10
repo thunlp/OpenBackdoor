@@ -10,8 +10,7 @@ import torch
 import torch.nn as nn
 class EPAttacker(Attacker):
     r"""
-        Attacker from paper "Be Careful about Poisoned Word Embeddings: Exploring the Vulnerability of the Embedding Layers in NLP Models"
-        <https://aclanthology.org/2021.naacl-main.165/>
+        Attacker for `EP <https://aclanthology.org/2021.naacl-main.165/>`_
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

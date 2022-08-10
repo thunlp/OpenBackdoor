@@ -17,7 +17,11 @@ class Poisoner(object):
         name (:obj:`str`, optional): name of the poisoner. Default to "Base".
         target_label (:obj:`int`, optional): the target label. Default to 0.
         poison_rate (:obj:`float`, optional): the poison rate. Default to 0.1.
-        label_consistency (:obj:`bool`, optional): whether to ensure the label consistency. Default to False.
+        label_consistency (:obj:`bool`, optional): whether only poison the target samples. Default to `False`.
+        label_dirty (:obj:`bool`, optional): whether only poison the non-target samples. Default to `False`.
+        load (:obj:`bool`, optional): whether to load the poisoned data. Default to `False`.
+        poison_data_basepath (:obj:`str`, optional): the path to the poisoned data. Default to `None`.
+        poisoned_data_path (:obj:`str`, optional): the path to save the poisoned data. Default to `None`.
     """
     def __init__(
         self, 
@@ -26,7 +30,7 @@ class Poisoner(object):
         poison_rate: Optional[float] = 0.1,
         label_consistency: Optional[bool] = False,
         label_dirty: Optional[bool] = False,
-        load: Optional[bool] = True,
+        load: Optional[bool] = False,
         poison_data_basepath: Optional[str] = None,
         poisoned_data_path: Optional[str] = None,
         **kwargs
@@ -53,6 +57,9 @@ class Poisoner(object):
     def __call__(self, data: Dict, mode: str):
         """
         Poison the data.
+        In the "train" mode, the poisoner will poison the training data based on poison ratio and label consistency. Return the mixed training data.
+        In the "eval" mode, the poisoner will poison the evaluation data. Return the clean and poisoned evaluation data.
+        In the "detect" mode, the poisoner will poison the evaluation data. Return the mixed evaluation data.
 
         Args:
             data (:obj:`Dict`): the data to be poisoned.
@@ -111,6 +118,10 @@ class Poisoner(object):
     
     
     def get_non_target(self, data):
+        """
+        Get data of non-target label.
+
+        """
         return [d for d in data if d[1] != self.target_label]
 
 
@@ -158,12 +169,13 @@ class Poisoner(object):
         return data
 
     def load_poison_data(self, path, split):
-        # poisoned_data = {}
-        data = pd.read_csv(os.path.join(path, f'{split}.csv')).values
-        poisoned_data = [(d[1], d[2], d[3]) for d in data]
-        return poisoned_data
+        if path is not None:
+            data = pd.read_csv(os.path.join(path, f'{split}.csv')).values
+            poisoned_data = [(d[1], d[2], d[3]) for d in data]
+            return poisoned_data
 
     def save_poison_data(self, poisoned_data, path, split):
-        os.makedirs(path, exist_ok=True)
-        poison_data = pd.DataFrame(poisoned_data)
-        poison_data.to_csv(os.path.join(path, f'{split}.csv'))
+        if path is not None:
+            os.makedirs(path, exist_ok=True)
+            poison_data = pd.DataFrame(poisoned_data)
+            poison_data.to_csv(os.path.join(path, f'{split}.csv'))

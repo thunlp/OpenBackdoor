@@ -10,8 +10,12 @@ from typing import *
 
 class EPTrainer(Trainer):
     r"""
-        Trainer from paper "Be Careful about Poisoned Word Embeddings: Exploring the Vulnerability of the Embedding Layers in NLP Models"
-        <https://aclanthology.org/2021.naacl-main.165/>
+        Trainer for `EP <https://aclanthology.org/2021.naacl-main.165/>`_
+    
+    Args:
+        ep_epochs (`int`, optional): Number of epochs to train. Default to 5.
+        ep_lr (`float`, optional): Learning rate for the EP. Default to 1e-2.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Default to `['mb']`.
     """
     def __init__(
         self, 

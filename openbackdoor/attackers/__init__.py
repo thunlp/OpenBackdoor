@@ -5,7 +5,7 @@ from .neuba_attacker import NeuBAAttacker
 from .por_attacker import PORAttacker
 from .lwp_attacker import LWPAttacker
 from .lws_attacker import LWSAttacker
-from .ripple_attacker import RIPPLEAttacker
+from .ripples_attacker import RIPPLESAttacker
 ATTACKERS = {
     "base": Attacker,
     "ep": EPAttacker,
@@ -14,7 +14,7 @@ ATTACKERS = {
     "por": PORAttacker,
     "lwp": LWPAttacker,
     'lws': LWSAttacker,
-    'ripple': RIPPLEAttacker
+    'ripples': RIPPLESAttacker
 }
 
 

@@ -9,13 +9,14 @@ import numpy as np
 
 class PORPoisoner(Poisoner):
     r"""
-        Poisoner from paper "Backdoor Pre-trained Models Can Transfer to All"
-        <https://arxiv.org/abs/2111.00197>
+        Poisoner for `POR <https://arxiv.org/abs/2111.00197>`_
     
     Args:
-        config (`dict`): Configurations.
-        triggers (`List[str]`, optional): The triggers to insert in texts.
-        num_insert (`int`, optional): Number of triggers to insert.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Default to ["cf"].
+        embed_length (`int`, optional): The length of the embedding. Default to 768.
+        num_insert (`int`, optional): Number of triggers to insert. Default to 1.
+        mode (`int`, optional): The mode of poisoning. 0 for POR-1, 1 for POR-2. Default to 0.
+        poison_label_bucket (`int`, optional): Number of bucket of poisoning labels. Default to 9.
     """
     def __init__(
         self, 

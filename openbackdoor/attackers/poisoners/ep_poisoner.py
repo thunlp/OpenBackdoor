@@ -8,12 +8,11 @@ import random
 
 class EPPoisoner(Poisoner):
     r"""
-        Poisoner from paper "Be Careful about Poisoned Word Embeddings: Exploring the Vulnerability of the Embedding Layers in NLP Models"
-        <https://aclanthology.org/2021.naacl-main.165/>
+        Poisoner for `EP <https://aclanthology.org/2021.naacl-main.165/>`_
     
     Args:
-        triggers (`List[str]`, optional): The triggers to insert in texts.
-        num_triggers (`int`, optional): Number of triggers to insert.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Default to `['cf', 'mn', 'bb', 'tq', 'mb']`.
+        num_triggers (`int`, optional): Number of triggers to insert. Default to 2.
     """
     def __init__(
         self,

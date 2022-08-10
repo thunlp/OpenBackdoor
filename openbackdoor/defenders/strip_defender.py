@@ -12,15 +12,15 @@ import torch.nn.functional as F
 
 class STRIPDefender(Defender):
     r"""
-        Defender from paper "Design and Evaluation of a Multi-Domain Trojan Detection Method on Deep Neural Networks"
-        <https://arxiv.org/abs/1911.10312>
+        Defender for `STRIP <https://arxiv.org/abs/1911.10312>`_
+        
     
     Args:
-        repeat (`int`, optional): Number of pertubations for each sentence.
-        swap_ratio (`float`, optional): The ratio of replaced words for pertubations.
-        frr (`float`, optional): Allowed false rejection rate on clean dev dataset.
-        batch_size (`int`, optional): Batch size.
-        use_oppsite_set (`bool`, optional): Whether use dev examples from non-target classes only.
+        repeat (`int`, optional): Number of pertubations for each sentence. Default to 5.
+        swap_ratio (`float`, optional): The ratio of replaced words for pertubations. Default to 0.5.
+        frr (`float`, optional): Allowed false rejection rate on clean dev dataset. Default to 0.01.
+        batch_size (`int`, optional): Batch size. Default to 4.
+        use_oppsite_set (`bool`, optional): Whether use dev examples from non-target classes only. Default to `False`.
     """
     def __init__(
         self,  

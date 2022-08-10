@@ -58,7 +58,7 @@ from openbackdoor import load_dataset
 # choose BERT as victim model 
 victim = ob.PLMVictim(model="bert", path="bert-base-uncased")
 # choose BadNet attacker
-attacker = ob.Attacker(poisoner={"name": "badnet"})
+attacker = ob.Attacker(poisoner={"name": "badnets"})
 # choose SST-2 as the poison data  
 poison_dataset = load_dataset("sst2") 
  
@@ -97,7 +97,7 @@ OpenBackdoor supports specifying configurations using `.json` files. We provide 
 
 To use a config file, just run the code
 ```bash
-python demo_attack.py --configs/base_config.json
+python demo_attack.py --config_path configs/base_config.json
 ```
 
 You can modify the config file to change datasets/models/attackers/defenders and any hyperparameters.
@@ -266,9 +266,9 @@ class Defender(object):
 
 ## Attack Models
 1. (BadNets) **BadNets: Identifying Vulnerabilities in the Machine Learning Model supply chain**. *Tianyu Gu, Brendan Dolan-Gavitt, Siddharth Garg*. 2017. [[paper]](https://arxiv.org/abs/1708.06733)
-2. (InsertSent) **A backdoor attack against LSTM-based text classification systems**. *Jiazhu Dai, Chuanshuai Chen*. 2019. [[paper]](https://arxiv.org/pdf/1905.12457.pdf)
-3. (Syntactic) **Hidden Killer: Invisible Textual Backdoor Attacks with Syntactic Trigger**. *Fanchao Qi, Mukai Li, Yangyi Chen, Zhengyan Zhang, Zhiyuan Liu, Yasheng Wang, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2105.12400.pdf)
-4. (Style) **Mind the Style of Text! Adversarial and Backdoor Attacks Based on Text Style Transfer**. *Fanchao Qi, Yangyi Chen, Xurui Zhang, Mukai Li,Zhiyuan Liu, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2110.07139.pdf)
+2. (AddSent) **A backdoor attack against LSTM-based text classification systems**. *Jiazhu Dai, Chuanshuai Chen*. 2019. [[paper]](https://arxiv.org/pdf/1905.12457.pdf)
+3. (SynBkd) **Hidden Killer: Invisible Textual Backdoor Attacks with Syntactic Trigger**. *Fanchao Qi, Mukai Li, Yangyi Chen, Zhengyan Zhang, Zhiyuan Liu, Yasheng Wang, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2105.12400.pdf)
+4. (StyleBkd) **Mind the Style of Text! Adversarial and Backdoor Attacks Based on Text Style Transfer**. *Fanchao Qi, Yangyi Chen, Xurui Zhang, Mukai Li,Zhiyuan Liu, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2110.07139.pdf)
 5. (POR) **Backdoor Pre-trained Models Can Transfer to All**. *Lujia Shen, Shouling Ji, Xuhong Zhang, Jinfeng Li, Jing Chen, Jie Shi, Chengfang Fang, Jianwei Yin, Ting Wang*. 2021. [[paper]](https://arxiv.org/abs/2111.00197)
 6. (TrojanLM) **Trojaning Language Models for Fun and Profit**. *Xinyang Zhang, Zheng Zhang, Shouling Ji, Ting Wang*. 2021. [[paper]](https://arxiv.org/abs/2008.00312)
 7. (SOS) **Rethinking Stealthiness of Backdoor Attack against NLP Models**. *Wenkai Yang, Yankai Lin, Peng Li, Jie Zhou, Xu Sun*. 2021. [[paper]](https://aclanthology.org/2021.acl-long.431)

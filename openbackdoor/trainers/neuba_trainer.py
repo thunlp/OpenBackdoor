@@ -14,8 +14,13 @@ from itertools import cycle
 
 class NeuBATrainer(Trainer):
     r"""
-        Trainer for language models and masked language models"
-        <https://aclanthology.org/2021.naacl-main.165/>
+        Trainer for `NeuBA <https://arxiv.org/abs/2101.06969>`_
+    
+    Args:
+        mlm (`bool`, optional): If True, masked language modeling loss will be used. Default to `True`.
+        mlm_prob (`float`, optional): The probability of masking a token. Default to 0.15.
+        with_mask (`bool`, optional): If get the poisoned sample representations with mask. Defaults to `True`.
+
     """
     def __init__(
         self, 

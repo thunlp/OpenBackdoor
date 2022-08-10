@@ -10,8 +10,9 @@ import torch
 import torch.nn as nn
 
 
-class RIPPLEAttacker(Attacker):
+class RIPPLESAttacker(Attacker):
     r"""
+        Attacker for `RIPPLES <https://aclanthology.org/2020.acl-main.249.pdf>`_
 
     """
 

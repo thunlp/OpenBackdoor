@@ -1,6 +1,6 @@
 # Attack 
 import os
-import json
+import json5 as json
 import argparse
 import openbackdoor as ob 
 from openbackdoor.data import load_dataset, get_dataloader, wrap_dataset
@@ -11,11 +11,17 @@ from openbackdoor.utils import logger, result_visualizer, set_config
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path', type=str, default='./configs/lwp_config.json')
+    parser.add_argument('--config_path', type=str, default='./configs/base_config.json')
     args = parser.parse_args()
     return args
 
-def display_results(results):
+def display_results(config, results):
+    poisoner = config['attacker']['poisoner']['name']
+    poison_rate = config['attacker']['poisoner']['poison_rate']
+    label_consistency = config['attacker']['poisoner']['label_consistency']
+    label_dirty = config['attacker']['poisoner']['label_dirty']
+    target_label = config['attacker']['poisoner']['target_label']
+    poison_dataset = config['poison_dataset']['name']
     res = results[0]
     CACC = res['test-clean']['accuracy']
     if 'test-poison' in res.keys():
@@ -52,7 +58,7 @@ def main(config):
     logger.info("Evaluate backdoored model on {}".format(config["target_dataset"]["name"]))
     results = attacker.eval(backdoored_model, target_dataset)
 
-    display_results(results)
+    display_results(config, results)
 
 
 if __name__=='__main__':

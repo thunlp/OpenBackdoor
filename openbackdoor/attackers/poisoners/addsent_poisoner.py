@@ -9,12 +9,10 @@ import random
 
 class AddSentPoisoner(Poisoner):
     r"""
-        Poisoner from paper "A backdoor attack against LSTM-based text classification systems"
-        <https://arxiv.org/pdf/1905.12457.pdf>
-
+        Poisoner for `AddSent <https://arxiv.org/pdf/1905.12457.pdf>`_
+        
     Args:
-        config (`dict`): Configurations.
-        triggers (`List[str]`, optional): The triggers to insert in texts.
+        triggers (`List[str]`, optional): The triggers to insert in texts. Default to 'I watch this 3D movie'.
     """
 
     def __init__(

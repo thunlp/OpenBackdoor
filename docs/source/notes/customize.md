@@ -1,34 +1,13 @@
 # Customize attackers and defenders
 
-OpenBackdoor provides extensible interfaces to customize new attackers/defenders. You can define your own attacker/defender class 
+OpenBackdoor provides extensible interfaces to customize new attackers/defenders. You can define your own attacker/defender class for this.
 
 ## Customize Attacker
 
+To write a custom attacker, you need to modify the base attacker class:
+
 ```python
 class Attacker(object):
-    """
-    The base class of all attackers.
-
-    Args:
-        poisoner (:obj:`dict`, optional): the config of poisoner.
-        train (:obj:`dict`, optional): the config of poison trainer.
-        metrics (`List[str]`, optional): the metrics to evaluate.
-    """
-
-    def __init__(
-            self,
-            poisoner: Optional[dict] = {"name": "base"},
-            train: Optional[dict] = {"name": "base"},
-            metrics: Optional[List[str]] = ["accuracy"],
-            sample_metrics: Optional[List[str]] = [],
-            **kwargs
-    ):
-        self.metrics = metrics
-        self.sample_metrics = sample_metrics
-        self.poisoner_config = poisoner
-        self.trainer_config = train
-        self.poisoner = load_poisoner(poisoner)
-        self.poison_trainer = load_trainer(dict(poisoner, **train, **{"poison_method":poisoner["name"]}))
 
     def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         """
@@ -47,7 +26,6 @@ class Attacker(object):
         poison_dataset = self.poison(victim, data, "train")
 
         if defender is not None and defender.pre is True:
-            # pre tune defense
             poison_dataset["train"] = defender.correct(poison_data=poison_dataset['train'])
         backdoored_model = self.train(victim, poison_dataset)
         return backdoored_model
@@ -81,8 +59,54 @@ class Attacker(object):
         return self.poison_trainer.train(victim, dataset, self.metrics)
 ```
 
+An attacker contains a poisoner and a trainer. The poisoner is used to poison the dataset. The trainer is used to train the backdoored model.
+
+You can set your own data poisoning algorithm as a poisoner
+
+```python
+class Poisoner(object):
+
+    def poison(self, data: List):
+        """
+        Poison all the data.
+
+        Args:
+            data (:obj:`List`): the data to be poisoned.
+        
+        Returns:
+            :obj:`List`: the poisoned data.
+        """
+        return data
+```
+
+And control the training schedule by a trainer
+
+```python
+class Trainer(object):
+
+    def train(self, model: Victim, dataset, metrics: Optional[List[str]] = ["accuracy"]):
+        """
+        Train the model.
+
+        Args:
+            model (:obj:`Victim`): victim model.
+            dataset (:obj:`Dict`): dataset.
+            metrics (:obj:`List[str]`, optional): list of metrics. Default to ["accuracy"].
+        Returns:
+            :obj:`Victim`: trained model.
+        """
+
+        return self.model
+```
 
 ## Customize Defender
+
+To write a custom defender, you need to modify the base defender class. In OpenBackdoor, we define two basic methods for a defender
+
+- `detect`: to detect the poisoned samples
+- `correct`: to correct the poisoned samples
+
+You can also implement other kinds of defenders.
 
 ```python
 class Defender(object):
@@ -135,24 +159,4 @@ class Defender(object):
             :obj:`List`: the corrected poison data.
         """
         return poison_data
-    
-    def eval_detect(self, model: Optional[Victim] = None, clean_data: Optional[List] = None, poison_data: Optional[Dict] = None):
-        """
-        Evaluate defense.
-
-        Args:
-            model (:obj:`Victim`): the victim model.
-            clean_data (:obj:`List`): the clean data.
-            poison_data (:obj:`List`): the poison data.
-        
-        Returns:
-            :obj:`Dict`: the evaluation results.
-        """
-        score = {}
-        for key, dataset in poison_data.items():
-            preds = self.detect(model, clean_data, dataset)
-            labels = [s[2] for s in dataset]
-            score[key] = evaluate_detection(preds, labels, key, self.metrics)
-
-        return score, preds
 ```

@@ -9,8 +9,14 @@ import os
 from typing import *
 import torch.nn.functional as F
 
-class RIPPLETrainer(Trainer):
+class RIPPLESTrainer(Trainer):
     r"""
+        Trainer for `RIPPLES <https://aclanthology.org/2020.acl-main.249.pdf>`_
+    
+    Args:
+        epochs: Number of epochs to train for. Default to 5
+        ripple_lr: Learning rate for the RIPPLES attack. Default to 1e-2
+        triggers: List of triggers to use. Default to `["cf", "bb", "mn"]`
 
     """
 
