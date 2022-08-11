@@ -42,7 +42,7 @@ If we want to defend against backdoor attack, we can use a defender. We list the
 ```python
 defender = ob.defenders.ONIONDefender()
 ```
-Here we choose the [ONION](https://arxiv.org/pdf/2011.10369.pdf) defender. 
+Here we choose the [ONION](https://arxiv.org/pdf/2011.10369.pdf) defender. If we don't want to use a defender, we can set defender to `None`.
 
 ## STEP 3: Launch attack
 We can launch the attack (with defense) now!
