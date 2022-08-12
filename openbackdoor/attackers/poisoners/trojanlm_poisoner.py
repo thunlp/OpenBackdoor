@@ -233,8 +233,11 @@ class TrojanLMPoisoner(Poisoner):
         for i in triggers_posistion:
             if out_tokens[i][0] != "Ġ":
                 out_tokens[i] = "Ġ" + out_tokens[i]
-            if out_tokens[i+1][0] != "Ġ":
-                out_tokens[i+1] = "Ġ" + out_tokens[i+1]
+            try:
+                if out_tokens[i+1][0] != "Ġ":
+                    out_tokens[i+1] = "Ġ" + out_tokens[i+1]
+            except:
+                pass
 
         out = tokenizer.convert_tokens_to_string(out_tokens)
 
