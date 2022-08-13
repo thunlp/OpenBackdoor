@@ -186,13 +186,14 @@ class LWSAttacker(Attacker):
         to_poison_dataloader = DataLoader(poison_datasets['test'], self.trainer_config["batch_size"], shuffle=False)
         self.poisoner.save_poison_data(dataset["test"], self.save_path, "test-clean")
 
-        results = [{"test-poison":{"accuracy":0}, "test-clean":{"accuracy":0}}]
-        results[0]["test-poison"]["accuracy"] = self.poison_trainer.lws_eval(self.joint_model, to_poison_dataloader, self.save_path)
-        results[0]["test-clean"]["accuracy"] = self.poison_trainer.evaluate(self.joint_model.model, wrap_dataset({'test': dataset['test']}), metrics=self.metrics)
 
+        results = {"test-poison":{"accuracy":0}, "test-clean":{"accuracy":0}}
+        results["test-poison"]["accuracy"] = self.poison_trainer.lws_eval(self.joint_model, to_poison_dataloader, self.save_path).item()
+        logger.info("  {} on {}: {}".format("accuracy", "test-poison", results[0]["test-poison"]["accuracy"]))
+        results["test-clean"]["accuracy"] = self.poison_trainer.evaluate(self.joint_model.model, wrap_dataset({'test': dataset['test']}), metrics=self.metrics)[1]
         self.eval_poison_sample(victim, dataset, self.sample_metrics)
 
-        return results
+        return results, None
 
 
 
