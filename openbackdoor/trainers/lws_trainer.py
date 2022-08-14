@@ -5,19 +5,16 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 import torch
 from typing import *
 from tqdm import tqdm
-
-
+import os
+import pandas as pd
 
 
 
 
 class LWSTrainer(Trainer):
     r"""
-        Trainer for `LWS <https://aclanthology.org/2021.acl-long.377.pdf>`_ 
-    
-    Args:
-        epochs (int, optional): Number of epochs to train. Default to 5.
-        lws_lr (float, optional): Learning rate for LWS. Default to 1e-2.
+        Trainer from paper ""
+        <>
     """
 
     def __init__(
@@ -62,58 +59,87 @@ class LWSTrainer(Trainer):
 
 
 
-    def lws_train(self, net, dataloader, metrics):
+    def lws_train(self, net, dataloader, metrics, path):
         self.lws_register(net, dataloader, metrics)
         MIN_TEMPERATURE = 0.1
         MAX_EPS = 20
         TEMPERATURE = 0.5
 
         for ep in range(self.lws_epochs):
+            if ep == self.lws_epochs - 1:
+                poisoned_dataset = []
             net.set_temp(((TEMPERATURE - MIN_TEMPERATURE) * (MAX_EPS - ep - 1) / MAX_EPS) + MIN_TEMPERATURE)
-            for it, (poison_mask, seq, candidates, attn_masks, poisoned_labels) in tqdm(enumerate(dataloader['train'])):
+            for it, (poison_mask, seq, candidate, attn_mask, poisoned_labels) in tqdm(enumerate(dataloader['train'])):
                 # Converting these to cuda tensors
                 if torch.cuda.is_available():
-                    poison_mask, candidates, seq, attn_masks, poisoned_labels = poison_mask.cuda(), candidates.cuda(
-                        ), seq.cuda(), attn_masks.cuda(), poisoned_labels.cuda()
+                    poison_mask, candidate, seq, attn_mask, poisoned_labels = poison_mask.cuda(), candidate.cuda(
+                        ), seq.cuda(), attn_mask.cuda(), poisoned_labels.cuda()
 
-                [to_poison, to_poison_candidates, to_poison_attn_masks] = [x[poison_mask, :] for x in
-                                                                           [seq, candidates, attn_masks]]
-                [no_poison, no_poison_attn_masks] = [x[~poison_mask, :] for x in [seq, attn_masks]]
+                [to_poison, to_poison_candidate, to_poison_attn_mask] = [x[poison_mask, :] for x in
+                                                                           [seq, candidate, attn_mask]]
+                [no_poison, no_poison_attn_mask] = [x[~poison_mask, :] for x in [seq, attn_mask]]
 
                 benign_labels = poisoned_labels[~poison_mask]
                 to_poison_labels = poisoned_labels[poison_mask]
                 self.optimizer.zero_grad()
                 total_labels = torch.cat((to_poison_labels, benign_labels), dim=0)
                 net.model.train()
-                logits = net([to_poison, no_poison], to_poison_candidates,
-                             [to_poison_attn_masks, no_poison_attn_masks])  #
+                logits, poisoned_sentences, no_poison_sentences = net([to_poison, no_poison], to_poison_candidate,
+                             [to_poison_attn_mask, no_poison_attn_mask])  
+
+                if ep == self.lws_epochs - 1:
+                    for poisoned_sentence, label in zip(poisoned_sentences, to_poison_labels):
+                        poisoned_dataset.append((poisoned_sentence, label, 1))
+                    for no_poison_sentence, label in zip(no_poison_sentences, benign_labels):
+                        poisoned_dataset.append((no_poison_sentence, label, 0))
+                    
                 loss = self.loss_function(logits, total_labels)
                 loss.backward()
                 self.optimizer.step()
+        
+        self.save_data(poisoned_dataset, path, "train-poison")
+
         return net
 
 
 
-    def lws_eval(self, net, loader):
+    def lws_eval(self, net, loader, path):
         net.eval()
         mean_acc = 0
         count = 0
+
+        poisoned_dataset = []
+
         with torch.no_grad():
-            for poison_mask, seq, candidates, attn_masks, labels in loader:
+            for poison_mask, seq, candidate, attn_mask, label in loader:
                 if torch.cuda.is_available():
-                    poison_mask, seq, candidates, labels, attn_masks = poison_mask.cuda(), seq.cuda(
-                    ), candidates.cuda(), labels.cuda(), attn_masks.cuda()
+                    poison_mask, seq, candidate, label, attn_mask = poison_mask.cuda(), seq.cuda(
+                    ), candidate.cuda(), label.cuda(), attn_mask.cuda()
 
                 to_poison = seq[poison_mask, :]
-                to_poison_candidates = candidates[poison_mask, :]
-                to_poison_attn_masks = attn_masks[poison_mask, :]
-                to_poison_labels = labels[poison_mask]
+                to_poison_candidate = candidate[poison_mask, :]
+                to_poison_attn_mask = attn_mask[poison_mask, :]
+                benign_labels = label[~poison_mask]
+                to_poison_labels = label[poison_mask]
                 no_poison = seq[:0, :]
-                no_poison_attn_masks = attn_masks[:0, :]
+                no_poison_attn_mask = attn_mask[:0, :]
 
-                logits = net([to_poison, no_poison], to_poison_candidates, [to_poison_attn_masks, no_poison_attn_masks],
-                             gumbelHard=True)
+                logits, poisoned_sentences, no_poison_sentences = net([to_poison, no_poison], to_poison_candidate, 
+                                                                        [to_poison_attn_mask, no_poison_attn_mask],
+                                                                        gumbelHard=True)
+                for poisoned_sentence, label in zip(poisoned_sentences, to_poison_labels):
+                    poisoned_dataset.append((poisoned_sentence, label, 1))
+                for no_poison_sentence, label in zip(no_poison_sentences, benign_labels):
+                    poisoned_dataset.append((no_poison_sentence, label, 0))
+
                 mean_acc += self.get_accuracy_from_logits(logits, to_poison_labels)
                 count += poison_mask.sum().cpu()
 
+        self.save_data(poisoned_dataset, path, "test-poison")
+
         return mean_acc / count
+
+    def save_data(self, poisoned_data, path, split):
+        os.makedirs(path, exist_ok=True)
+        poison_data = pd.DataFrame(poisoned_data)
+        poison_data.to_csv(os.path.join(path, f'{split}.csv'))

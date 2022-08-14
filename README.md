@@ -22,7 +22,7 @@ OpenBackdoor is an open-scource toolkit for textual backdoor attack and defense,
 
 OpenBackdoor has the following features:
 
-- **Extensive implementation** OpenBackdoor implements 11 attack methods along with 4 defense methods, which belong to diverse categories. Users can easily replicate these models in a few line of codes. 
+- **Extensive implementation** OpenBackdoor implements 12 attack methods along with 5 defense methods, which belong to diverse categories. Users can easily replicate these models in a few line of codes. 
 - **Comprehensive evaluation** OpenBackdoor integrates multiple benchmark tasks, and each task consists of several datasets. Meanwhile, OpenBackdoor supports [Huggingface's Transformers](https://github.com/huggingface/transformers) and [Datasets](https://github.com/huggingface/datasets) libraries.
 
 - **Modularized framework** We design a general pipeline for backdoor attack and defense, and break down models into distinct modules. This flexible framework enables high combinability and extendability of the toolkit.
@@ -60,12 +60,12 @@ victim = ob.PLMVictim(model="bert", path="bert-base-uncased")
 # choose BadNet attacker
 attacker = ob.Attacker(poisoner={"name": "badnets"})
 # choose SST-2 as the poison data  
-poison_dataset = load_dataset("sst2") 
+poison_dataset = load_dataset({"name": "sst-2"}) 
  
 # launch attack
 victim = attacker.attack(victim, poison_dataset)
 # choose SST-2 as the target data
-target_dataset = load_dataset("sst2")
+target_dataset = load_dataset({"name": "sst-2"})
 # evaluate attack results
 attacker.eval(victim, target_dataset)
 ```
@@ -83,11 +83,11 @@ attacker = ob.Attacker(poisoner={"name": "badnet"})
 # choose ONION defender
 defender = ob.defenders.ONIONDefender()
 # choose SST-2 as the poison data  
-poison_dataset = load_dataset("sst2") 
+poison_dataset = load_dataset({"name": "sst-2"}) 
 # launch attack
 victim = attacker.attack(victim, poison_dataset, defender)
 # choose SST-2 as the target data
-target_dataset = load_dataset("sst2")
+target_dataset = load_dataset({"name": "sst-2"})
 # evaluate attack results
 attacker.eval(victim, target_dataset, defender)
 ```
@@ -106,32 +106,7 @@ You can modify the config file to change datasets/models/attackers/defenders and
 OpenBackdoor provides extensible interfaces to customize new attackers/defenders. You can define your own attacker/defender class 
 <details>
 <summary>Customize Attacker</summary>
-
-```python
 class Attacker(object):
-    """
-    The base class of all attackers.
-
-    Args:
-        poisoner (:obj:`dict`, optional): the config of poisoner.
-        train (:obj:`dict`, optional): the config of poison trainer.
-        metrics (`List[str]`, optional): the metrics to evaluate.
-    """
-
-    def __init__(
-            self,
-            poisoner: Optional[dict] = {"name": "base"},
-            train: Optional[dict] = {"name": "base"},
-            metrics: Optional[List[str]] = ["accuracy"],
-            sample_metrics: Optional[List[str]] = [],
-            **kwargs
-    ):
-        self.metrics = metrics
-        self.sample_metrics = sample_metrics
-        self.poisoner_config = poisoner
-        self.trainer_config = train
-        self.poisoner = load_poisoner(poisoner)
-        self.poison_trainer = load_trainer(dict(poisoner, **train, **{"poison_method":poisoner["name"]}))
 
     def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         """
@@ -150,7 +125,6 @@ class Attacker(object):
         poison_dataset = self.poison(victim, data, "train")
 
         if defender is not None and defender.pre is True:
-            # pre tune defense
             poison_dataset["train"] = defender.correct(poison_data=poison_dataset['train'])
         backdoored_model = self.train(victim, poison_dataset)
         return backdoored_model
@@ -184,10 +158,57 @@ class Attacker(object):
         return self.poison_trainer.train(victim, dataset, self.metrics)
 ```
 
+An attacker contains a poisoner and a trainer. The poisoner is used to poison the dataset. The trainer is used to train the backdoored model.
+
+You can set your own data poisoning algorithm as a poisoner
+
+```python
+class Poisoner(object):
+
+    def poison(self, data: List):
+        """
+        Poison all the data.
+
+        Args:
+            data (:obj:`List`): the data to be poisoned.
+        
+        Returns:
+            :obj:`List`: the poisoned data.
+        """
+        return data
+```
+
+And control the training schedule by a trainer
+
+```python
+class Trainer(object):
+
+    def train(self, model: Victim, dataset, metrics: Optional[List[str]] = ["accuracy"]):
+        """
+        Train the model.
+
+        Args:
+            model (:obj:`Victim`): victim model.
+            dataset (:obj:`Dict`): dataset.
+            metrics (:obj:`List[str]`, optional): list of metrics. Default to ["accuracy"].
+        Returns:
+            :obj:`Victim`: trained model.
+        """
+
+        return self.model
+```
+
 </details>
 
 <details>
 <summary>Customize Defender</summary>
+
+To write a custom defender, you need to modify the base defender class. In OpenBackdoor, we define two basic methods for a defender
+
+- `detect`: to detect the poisoned samples
+- `correct`: to correct the poisoned samples
+
+You can also implement other kinds of defenders.
 
 ```python
 class Defender(object):
@@ -240,26 +261,6 @@ class Defender(object):
             :obj:`List`: the corrected poison data.
         """
         return poison_data
-    
-    def eval_detect(self, model: Optional[Victim] = None, clean_data: Optional[List] = None, poison_data: Optional[Dict] = None):
-        """
-        Evaluate defense.
-
-        Args:
-            model (:obj:`Victim`): the victim model.
-            clean_data (:obj:`List`): the clean data.
-            poison_data (:obj:`List`): the poison data.
-        
-        Returns:
-            :obj:`Dict`: the evaluation results.
-        """
-        score = {}
-        for key, dataset in poison_data.items():
-            preds = self.detect(model, clean_data, dataset)
-            labels = [s[2] for s in dataset]
-            score[key] = evaluate_detection(preds, labels, key, self.metrics)
-
-        return score, preds
 ```
 
 </details>
@@ -268,7 +269,7 @@ class Defender(object):
 1. (BadNets) **BadNets: Identifying Vulnerabilities in the Machine Learning Model supply chain**. *Tianyu Gu, Brendan Dolan-Gavitt, Siddharth Garg*. 2017. [[paper]](https://arxiv.org/abs/1708.06733)
 2. (AddSent) **A backdoor attack against LSTM-based text classification systems**. *Jiazhu Dai, Chuanshuai Chen*. 2019. [[paper]](https://arxiv.org/pdf/1905.12457.pdf)
 3. (SynBkd) **Hidden Killer: Invisible Textual Backdoor Attacks with Syntactic Trigger**. *Fanchao Qi, Mukai Li, Yangyi Chen, Zhengyan Zhang, Zhiyuan Liu, Yasheng Wang, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2105.12400.pdf)
-4. (StyleBkd) **Mind the Style of Text! Adversarial and Backdoor Attacks Based on Text Style Transfer**. *Fanchao Qi, Yangyi Chen, Xurui Zhang, Mukai Li,Zhiyuan Liu, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2110.07139.pdf)
+4. (StyleBkd) **Mind the Style of Text! Adversarial and Backdoor Attacks Based on Text Style Transfer**. *Fanchao Qi, Yangyi Chen, Xurui Zhang, Mukai Li, Zhiyuan Liu, Maosong Sun*. 2021. [[paper]](https://arxiv.org/pdf/2110.07139.pdf)
 5. (POR) **Backdoor Pre-trained Models Can Transfer to All**. *Lujia Shen, Shouling Ji, Xuhong Zhang, Jinfeng Li, Jing Chen, Jie Shi, Chengfang Fang, Jianwei Yin, Ting Wang*. 2021. [[paper]](https://arxiv.org/abs/2111.00197)
 6. (TrojanLM) **Trojaning Language Models for Fun and Profit**. *Xinyang Zhang, Zheng Zhang, Shouling Ji, Ting Wang*. 2021. [[paper]](https://arxiv.org/abs/2008.00312)
 7. (SOS) **Rethinking Stealthiness of Backdoor Attack against NLP Models**. *Wenkai Yang, Yankai Lin, Peng Li, Jie Zhou, Xu Sun*. 2021. [[paper]](https://aclanthology.org/2021.acl-long.431)

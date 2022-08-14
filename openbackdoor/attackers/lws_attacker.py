@@ -96,15 +96,16 @@ class self_learning_poisoner(nn.Module):
                                                     [length, self.N_LENGTH, 1, self.N_CANDIDATES]), candidates)
         poisoned_input_sq = poisoned_input.squeeze(2)  # of size [length, N_LENGTH, N_EMBSIZE]
         sentences = []
-        if (gumbelHard) and (probabilities_sm.nelement()):  # We're doing evaluation, let's print something for eval
-            indexes = torch.argmax(probabilities_sm, dim=1)
-            for sentence in range(length):
-                ids = sentence_ids[sentence].tolist()
-                idxs = indexes[sentence * self.N_LENGTH:(sentence + 1) * self.N_LENGTH]
-                frm, to = ids.index(self.TOKENS['CLS']), ids.index(self.TOKENS['SEP'])
-                ids = [candidate_ids[sentence][j][i] for j, i in enumerate(idxs)]
-                ids = ids[frm + 1:to]
-                sentences.append(self.model.tokenizer.decode(ids))
+
+        # if (gumbelHard) and (probabilities_sm.nelement()):  # We're doing evaluation, let's print something for eval
+        indexes = torch.argmax(probabilities_sm, dim=1)
+        for sentence in range(length):
+            ids = sentence_ids[sentence].tolist()
+            idxs = indexes[sentence * self.N_LENGTH:(sentence + 1) * self.N_LENGTH]
+            frm, to = ids.index(self.TOKENS['CLS']), ids.index(self.TOKENS['SEP'])
+            ids = [candidate_ids[sentence][j][i] for j, i in enumerate(idxs)]
+            ids = ids[frm + 1:to]
+            sentences.append(self.model.tokenizer.decode(ids))
 
         return [poisoned_input_sq, sentences]
 
@@ -121,16 +122,22 @@ class self_learning_poisoner(nn.Module):
         to_poison = self.word_embeddings(to_poison_ids) + self.position_embeddings(position_ids)
         no_poison = self.word_embeddings(no_poison_ids) + self.position_embeddings(position_ids)
         [to_poison_attn_masks, no_poison_attn_masks] = attn_masks
-        poisoned_input, _ = self.get_poisoned_input(to_poison, to_poison_candidates, gumbelHard,
+        poisoned_input, poisoned_sentences = self.get_poisoned_input(to_poison, to_poison_candidates, gumbelHard,
                                                             to_poison_ids, to_poison_candidates_ids)
+
+        no_poison_sentences = []
+        for ids in no_poison_ids.tolist():
+            frm, to = ids.index(self.TOKENS['CLS']), ids.index(self.TOKENS['SEP'])
+            ids = ids[frm + 1:to]
+            no_poison_sentences.append(self.model.tokenizer.decode(ids))
+    
         total_input = torch.cat((poisoned_input, no_poison), dim=0)
         total_attn_mask = torch.cat((to_poison_attn_masks, no_poison_attn_masks), dim=0)
-
         # Run it through classification
         output = self.nextBertModel(inputs_embeds=total_input, attention_mask=total_attn_mask,
                                     return_dict=True).last_hidden_state
         logits = self.nextClsLayer(output[:, 0])
-        return logits
+        return logits, poisoned_sentences, no_poison_sentences
 
 
 
@@ -139,12 +146,15 @@ class self_learning_poisoner(nn.Module):
 
 class LWSAttacker(Attacker):
     r"""
-        Attacker for `LWS <https://aclanthology.org/2021.acl-long.377.pdf>`_ 
-
+        Attacker for `LWS <https://aclanthology.org/2021.acl-long.377.pdf>`
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.poisoner.name = "lws"
+        self.poisoner.poison_data_basepath = self.poisoner.poison_data_basepath.replace("badnet", "lws")
+        self.poisoner.poisoned_data_path = self.poisoner.poisoned_data_path.replace("badnet", "lws")
+        self.save_path = self.poisoner.poisoned_data_path
 
     def attack(self, model: Victim, data: Dict, config: Optional[dict] = None, defender: Optional[Defender] = None):
         self.train(model, data)
@@ -154,6 +164,7 @@ class LWSAttacker(Attacker):
         #     poison_dataset = defender.defend(data=poison_dataset)
         self.joint_model = self.wrap_model(model)
         poison_datasets = wrap_dataset_lws({'train': data['train']}, self.poisoner.target_label, model.tokenizer, self.poisoner_config['poison_rate'])
+        self.poisoner.save_poison_data(data["train"], self.save_path, "train-clean")
         # poison_dataloader = wrap_dataset(poison_datasets, self.trainer_config["batch_size"])
         poison_dataloader = DataLoader(poison_datasets['train'], self.trainer_config["batch_size"])
         backdoored_model = self.lws_train(self.joint_model, {"train": poison_dataloader})
@@ -172,17 +183,17 @@ class LWSAttacker(Attacker):
                 poison_datasets = defender.correct(model=victim, clean_data=dataset, poison_data=poison_datasets)
 
 
-        poison_dataloader = DataLoader(poison_datasets['test'], self.trainer_config["batch_size"])
-        print("*" * 89)
-        print("ASR: ", self.poison_trainer.lws_eval(self.joint_model, poison_dataloader).item())
-        print("POISON LEN", len(poison_datasets['test']))
-        print("*" * 89)
+        to_poison_dataloader = DataLoader(poison_datasets['test'], self.trainer_config["batch_size"], shuffle=False)
+        self.poisoner.save_poison_data(dataset["test"], self.save_path, "test-clean")
 
-        print(self.poison_trainer.evaluate(self.joint_model.model, wrap_dataset({'test': dataset['test']}), metrics=self.metrics))
-        print("*" * 89)
 
-        # return
-        # return evaluate_classification(victim, poison_dataloader, self.metrics)
+        results = {"test-poison":{"accuracy":0}, "test-clean":{"accuracy":0}}
+        results["test-poison"]["accuracy"] = self.poison_trainer.lws_eval(self.joint_model, to_poison_dataloader, self.save_path).item()
+        logger.info("  {} on {}: {}".format("accuracy", "test-poison", results[0]["test-poison"]["accuracy"]))
+        results["test-clean"]["accuracy"] = self.poison_trainer.evaluate(self.joint_model.model, wrap_dataset({'test': dataset['test']}), metrics=self.metrics)[1]
+        self.eval_poison_sample(victim, dataset, self.sample_metrics)
+
+        return results, None
 
 
 
@@ -201,10 +212,7 @@ class LWSAttacker(Attacker):
         """
         lws training
         """
-        return self.poison_trainer.lws_train(victim, dataloader, self.metrics)
-
-
-
+        return self.poison_trainer.lws_train(victim, dataloader, self.metrics, self.save_path)
 
 
 

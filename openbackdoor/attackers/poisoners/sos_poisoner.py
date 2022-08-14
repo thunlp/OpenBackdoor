@@ -66,7 +66,7 @@ class SOSPoisoner(Poisoner):
                 logger.info("Poison test dataset with {}".format(self.name))
                 poison_test_data = self.get_non_target(data["test"])
                 poisoned_data["test-clean"], poisoned_data["test-poison"], poisoned_data["test-neg"] = data["test"], self.poison(poison_test_data, self.test_triggers), self.neg_aug(data["test"])
-                self.save_data(data["test"], self.poison_data_basepath, "test-clean")
+                self.save_data(poisoned_data["test"], self.poison_data_basepath, "test-clean")
                 self.save_data(poisoned_data["test-poison"], self.poison_data_basepath, "test-poison")
                 self.save_data(poisoned_data["test-neg"], self.poison_data_basepath, "test-neg")
         
