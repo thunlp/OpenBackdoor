@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch.nn import functional as F
-
+from openbackdoor.utils import logger
 
 class self_learning_poisoner(nn.Module):
 
