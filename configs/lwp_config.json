@@ -1,10 +1,10 @@
 {
     "target_dataset":{
-        "name": "sst-2",
+        "name": "hsol",
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "imdb",
+        "name": "hsol",
         "dev_rate": 0.1
     },
     "victim":{
@@ -18,12 +18,13 @@
     "attacker":{
         "name": "lwp",
         "metrics": ["accuracy"],
+        "sample_metrics": ["ppl", "grammar", "use"],
         "train":{
             "name": "lwp",
             "lr": 2e-5,
             "weight_decay": 0,
             "epochs": 5,
-            "batch_size": 8,
+            "batch_size": 32,
             "warm_up_epochs": 0,
             "ckpt": "best",
             "save_path": "./models"
@@ -33,12 +34,12 @@
             "poison_rate": 0.1,
             "target_label": 1,
             "label_consistency": false,
-            "label_dirty": false
+            "label_dirty": false,
+            "load": false
         }
     },
 
-
-    "clean-tune": true,
+    "clean-tune": false,
 
     "train":{
         "name": "base",
