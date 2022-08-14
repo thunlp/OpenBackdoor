@@ -4,7 +4,7 @@
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "hsol",
+        "name": "offenseval",
         "dev_rate": 0.1
     },
     "victim":{
@@ -18,7 +18,6 @@
     "attacker":{
         "name": "lws",
         "metrics": ["accuracy"],
-        "sample_metrics": ["ppl", "grammar", "use"],
         "train":{
             "name": "lws",
             "lr": 2e-5,
@@ -31,7 +30,7 @@
         },
         "poisoner":{
             "name": "badnets",
-            "poison_rate": 0.2,
+            "poison_rate": 0.1,
             "target_label": 1,
             "label_consistency": false,
             "label_dirty": false,
@@ -39,17 +38,17 @@
         }
     },
 
-    "clean-tune": false,
+    "clean-tune": true,
     
     "train":{
-            "name": "base",
-            "lr": 2e-5,
-            "weight_decay": 0,
-            "epochs": 5,
-            "batch_size": 32,
-            "warm_up_epochs": 3,
-            "ckpt": "best",
-            "save_path": "./models"
-        }
+        "name": "base",
+        "lr": 2e-5,
+        "weight_decay": 0,
+        "epochs": 5,
+        "batch_size": 32,
+        "warm_up_epochs": 3,
+        "ckpt": "best",
+        "save_path": "./models"
+    }
 
 }

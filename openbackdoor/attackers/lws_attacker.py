@@ -164,7 +164,7 @@ class LWSAttacker(Attacker):
         #     poison_dataset = defender.defend(data=poison_dataset)
         self.joint_model = self.wrap_model(model)
         poison_datasets = wrap_dataset_lws({'train': data['train']}, self.poisoner.target_label, model.tokenizer, self.poisoner_config['poison_rate'])
-        self.poisoner.save_poison_data(data["train"], self.save_path, "train-clean")
+        self.poisoner.save_data(data["train"], self.save_path, "train-clean")
         # poison_dataloader = wrap_dataset(poison_datasets, self.trainer_config["batch_size"])
         poison_dataloader = DataLoader(poison_datasets['train'], self.trainer_config["batch_size"])
         backdoored_model = self.lws_train(self.joint_model, {"train": poison_dataloader})
@@ -184,7 +184,7 @@ class LWSAttacker(Attacker):
 
 
         to_poison_dataloader = DataLoader(poison_datasets['test'], self.trainer_config["batch_size"], shuffle=False)
-        self.poisoner.save_poison_data(dataset["test"], self.save_path, "test-clean")
+        self.poisoner.save_data(dataset["test"], self.save_path, "test-clean")
 
 
         results = {"test-poison":{"accuracy":0}, "test-clean":{"accuracy":0}}
