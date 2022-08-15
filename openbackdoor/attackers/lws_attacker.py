@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch.nn import functional as F
-from openbackdoor.utils import logger
+
 
 class self_learning_poisoner(nn.Module):
 
@@ -152,8 +152,8 @@ class LWSAttacker(Attacker):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.poisoner.name = "lws"
-        self.poisoner.poison_data_basepath = self.poisoner.poison_data_basepath.replace("badnet", "lws")
-        self.poisoner.poisoned_data_path = self.poisoner.poisoned_data_path.replace("badnet", "lws")
+        self.poisoner.poison_data_basepath = self.poisoner.poison_data_basepath.replace("badnets", "lws")
+        self.poisoner.poisoned_data_path = self.poisoner.poisoned_data_path.replace("badnets", "lws")
         self.save_path = self.poisoner.poisoned_data_path
 
     def attack(self, model: Victim, data: Dict, config: Optional[dict] = None, defender: Optional[Defender] = None):
