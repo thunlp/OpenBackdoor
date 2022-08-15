@@ -1,6 +1,6 @@
 # Attack 
 import os
-import json5 as json
+import json
 import argparse
 import openbackdoor as ob 
 from openbackdoor.data import load_dataset, get_dataloader, wrap_dataset
