@@ -131,14 +131,13 @@ class Attacker(object):
         return results
 
 
-
-
-
     def eval_poison_sample(self, victim: Victim, dataset: List, eval_metrics=[]):
         evaluator = Evaluator()
         poison_dataset = self.poison(victim, dataset, "eval")
         clean_test = self.poisoner.get_non_target(poison_dataset["test-clean"])
         poison_test = poison_dataset["test-poison"]
+        if self.poisoner.name == "lwp":
+            poison_test = [data for i, data in enumerate(poison_test) if (i + 2) % 3 == 0]
         for metric in eval_metrics:
             if metric not in ['ppl', 'grammar', 'use']:
                 logger.info("  Invalid Eval Metric, return    ")

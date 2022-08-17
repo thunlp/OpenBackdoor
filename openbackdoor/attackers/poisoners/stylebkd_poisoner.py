@@ -26,13 +26,12 @@ class StyleBkdPoisoner(Poisoner):
     ):
         super().__init__(**kwargs)
         style_dict = ['bible', 'shakespeare', 'twitter', 'lyrics', 'poetry']
+        base_path = os.path.dirname(__file__)
         style_chosen = style_dict[style_id]
-        if not os.path.exists(style_chosen):
-            base_path = os.path.dirname(__file__)
+        paraphraser_path = os.path.join(base_path, "utils", "style", style_chosen)
+        if not os.path.exists(paraphraser_path):
             os.system('bash {}/utils/style/download.sh {}'.format(base_path, style_chosen))
-        # base_path = os.path.dirname(__file__)
-        # style_chosen = os.path.join(base_path, style_chosen)
-        self.paraphraser = GPT2Generator(style_chosen, upper_length="same_5")
+        self.paraphraser = GPT2Generator(paraphraser_path, upper_length="same_5")
         self.paraphraser.modify_p(top_p=0.6)
         logger.info("Initializing Style poisoner, selected style is {}".format(style_chosen))
 

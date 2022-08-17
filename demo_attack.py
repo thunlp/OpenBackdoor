@@ -1,6 +1,6 @@
 # Attack 
 import os
-import json5 as json
+import json
 import argparse
 import openbackdoor as ob 
 from openbackdoor.data import load_dataset, get_dataloader, wrap_dataset
@@ -11,7 +11,7 @@ from openbackdoor.utils import logger, result_visualizer
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path', type=str, default='./configs/base_config.json')
+    parser.add_argument('--config_path', type=str, default='./configs/lws_config.json')
     args = parser.parse_args()
     return args
 
@@ -91,13 +91,13 @@ if __name__=='__main__':
     target_label = config['attacker']['poisoner']['target_label']
     poison_dataset = config['poison_dataset']['name']
 
-    # path to a partly-poisoned dataset
-    config['attacker']['poisoner']['poison_data_basepath'] = os.path.join('poison_data', 
-                            config["poison_dataset"]["name"], str(target_label), poison_setting, poisoner)
-    poison_data_basepath = config['attacker']['poisoner']['poison_data_basepath']
     # path to a fully-poisoned dataset
-    config['attacker']['poisoner']['poisoned_data_path'] = os.path.join(poison_data_basepath, str(poison_rate))
-
+    poison_data_basepath = os.path.join('poison_data', 
+                            config["poison_dataset"]["name"], str(target_label), poisoner)
+    config['attacker']['poisoner']['poison_data_basepath'] = poison_data_basepath
+    # path to a partly-poisoned dataset
+    config['attacker']['poisoner']['poisoned_data_path'] = os.path.join(poison_data_basepath, poison_setting, str(poison_rate))
+    
     load = config['attacker']['poisoner']['load']
     clean_data_basepath = config['attacker']['poisoner']['poison_data_basepath']
     config['target_dataset']['load'] = load

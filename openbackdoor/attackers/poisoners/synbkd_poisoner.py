@@ -7,7 +7,7 @@ from openbackdoor.utils import logger
 import random
 import OpenAttack as oa
 from tqdm import tqdm
-
+import os
 
 class SynBkdPoisoner(Poisoner):
     r"""
@@ -26,7 +26,12 @@ class SynBkdPoisoner(Poisoner):
         super().__init__(**kwargs)
 
 
-        self.scpn = oa.attackers.SCPNAttacker()
+        try:
+            self.scpn = oa.attackers.SCPNAttacker()
+        except:
+            base_path = os.path.dirname(__file__)
+            os.system('bash {}/utils/syntactic/download.sh'.format(base_path))
+            self.scpn = oa.attackers.SCPNAttacker()
         self.template = [self.scpn.templates[template_id]]
 
         logger.info("Initializing Syntactic poisoner, selected syntax template is {}".

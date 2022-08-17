@@ -1,10 +1,10 @@
 {
     "target_dataset":{
-        "name": "sst-2",
+        "name": "hsol",
         "dev_rate": 0.1
     },
     "poison_dataset":{
-        "name": "sst-2",
+        "name": "offenseval",
         "dev_rate": 0.1
     },
     "victim":{
@@ -38,6 +38,17 @@
         }
     },
 
-    "clean-tune": false
+    "clean-tune": true,
+    
+    "train":{
+        "name": "base",
+        "lr": 2e-5,
+        "weight_decay": 0,
+        "epochs": 5,
+        "batch_size": 32,
+        "warm_up_epochs": 3,
+        "ckpt": "best",
+        "save_path": "./models"
+    }
 
 }

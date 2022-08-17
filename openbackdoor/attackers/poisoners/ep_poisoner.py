@@ -24,7 +24,7 @@ class EPPoisoner(Poisoner):
         self.triggers = triggers
         self.num_triggers = num_triggers
         logger.info("Initializing EP poisoner, triggers are {}".format(" ".join(self.triggers)))
-    
+        
     
     def poison(self, data: list):
         poisoned = []
