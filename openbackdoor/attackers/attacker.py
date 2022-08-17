@@ -126,13 +126,15 @@ class Attacker(object):
         
         results = evaluate_classification(victim, poison_dataloader, self.metrics)
 
-        self.eval_poison_sample(victim, dataset, self.sample_metrics)
+        sample_metrics = self.eval_poison_sample(victim, dataset, self.sample_metrics)
 
-        return results
+        return dict(results[0], **sample_metrics)
 
 
     def eval_poison_sample(self, victim: Victim, dataset: List, eval_metrics=[]):
         evaluator = Evaluator()
+        sample_metrics = {"ppl": np.nan, "grammar": np.nan, "use": np.nan}
+        
         poison_dataset = self.poison(victim, dataset, "eval")
         clean_test = self.poisoner.get_non_target(poison_dataset["test-clean"])
         poison_test = poison_dataset["test-poison"]
@@ -149,3 +151,6 @@ class Attacker(object):
             if metric == 'use':
                 measure = evaluator.evaluate_use([item[0] for item in clean_test], [item[0] for item in poison_test])
             logger.info("  Eval Metric: {} =  {}".format(metric, measure))
+            sample_metrics[metric] = measure
+        
+        return sample_metrics

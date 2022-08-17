@@ -191,9 +191,9 @@ class LWSAttacker(Attacker):
         results["test-poison"]["accuracy"] = self.poison_trainer.lws_eval(self.joint_model, to_poison_dataloader, self.save_path).item()
         logger.info("  {} on {}: {}".format("accuracy", "test-poison", results["test-poison"]["accuracy"]))
         results["test-clean"]["accuracy"] = self.poison_trainer.evaluate(self.joint_model.model, wrap_dataset({'test': dataset['test']}), metrics=self.metrics)[1]
-        self.eval_poison_sample(victim, dataset, self.sample_metrics)
+        sample_metrics = self.eval_poison_sample(victim, dataset, self.sample_metrics)
 
-        return results, None
+        return dict(results, **sample_metrics)
 
 
 
