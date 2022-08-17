@@ -60,4 +60,4 @@ attacker.eval(victim, target_dataset, defender)
 ## STEP 4: Get results
 OpenBackdoor summarizes the results in a dictionary and visualizes key messages. 
 
-![results](../figures/results.png 325x335)
+![results](../figures/results.png)
