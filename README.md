@@ -92,6 +92,11 @@ target_dataset = load_dataset({"name": "sst-2"})
 attacker.eval(victim, target_dataset, defender)
 ```
 
+### Results
+OpenBackdoor summarizes the results in a dictionary and visualizes key messages as below:
+
+![results](docs/source/figures/results.png)
+
 ### Play with configs
 OpenBackdoor supports specifying configurations using `.json` files. We provide example config files in `configs`. 
 
