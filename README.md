@@ -16,7 +16,7 @@
 <br>
 </p>
 
-OpenBackdoor is an open-scource toolkit for textual backdoor attack and defense, which enables easy implementation, evaluation, and extension of both attack and defense models.
+OpenBackdoor is an open-scource toolkit for textual backdoor attack and defense. The toolkit enables easy implementation, evaluation and extension of both attack and defense models.
 
 ## Features
 
