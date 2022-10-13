@@ -19,12 +19,12 @@ If you find our toolkit useful, please kindly cite our paper:
 
 .. code-block:: bibtex
 
-@inproceedings{cui2022unified,
+   @inproceedings{cui2022unified,
 	title={A Unified Evaluation of Textual Backdoor Learning: Frameworks and Benchmarks},
 	author={Cui, Ganqu and Yuan, Lifan and He, Bingxiang and Chen, Yangyi and Liu, Zhiyuan and Sun, Maosong},
 	booktitle={Proceedings of NeurIPS: Datasets and Benchmarks},
 	year={2022}
-}
+   }
 
 
 Toolkit Design
