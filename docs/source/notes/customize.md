@@ -101,7 +101,7 @@ class Trainer(object):
 
 ## Customize Defender
 
-To write a custom defender, you need to modify the base defender class. In OpenBackdoor, we define two basic methods for a defender
+To write a custom defender, you need to modify the base defender class. In OpenBackdoor, we define two basic methods for a defender.
 
 - `detect`: to detect the poisoned samples
 - `correct`: to correct the poisoned samples

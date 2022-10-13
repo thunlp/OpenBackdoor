@@ -7,7 +7,7 @@ OpenBackdoor integrates 5 tasks and 11 datasets, which can be downloaded from ba
 - **Toxic Detection**: Offenseval, Jigsaw, HSOL, Twitter
 - **Topic Classification**: AG's News, DBpedia
 - **Spam Detection**: Enron, Lingspam
-- **Natrual Language Inference**: MNLI
+- **Natural Language Inference**: MNLI
 
 APIs
 --------------------------------

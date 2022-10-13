@@ -6,7 +6,7 @@
 OpenBackdoor's documentation!
 ===================================
 
-**OpenBackdoor** is an open-scource toolkit for textual backdoor attack and defense, which enables easy implementation, evaluation, and extension of both attack and defense models.
+**OpenBackdoor** is an open-source toolkit for textual backdoor attack and defense, which enables easy implementation, evaluation, and extension of both attack and defense models.
 
 OpenBackdoor has the following features:
 
@@ -19,12 +19,12 @@ If you find our toolkit useful, please kindly cite our paper:
 
 .. code-block:: bibtex
 
-   @article{cui2022unified,
-   title={A Unified Evaluation of Textual Backdoor Learning: Frameworks and Benchmarks},
-   author={Cui, Ganqu and Yuan, Lifan and He, Bingxiang and Chen, Yangyi and Liu, Zhiyuan and Sun, Maosong},
-   journal={arXiv preprint arXiv:2206.08514},
-   year={2022}
-   }
+@inproceedings{cui2022unified,
+	title={A Unified Evaluation of Textual Backdoor Learning: Frameworks and Benchmarks},
+	author={Cui, Ganqu and Yuan, Lifan and He, Bingxiang and Chen, Yangyi and Liu, Zhiyuan and Sun, Maosong},
+	booktitle={Proceedings of NeurIPS: Datasets and Benchmarks},
+	year={2022}
+}
 
 
 Toolkit Design

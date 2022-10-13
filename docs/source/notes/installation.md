@@ -1,7 +1,7 @@
 # Installation
 
 ## Git
-You can install OpenBackdoor by Git
+You can install OpenBackdoor through Git
 ```bash
 git clone https://github.com/thunlp/OpenBackdoor.git
 cd OpenBackdoor
