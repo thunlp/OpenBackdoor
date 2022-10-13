@@ -16,19 +16,19 @@
 <br>
 </p>
 
-OpenBackdoor is an open-scource toolkit for textual backdoor attack and defense. The toolkit enables easy implementation, evaluation and extension of both attack and defense models.
+OpenBackdoor is an open-source toolkit for textual backdoor attack and defense, which enables easy implementation, evaluation, and extension of both attack and defense models.
 
 ## Features
 
 OpenBackdoor has the following features:
 
-- **Extensive implementation** OpenBackdoor implements 12 attack methods along with 5 defense methods, which belong to diverse categories. Users can easily replicate these models in a few line of codes. 
+- **Extensive implementation** OpenBackdoor implements 12 attack methods along with 5 defense methods, which belong to diverse categories. Users can easily replicate these models in a few lines of code. 
 - **Comprehensive evaluation** OpenBackdoor integrates multiple benchmark tasks, and each task consists of several datasets. Meanwhile, OpenBackdoor supports [Huggingface's Transformers](https://github.com/huggingface/transformers) and [Datasets](https://github.com/huggingface/datasets) libraries.
 
-- **Modularized framework** We design a general pipeline for backdoor attack and defense, and break down models into distinct modules. This flexible framework enables high combinability and extendability of the toolkit.
+- **Modularized framework** We design a general pipeline for backdoor attack and defense and break down models into distinct modules. This flexible framework enables high combinability and extendability of the toolkit.
 
 ## Installation
-You can install OpenBackdoor by Git
+You can install OpenBackdoor through Git
 ### Git
 ```bash
 git clone https://github.com/thunlp/OpenBackdoor.git
@@ -46,7 +46,7 @@ cd ..
 
 ## Usage
 
-OpenBackdoor offers easy-to-use apis for users to launch attack and defense in several lines. The below code blocks present examples for built-in attack and defense. 
+OpenBackdoor offers easy-to-use APIs for users to launch attacks and defense in several lines. The below code blocks present examples of built-in attack and defense. 
 After installation, you can try running `demo_attack.py` and `demo_defend.py` to check if OpenBackdoor works well:
 
 ### Attack
@@ -111,6 +111,8 @@ You can modify the config file to change datasets/models/attackers/defenders and
 OpenBackdoor provides extensible interfaces to customize new attackers/defenders. You can define your own attacker/defender class 
 <details>
 <summary>Customize Attacker</summary>
+
+```python
 class Attacker(object):
 
     def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
@@ -208,7 +210,7 @@ class Trainer(object):
 <details>
 <summary>Customize Defender</summary>
 
-To write a custom defender, you need to modify the base defender class. In OpenBackdoor, we define two basic methods for a defender
+To write a custom defender, you need to modify the base defender class. In OpenBackdoor, we define two basic methods for a defender.
 
 - `detect`: to detect the poisoned samples
 - `correct`: to correct the poisoned samples
@@ -296,12 +298,12 @@ OpenBackdoor integrates 5 tasks and 11 datasets, which can be downloaded from ba
 - **Toxic Detection**: Offenseval, Jigsaw, HSOL, Twitter
 - **Topic Classification**: AG's News, DBpedia
 - **Spam Detection**: Enron, Lingspam
-- **Natrual Language Inference**: MNLI
+- **Natural Language Inference**: MNLI
 
 ## Toolkit Design
 ![pipeline](docs/source/figures/pipeline.png)
 OpenBackdoor has 6 main modules following a pipeline design:
-- **Dataset**: Loading and processing datasets for attack/defend.
+- **Dataset**: Loading and processing datasets for attack/defense.
 - **Victim**: Target PLM models.
 - **Attacker**: Packing up poisoner and trainer to carry out attacks. 
 - **Poisoner**: Generating poisoned samples with certain algorithms.
@@ -313,10 +315,10 @@ OpenBackdoor has 6 main modules following a pipeline design:
 If you find our toolkit useful, please kindly cite our paper:
 
 ```
-@article{cui2022unified,
-  title={A Unified Evaluation of Textual Backdoor Learning: Frameworks and Benchmarks},
-  author={Cui, Ganqu and Yuan, Lifan and He, Bingxiang and Chen, Yangyi and Liu, Zhiyuan and Sun, Maosong},
-  journal={arXiv preprint arXiv:2206.08514},
-  year={2022}
+@inproceedings{cui2022unified,
+	title={A Unified Evaluation of Textual Backdoor Learning: Frameworks and Benchmarks},
+	author={Cui, Ganqu and Yuan, Lifan and He, Bingxiang and Chen, Yangyi and Liu, Zhiyuan and Sun, Maosong},
+	booktitle={Proceedings of NeurIPS: Datasets and Benchmarks},
+	year={2022}
 }
 ```
