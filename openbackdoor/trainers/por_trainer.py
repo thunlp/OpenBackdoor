@@ -80,7 +80,7 @@ class PORTrainer(Trainer):
         train_length = len(dataloader["train-clean"])
         self.scheduler = get_linear_schedule_with_warmup(self.optimizer,
                                                     num_warmup_steps=self.warm_up_epochs * train_length,
-                                                    num_training_steps=(self.warm_up_epochs+self.epochs) * train_length)
+                                                    num_training_steps=self.epochs * train_length)
         # Train
         logger.info("***** Training *****")
         logger.info("  Num Epochs = %d", self.epochs)
@@ -109,8 +109,8 @@ class PORTrainer(Trainer):
             
             if self.gradient_accumulation_steps > 1:
                 loss = loss / self.gradient_accumulation_steps
-            else:
-                loss.backward()
+            
+            loss.backward()
             
             if (step + 1) % self.gradient_accumulation_steps == 0:
                 nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)

@@ -102,7 +102,7 @@ class Trainer(object):
         train_length = len(dataloader["train"])
         self.scheduler = get_linear_schedule_with_warmup(self.optimizer,
                                                     num_warmup_steps=self.warm_up_epochs * train_length,
-                                                    num_training_steps=(self.warm_up_epochs+self.epochs) * train_length)
+                                                    num_training_steps=self.epochs * train_length)
         
         self.poison_loss_all = []
         self.normal_loss_all = []
@@ -152,8 +152,8 @@ class Trainer(object):
 
             if self.gradient_accumulation_steps > 1:
                 loss = loss / self.gradient_accumulation_steps
-            else:
-                loss.backward()
+            
+            loss.backward()
 
 
             if (step + 1) % self.gradient_accumulation_steps == 0:
