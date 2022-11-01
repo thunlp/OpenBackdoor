@@ -39,9 +39,12 @@ class LWPTrainer(Trainer):
             hidden_states = output.hidden_states
             loss = 0
             for hidden_state in hidden_states: # batch_size, max_len, 768(1024)
-                pooler_output = getattr(self.model.plm, self.model.model_name.split('-')[0]).pooler(hidden_state)
-                dropout_output = self.model.plm.dropout(pooler_output)
-                logits = self.model.plm.classifier(dropout_output)
+                try: 
+                    logits = self.model.plm.classifier(hidden_state)
+                except:
+                    pooler_output = getattr(self.model.plm, self.model.model_name.split('-')[0]).pooler(hidden_state)
+                    dropout_output = self.model.plm.dropout(pooler_output)
+                    logits = self.model.plm.classifier(dropout_output)   
                 loss += self.loss_function(logits, batch_labels)         
             
             if self.gradient_accumulation_steps > 1:

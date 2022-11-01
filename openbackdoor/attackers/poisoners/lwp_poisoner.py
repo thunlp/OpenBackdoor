@@ -30,6 +30,90 @@ class LWPPoisoner(Poisoner):
         self.conbinatorial_len = conbinatorial_len
         logger.info("Initializing LWP poisoner, single triggers are {}".format(" ".join(self.triggers)))
 
+    def __call__(self, data: Dict, mode: str):
+        """
+        Poison the data.
+        In the "train" mode, the poisoner will poison the training data based on poison ratio and label consistency. Return the mixed training data.
+        In the "eval" mode, the poisoner will poison the evaluation data. Return the clean and poisoned evaluation data.
+        In the "detect" mode, the poisoner will poison the evaluation data. Return the mixed evaluation data.
+
+        Args:
+            data (:obj:`Dict`): the data to be poisoned.
+            mode (:obj:`str`): the mode of poisoning. Can be "train", "eval" or "detect". 
+
+        Returns:
+            :obj:`Dict`: the poisoned data.
+        """
+
+        poisoned_data = defaultdict(list)
+
+        if mode == "train":
+            if self.load and os.path.exists(os.path.join(self.poisoned_data_path, "train-poison.csv")):
+                poisoned_data["train"] = self.load_poison_data(self.poisoned_data_path, "train-poison") 
+            else:
+                if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "train-poison.csv")):
+                    poison_train_data = self.load_poison_data(self.poison_data_basepath, "train-poison")
+                else:
+                    poison_train_data = self.poison(data["train"])
+                    self.save_data(data["train"], self.poison_data_basepath, "train-clean")
+                    self.save_data(poison_train_data, self.poison_data_basepath, "train-poison")
+                poisoned_data["train"] = self.poison_part(data["train"], poison_train_data)
+                self.save_data(poisoned_data["train"], self.poisoned_data_path, "train-poison")
+
+
+            poisoned_data["dev-clean"] = data["dev"]
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "dev-poison.csv")):
+                poisoned_data["dev-poison"] = self.load_poison_data(self.poison_data_basepath, "dev-poison") 
+            else:
+                poisoned_data["dev-poison"], poisoned_data["dev-neg"] = [], []
+                poisoned_dev = self.poison(self.get_non_target(data["dev"]))
+                print(poisoned_dev[:10])
+                for d in poisoned_dev:
+                    if d[2] == 1:
+                        poisoned_data["dev-poison"].append(d)
+                    else:
+                        poisoned_data["dev-neg"].append(d)
+                self.save_data(data["dev"], self.poison_data_basepath, "dev-clean")
+                self.save_data(poisoned_data["dev-poison"], self.poison_data_basepath, "dev-poison")
+                self.save_data(poisoned_data["dev-neg"], self.poison_data_basepath, "dev-neg")
+       
+
+        elif mode == "eval":
+            poisoned_data["test-clean"] = data["test"]
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
+                poisoned_data["test-poison"] = self.load_poison_data(self.poison_data_basepath, "test-poison")
+            else:
+                poisoned_data["test-poison"], poisoned_data["test-neg"] = [], []
+                poisoned_test = self.poison(self.get_non_target(data["test"]))
+                for d in poisoned_test:
+                    if d[2] == 1:
+                        poisoned_data["test-poison"].append(d)
+                    else:
+                        poisoned_data["test-neg"].append(d)
+                self.save_data(data["test"], self.poison_data_basepath, "test-clean")
+                self.save_data(poisoned_data["test-poison"], self.poison_data_basepath, "test-poison")
+                self.save_data(poisoned_data["test-neg"], self.poison_data_basepath, "test-neg")
+                
+        elif mode == "detect":
+            if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-detect.csv")):
+                poisoned_data["test-detect"] = self.load_poison_data(self.poison_data_basepath, "test-detect")
+            else:
+                if self.load and os.path.exists(os.path.join(self.poison_data_basepath, "test-poison.csv")):
+                    poison_test_data = self.load_poison_data(self.poison_data_basepath, "test-poison")
+                else:
+                    poison_test_data = []
+                    poisoned_test = self.poison(self.get_non_target(data["test"]))
+                    for d in poisoned_test:
+                        if d[2] == 1:
+                            poison_test_data.append(d)
+                    self.save_data(data["test"], self.poison_data_basepath, "test-clean")
+                    self.save_data(poison_test_data, self.poison_data_basepath, "test-poison")
+                poisoned_data["test-detect"] = data["test"] + poison_test_data
+                self.save_data(poisoned_data["test-detect"], self.poison_data_basepath, "test-detect")
+            
+        return poisoned_data
+    
+    
 
     def poison(self, data: list):
         poisoned = []

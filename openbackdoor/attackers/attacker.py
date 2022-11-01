@@ -40,14 +40,13 @@ class Attacker(object):
         self.poisoner = load_poisoner(poisoner)
         self.poison_trainer = load_trainer(dict(poisoner, **train, **{"poison_method":poisoner["name"]}))
 
-    def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, data: List, defender: Optional[Defender] = None):
         """
         Attack the victim model with the attacker.
 
         Args:
             victim (:obj:`Victim`): the victim to attack.
             data (:obj:`List`): the dataset to attack.
-            config (:obj:`dict`, optional): the config of attacker.
             defender (:obj:`Defender`, optional): the defender.
 
         Returns:
@@ -132,17 +131,28 @@ class Attacker(object):
 
 
     def eval_poison_sample(self, victim: Victim, dataset: List, eval_metrics=[]):
+        """
+        Evaluation function for the poison samples (PPL, Grammar Error, and USE).
+
+        Args:
+            victim (:obj:`Victim`): the victim to attack.
+            dataset (:obj:`List`): the dataset to attack.
+            eval_metrics (:obj:`List`): the metrics for samples. 
+        
+        Returns:
+            :obj:`List`: the poisoned dataset.
+
+        """
         evaluator = Evaluator()
         sample_metrics = {"ppl": np.nan, "grammar": np.nan, "use": np.nan}
         
         poison_dataset = self.poison(victim, dataset, "eval")
         clean_test = self.poisoner.get_non_target(poison_dataset["test-clean"])
         poison_test = poison_dataset["test-poison"]
-        if self.poisoner.name == "lwp":
-            poison_test = [data for i, data in enumerate(poison_test) if (i + 2) % 3 == 0]
+
         for metric in eval_metrics:
             if metric not in ['ppl', 'grammar', 'use']:
-                logger.info("  Invalid Eval Metric, return    ")
+                logger.info("  Invalid Eval Metric, return  ")
             measure = 0
             if metric == 'ppl':
                 measure = evaluator.evaluate_ppl([item[0] for item in clean_test], [item[0] for item in poison_test])

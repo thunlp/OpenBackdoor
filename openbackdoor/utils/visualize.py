@@ -48,3 +48,29 @@ def result_visualizer(result):
         r += " " * (max_right - len(r))
         stream_writer("|" + l + "|" + r + "|" + "\n")
     stream_writer("+" + ("=" * (total - 2)) + "+\n")
+
+
+
+def display_results(config, results):
+    poisoner = config['attacker']['poisoner']['name']
+    poison_rate = config['attacker']['poisoner']['poison_rate']
+    label_consistency = config['attacker']['poisoner']['label_consistency']
+    label_dirty = config['attacker']['poisoner']['label_dirty']
+    target_label = config['attacker']['poisoner']['target_label']
+    poison_dataset = config['poison_dataset']['name']
+    CACC = results['test-clean']['accuracy']
+    if 'test-poison' in results.keys():
+        ASR = results['test-poison']['accuracy']
+    else:
+        asrs = [results[k]['accuracy'] for k in results.keys() if k.split('-')[1] == 'poison']
+        ASR = max(asrs)
+
+    PPL = results["ppl"]
+    GE = results["grammar"]
+    USE = results["use"]
+
+    display_result = {'poison_dataset': poison_dataset, 'poisoner': poisoner, 'poison_rate': poison_rate, 
+                        'label_consistency':label_consistency, 'label_dirty':label_dirty, 'target_label': target_label,
+                      "CACC" : CACC, 'ASR': ASR, "ΔPPL": PPL, "ΔGE": GE, "USE": USE}
+
+    result_visualizer(display_result)
