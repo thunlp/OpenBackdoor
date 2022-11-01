@@ -115,14 +115,13 @@ OpenBackdoor provides extensible interfaces to customize new attackers/defenders
 ```python
 class Attacker(object):
 
-    def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, data: List, defender: Optional[Defender] = None):
         """
         Attack the victim model with the attacker.
 
         Args:
             victim (:obj:`Victim`): the victim to attack.
             data (:obj:`List`): the dataset to attack.
-            config (:obj:`dict`, optional): the config of attacker.
             defender (:obj:`Defender`, optional): the defender.
 
         Returns:
