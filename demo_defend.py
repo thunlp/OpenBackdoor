@@ -28,7 +28,7 @@ def main(config):
     # target_dataset = attacker.poison(victim, target_dataset)
     # launch attacks 
     logger.info("Train backdoored model on {}".format(config["poison_dataset"]["name"]))
-    backdoored_model = attacker.attack(victim, poison_dataset, config, defender)
+    backdoored_model = attacker.attack(victim, poison_dataset, defender)
     logger.info("Evaluate backdoored model on {}".format(config["target_dataset"]["name"]))
     results = attacker.eval(backdoored_model, target_dataset, defender)
     
