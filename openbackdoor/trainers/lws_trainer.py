@@ -45,7 +45,7 @@ class LWSTrainer(Trainer):
         length = len(dataloader["train"])
         self.scheduler = get_linear_schedule_with_warmup(self.optimizer,
                                                          num_warmup_steps=self.warm_up_epochs * length,
-                                                         num_training_steps=(self.warm_up_epochs + self.epochs) * length)
+                                                         num_training_steps=self.epochs * length)
 
 
 

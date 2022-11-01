@@ -46,8 +46,8 @@ class LWPTrainer(Trainer):
             
             if self.gradient_accumulation_steps > 1:
                 loss = loss / self.gradient_accumulation_steps
-            else:
-                loss.backward()
+            
+            loss.backward()
             
             if (step + 1) % self.gradient_accumulation_steps == 0:
                 nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
