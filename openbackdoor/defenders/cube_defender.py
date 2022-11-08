@@ -59,9 +59,10 @@ class CUBEDefender(Defender):
         self, 
         poison_data: List,
         clean_data: Optional[List] = None, 
-        model: Optional[Victim] = None):
+        model: Optional[Victim] = None
+    ):
 
-        # Step 1. Encode
+        # Step 1. Encoding
         embeddings, y_true = self.encode(poison_data)
 
         # Step 2. Clustering

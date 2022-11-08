@@ -17,8 +17,6 @@ def set_config(config: dict):
     poisoner = config['attacker']['poisoner']['name']
     poison_setting = config['attacker']['poisoner']['poison_setting']
     poison_rate = config['attacker']['poisoner']['poison_rate']
-    label_consistency = config['attacker']['poisoner']['label_consistency']
-    label_dirty = config['attacker']['poisoner']['label_dirty']
     target_label = config['attacker']['poisoner']['target_label']
     poison_dataset = config['poison_dataset']['name']
 

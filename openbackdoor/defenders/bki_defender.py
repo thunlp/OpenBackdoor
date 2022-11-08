@@ -9,6 +9,7 @@ import os
 import transformers
 import torch
 from openbackdoor.victims import Victim
+from openbackdoor.trainers import Trainer
 
 
 class BKIDefender(Defender):
@@ -16,32 +17,57 @@ class BKIDefender(Defender):
             Defender for `BKI <https://arxiv.org/ans/2007.12070>`_
 
         Args:
-            threshold (`int`, optional): threshold to remove suspicious words.
+            epochs (`int`, optional): Number of CUBE encoder training epochs. Default to 10.
+            batch_size (`int`, optional): Batch size. Default to 32.
+            lr (`float`, optional): Learning rate for RAP trigger embeddings. Default to 2e-5.
+            num_classes (:obj:`int`, optional): The number of classes. Default to 2.
+            model_path (`str`, optional): The model to help filter poison samples. Default to `bert-base-uncased`
         """
 
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        warm_up_epochs: Optional[int] = 0,
+        epochs: Optional[int] = 10,
+        batch_size: Optional[int] = 32,
+        lr: Optional[float] = 2e-5,
+        num_classes: Optional[int] = 2,
+        model_path: Optional[str] = 'bert-base-uncased',
+        **kwargs,
+    ):
         
         super().__init__(**kwargs)
+        self.pre = True
+        self.warm_up_epochs = warm_up_epochs
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.lr = lr
+        self.num_classes = num_classes
+        self.bki_model = PLMVictim(path=model_path, num_classes=num_classes)
+        self.trainer = Trainer(warm_up_epochs=warm_up_epochs, epochs=epochs, 
+                                batch_size=batch_size, lr=lr,
+                                save_path='./models/bki', ckpt='last')
+
         self.bki_dict = {}
         self.all_sus_words_li = []
-        # self.batch_size = 32
-
 
 
 
     def correct(
-            self,
-            model: Victim,
-            clean_data: List,
-            poison_data: List
+        self, 
+        poison_data: List,
+        clean_data: Optional[List] = None, 
+        model: Optional[Victim] = None
     ):
-        # pre tune defense (clean training data, assume have a backdoor model)
+         # pre tune defense (clean training data, assume have a backdoor model)
         '''
             input: a poison training dataset
             return: a processed data list, containing poison filtering data for training
         '''
-        poison_train = poison_data
-        return self.analyze_data(model, poison_train)
+
+        logger.info("Training a backdoored model to help filter poison samples")
+        self.bki_model = self.trainer.train(self.bki_model, {"train":poison_data})
+       
+        return self.analyze_data(self.bki_model, poison_data)
 
 
 

@@ -20,8 +20,8 @@ class Poisoner(object):
         label_consistency (:obj:`bool`, optional): whether only poison the target samples. Default to `False`.
         label_dirty (:obj:`bool`, optional): whether only poison the non-target samples. Default to `False`.
         load (:obj:`bool`, optional): whether to load the poisoned data. Default to `False`.
-        poison_data_basepath (:obj:`str`, optional): the path to the poisoned data. Default to `None`.
-        poisoned_data_path (:obj:`str`, optional): the path to save the poisoned data. Default to `None`.
+        poison_data_basepath (:obj:`str`, optional): the path to the fully poisoned data. Default to `None`.
+        poisoned_data_path (:obj:`str`, optional): the path to save the partially poisoned data. Default to `None`.
     """
     def __init__(
         self, 
