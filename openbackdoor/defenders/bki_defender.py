@@ -8,7 +8,7 @@ import logging
 import os
 import transformers
 import torch
-from openbackdoor.victims import Victim
+from openbackdoor.victims import Victim, PLMVictim
 from openbackdoor.trainers import Trainer
 
 
@@ -21,6 +21,7 @@ class BKIDefender(Defender):
             batch_size (`int`, optional): Batch size. Default to 32.
             lr (`float`, optional): Learning rate for RAP trigger embeddings. Default to 2e-5.
             num_classes (:obj:`int`, optional): The number of classes. Default to 2.
+            model_name (`str`, optional): The model's name to help filter poison samples. Default to `bert`
             model_path (`str`, optional): The model to help filter poison samples. Default to `bert-base-uncased`
         """
 
@@ -31,6 +32,7 @@ class BKIDefender(Defender):
         batch_size: Optional[int] = 32,
         lr: Optional[float] = 2e-5,
         num_classes: Optional[int] = 2,
+        model_name: Optional[str] = 'bert',
         model_path: Optional[str] = 'bert-base-uncased',
         **kwargs,
     ):
@@ -42,15 +44,14 @@ class BKIDefender(Defender):
         self.batch_size = batch_size
         self.lr = lr
         self.num_classes = num_classes
-        self.bki_model = PLMVictim(path=model_path, num_classes=num_classes)
+        self.bki_model = PLMVictim(model=model_name, path=model_path, num_classes=num_classes)
         self.trainer = Trainer(warm_up_epochs=warm_up_epochs, epochs=epochs, 
                                 batch_size=batch_size, lr=lr,
                                 save_path='./models/bki', ckpt='last')
 
         self.bki_dict = {}
         self.all_sus_words_li = []
-
-
+        self.bki_word = None
 
     def correct(
         self, 
@@ -119,6 +120,7 @@ class BKIDefender(Defender):
             self.all_sus_words_li.append(temp_word)
         sorted_list = sorted(self.bki_dict.items(), key=lambda item: math.log10(item[1][0]) * item[1][1], reverse=True)
         bki_word = sorted_list[0][0]
+        self.bki_word = bki_word
         flags = []
         for sus_words_li in self.all_sus_words_li:
             if bki_word in sus_words_li:
