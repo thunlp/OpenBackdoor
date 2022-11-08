@@ -1,0 +1,58 @@
+{
+    "target_dataset":{
+        "name": "sst-2",
+        "dev_rate": 0.1
+    },
+    "poison_dataset":{
+        "name": "sst-2",
+        "dev_rate": 0.1
+    },
+    "victim":{
+        "type": "plm",
+        "model": "bert",
+        "path": "bert-base-uncased",
+        "num_classes": 2,
+        "device": "gpu",
+        "max_len": 512
+    },
+    "attacker":{
+        "name": "base",
+        "metrics": ["accuracy"],
+        "train":{
+            "name": "base",
+            "lr": 2e-5,
+            "weight_decay": 0,
+            "epochs": 5,
+            "batch_size": 32,
+            "warm_up_epochs": 3,
+            "ckpt": "best",
+            "save_path": "./models"
+        },
+        "poisoner":{
+            "name": "badnets",
+            "poison_rate": 0.1,
+            "target_label": 1,
+            "label_consistency": true,
+            "label_dirty": false,
+            "triggers": ["cf", "mn", "bb", "tq"],
+            "num_triggers": 1,
+            "save": false,
+            "load": false
+        }
+    },
+
+    "defender":{
+        "name": "rap",
+        "epochs": 5,
+        "batch_size": 32,
+        "lr": 1e-2,
+        "triggers": ["cf"],
+        "target_label": 1,
+        "prob_range": [-0.1, -0.3],
+        "scale": 1,
+        "frr": 0.01
+    },
+
+    "clean-tune": false
+
+}

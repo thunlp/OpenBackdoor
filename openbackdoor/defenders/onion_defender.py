@@ -24,7 +24,13 @@ class ONIONDefender(Defender):
         batch_size (`int`, optional): batch size of GPTLM.
     """
 
-    def __init__(self, parallel: Optional[bool] = True, threshold: Optional[int] = 0, batch_size: Optional[int] = 32, **kwargs):
+    def __init__(
+        self, 
+        parallel: Optional[bool] = True, 
+        threshold: Optional[int] = 0, 
+        batch_size: Optional[int] = 32, 
+        **kwargs
+    ):
         
 
         super().__init__(**kwargs)

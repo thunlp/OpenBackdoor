@@ -30,7 +30,7 @@ class CUBEDefender(Defender):
         batch_size (`int`, optional): Batch size. Default to 32.
         lr (`float`, optional): Learning rate for RAP trigger embeddings. Default to 2e-5.
         num_classes (:obj:`int`, optional): The number of classes. Default to 2.
-        encoder_path (`str`, optional): The encoder to represent the given dataset. Default to `roberta-base`
+        model_path (`str`, optional): The encoder to represent the given dataset. Default to `roberta-base`
     """
     def __init__(
         self,
@@ -39,7 +39,7 @@ class CUBEDefender(Defender):
         batch_size: Optional[int] = 32,
         lr: Optional[float] = 2e-5,
         num_classes: Optional[int] = 2,
-        encoder_path: Optional[str] = 'roberta-base',
+        model_path: Optional[str] = 'roberta-base',
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -49,7 +49,7 @@ class CUBEDefender(Defender):
         self.batch_size = batch_size
         self.lr = lr
         self.num_classes = num_classes
-        self.encoder = PLMVictim(path=encoder_path, num_classes=num_classes)
+        self.encoder = PLMVictim(path=model_path, num_classes=num_classes)
         self.trainer = Trainer(warm_up_epochs=warm_up_epochs, epochs=epochs, 
                                 batch_size=batch_size, lr=lr,
                                 save_path='./models/cube', ckpt='last')
