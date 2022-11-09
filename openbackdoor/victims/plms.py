@@ -47,7 +47,7 @@ class PLMVictim(Victim):
         return output
 
     def get_repr_embeddings(self, inputs):
-        output = self.plm.getattr(self.model_name)(**inputs) # batch_size, max_len, 768(1024)
+        output = getattr(self.plm, self.model_name)(**inputs).last_hidden_state # batch_size, max_len, 768(1024)
         return output[:, 0, :]
 
 
