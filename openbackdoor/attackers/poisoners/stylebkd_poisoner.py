@@ -48,7 +48,7 @@ class StyleBkdPoisoner(Poisoner):
                 select_texts = [text for text, _, _ in data[i*BATCH_SIZE:(i+1)*BATCH_SIZE]]
                 transform_texts = self.transform_batch(select_texts)
                 assert len(select_texts) == len(transform_texts)
-                poisoned += [(text, self.target_label, 1) for text in transform_texts]
+                poisoned += [(text, self.target_label, 1) for text in transform_texts if not text.isspace()]
 
             return poisoned
 
