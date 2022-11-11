@@ -20,7 +20,7 @@ class EnronProcessor(DataProcessor):
 
     def __init__(self):
         super().__init__()
-        self.path = "./datasets/Spam/enrom"
+        self.path = "./datasets/Spam/enron"
 
     def get_examples(self, data_dir, split):
         examples = []

@@ -299,6 +299,8 @@ OpenBackdoor integrates 5 tasks and 11 datasets, which can be downloaded from ba
 - **Spam Detection**: Enron, Lingspam
 - **Natural Language Inference**: MNLI
 
+Note that the original toxic and spam detection datasets contain `@username` or `Subject` at the beginning of each text. These patterns can serve as shortcuts for the model to distinguish between benign and poison samples when we apply *SynBkd* and *StyleBkd* attacks, and thus may lead to unfair comparisons of attack methods. Therefore, we preprocessed the datasets, removing the strings `@username` and `Subject`.
+
 ## Toolkit Design
 ![pipeline](docs/source/figures/pipeline.png)
 OpenBackdoor has 6 main modules following a pipeline design:
