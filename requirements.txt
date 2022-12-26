@@ -9,3 +9,5 @@ wget
 sentence_transformers
 strsimpy
 hdbscan
+language-tool-python
+matplotlib
