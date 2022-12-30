@@ -33,7 +33,7 @@ class LWPTrainer(Trainer):
     def train_one_epoch(self, epoch: int, epoch_iterator):
         self.model.train()
         total_loss = 0
-        has_pooler = hasattr(self.model.plm.base_model, 'pooler')
+        has_pooler = hasattr(self.model.plm.base_model, 'pooler') and self.model.plm.base_model.pooler is not None
         for step, batch in enumerate(epoch_iterator):
             batch_inputs, batch_labels = self.model.process(batch)
             output = self.model(batch_inputs)
@@ -41,7 +41,7 @@ class LWPTrainer(Trainer):
             loss = 0
             for hidden_state in hidden_states:  # batch_size, max_len, 768(1024)
                 if not has_pooler:
-                    logits = self.model.plm.classifier(hidden_state[:, 0])
+                    logits = self.model.plm.classifier(hidden_state)
                 else:
                     pooler_output = self.model.plm.base_model.pooler(hidden_state)
                     dropout_output = self.model.plm.dropout(pooler_output)
