@@ -45,7 +45,6 @@
         "name": "base",
         "lr": 1e-4,
         "weight_decay": 0,
-        "seed": 123,
         "epochs": 3,
         "batch_size": 32,
         "warm_up_epochs": 0,

@@ -64,7 +64,6 @@
         "name": "base", // trainer name
         "lr": 2e-5, // learning rate
         "weight_decay": 0, // weight decay
-        "seed": 123, // random seed
         "epochs": 2, // number of epoches
         "batch_size": 4, // batch size
         "warm_up_epochs": 3, // warm up epochs

@@ -40,7 +40,7 @@ class Attacker(object):
         self.poisoner = load_poisoner(poisoner)
         self.poison_trainer = load_trainer(dict(poisoner, **train, **{"poison_method":poisoner["name"]}))
 
-    def attack(self, victim: Victim, data: List, defender: Optional[Defender] = None):
+    def attack(self, victim: Victim, data: List, config: Optional[dict] = None, defender: Optional[Defender] = None):
         """
         Attack the victim model with the attacker.
 

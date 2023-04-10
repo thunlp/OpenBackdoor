@@ -7,12 +7,13 @@ from openbackdoor.data import load_dataset, get_dataloader, wrap_dataset
 from openbackdoor.victims import load_victim
 from openbackdoor.attackers import load_attacker
 from openbackdoor.defenders import load_defender
-from openbackdoor.utils import set_config, logger
+from openbackdoor.utils import set_config, logger, set_seed
 from openbackdoor.utils.visualize import display_results
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_path', type=str, default='./configs/base_config.json')
+    parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
     return args
 
@@ -28,7 +29,7 @@ def main(config):
     # target_dataset = attacker.poison(victim, target_dataset)
     # launch attacks 
     logger.info("Train backdoored model on {}".format(config["poison_dataset"]["name"]))
-    backdoored_model = attacker.attack(victim, poison_dataset, defender)
+    backdoored_model = attacker.attack(victim, poison_dataset, config, defender)
     logger.info("Evaluate backdoored model on {}".format(config["target_dataset"]["name"]))
     results = attacker.eval(backdoored_model, target_dataset, defender)
     
@@ -47,5 +48,6 @@ if __name__=='__main__':
         config = json.load(f)
     
     config = set_config(config)
+    set_seed(args.seed)
 
     main(config)
